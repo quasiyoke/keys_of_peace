@@ -2,6 +2,7 @@
 
 
 {% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/home-login.css" media="screen" />
 {% endblock %}
 
 
@@ -10,5 +11,9 @@
 
 
 {% block content %}
+<h1>Passw pit</h1>
+<form method="post">
 {{ form }}
+<input type="submit" value="Login">
+</form>
 {% endblock %}

@@ -1,0 +1,10 @@
+$form-width: 640px;
+
+form {
+	font-size: 2em;
+	width: $form-width;
+}
+
+input[type=text], input[type=password], input[type=email] {
+	width: $form-width - 2px;
+}
