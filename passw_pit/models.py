@@ -44,8 +44,8 @@ class Accounter(models.Model):
     registration = models.URLField(blank=True)
     login = models.URLField(blank=True)
     logout = models.URLField(blank=True)
-    password_alphabet = SmallPositiveIntegerField(choices=ALPHABET_CHOICES, default=700)
-    password_length = SmallPositiveIntegerField(default=20)
+    password_alphabet = models.PositiveSmallIntegerField(choices=ALPHABET_CHOICES, default=700)
+    password_length = models.PositiveSmallIntegerField(default=20)
 
 
 class Site(models.Model):
