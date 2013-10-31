@@ -1,3 +1,4 @@
+{% load jsonify_tags %}
 <!doctype html>
 <html lang={{ LANGUAGE_CODE }}>
   <head>
@@ -9,6 +10,17 @@
   <body>
 	{% block content %}{% endblock %}
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/lodash.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/core.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/sha256.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/hmac.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/pbkdf2.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/cipher-core.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/aes.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/crypto.js"></script>
+	<script type="text/javascript">
+	  _.extend(Crypto, {{ crypto|jsonify|safe }});
+	</script>
 	{% block scripts %}{% endblock %}
   </body>
 </html>
