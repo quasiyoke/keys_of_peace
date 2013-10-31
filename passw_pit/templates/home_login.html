@@ -13,7 +13,10 @@
 {% block content %}
 <h1>Passw pit</h1>
 <form method="post">
-{{ form }}
-<input type="submit" value="Login">
+  {{ form }}
+  <input type="submit" value="Login">
 </form>
+<p>
+Have no account? Register <a href="{% url 'registration' %}">here.</a>
+</p>
 {% endblock %}
