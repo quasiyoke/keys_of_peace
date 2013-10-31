@@ -21,7 +21,7 @@ ALPHABETS = (
     (100, ('Digits', )),
     )
 
-ALPHABET_CHOICES = [(k, ' + '.join(ALPHABETS[k]), ) for k in reversed(sorted(ALPHABETS.keys()))]
+ALPHABET_CHOICES = ((k, ' + '.join(v), ) for k, v in ALPHABETS)
 
 
 class Account(models.Model):
