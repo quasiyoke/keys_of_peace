@@ -12,14 +12,14 @@ h1, h2, h3 {
 }
 
 h1 {
-	font-size: 7em;
+	font-size: 4em;
 }
 
 $form-width: 300px;
 
 form {
 	width: $form-width;
-	margin: 0 auto;
+	margin: 3em auto;
 	
 	p {
 		& + p {
