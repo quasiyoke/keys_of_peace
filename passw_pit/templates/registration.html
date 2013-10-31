@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/registration.css" media="screen" />
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}
+
+
+{% block content %}
+<h1>Registration — Passw pit</h1>
+<form method="post">
+  {{ form }}
+  <input type="submit" value="Register">
+</form>
+{% endblock %}
