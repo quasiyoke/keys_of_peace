@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import base64
-import binascii
 import os
 import re
 from django.conf import settings
@@ -16,7 +15,7 @@ SALT_BITS_COUNT = 256
 
 
 def from_string(s):
-    return binascii.a2b_hex(s)
+    return base64.b64decode(s)
 
 
 def get_salt():
@@ -47,4 +46,4 @@ def parse_password(passw):
 
 
 def to_string(s):
-    return binascii.b2a_hex(s)
+    return base64.b64encode(s)

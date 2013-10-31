@@ -3,7 +3,7 @@
 (function(CryptoJS){
 
 
-  var Encoder = CryptoJS.enc.Hex;
+  var Encoder = CryptoJS.enc.Base64;
 
   
   var Formatter = {
