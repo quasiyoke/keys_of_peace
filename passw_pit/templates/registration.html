@@ -1,4 +1,17 @@
-{% extends 'base.html' %}
+{% extends 'daily.html' %}
+
+
+{% block daily_title %}Registration{% endblock %}
+
+
+{% block header %}
+<h1>Registration</h1>
+{% endblock %}
+
+
+{% block breadcrumbs %}
+<span class="last-breadcrumb">Registration</span>
+{% endblock %}
 
 
 {% block stylesheets %}
@@ -10,8 +23,7 @@
 {% endblock %}
 
 
-{% block content %}
-<h1>Registration — Passw pit</h1>
+{% block daily_content %}
 <form method="post">
   {{ form }}
   <input type="submit" value="Register">

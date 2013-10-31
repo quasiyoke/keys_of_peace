@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+{% block title %}{% block daily_title %}{% endblock %} — Passw pit{% endblock %}
+
+
+{% block content %}
+{% block header %}{% endblock %}
+<div class="breadcrumbs">
+  {% spaceless %}
+  <a class="breadcrumb" href="{% url 'home' %}">Passw pit</a>
+  {% block breadcrumbs %}{% endblock %}
+  {% endspaceless %}
+</div>
+{% block daily_content %}{% endblock %}
+{% endblock %}

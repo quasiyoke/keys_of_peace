@@ -3,7 +3,7 @@
 <html lang={{ LANGUAGE_CODE }}>
   <head>
     <meta charset="UTF-8">
-    <title>Passw-pit</title>
+    <title>{% block title %}Passw-pit{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" media="screen" />
 	{% block stylesheets %}{% endblock %}
   </head>

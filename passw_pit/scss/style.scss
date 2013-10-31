@@ -1,3 +1,4 @@
+@charset "utf-8";
 @import "compass/reset";
 @import "mixins";
 
@@ -15,7 +16,7 @@ h1 {
 	font-size: 4em;
 }
 
-$form-width: 300px;
+$form-width: 320px;
 
 form {
 	width: $form-width;
@@ -49,4 +50,22 @@ label {
 
 input[type=submit] {
 	margin-top: .8em;
+}
+
+.breadcrumbs {
+	margin: 2em 0;
+}
+
+.breadcrumb {
+	&:link {
+		&:after {
+			content: "›";
+			margin: 0 .4em;
+			display: inline-block;
+		}
+	}
+}
+
+.last-breadcrumb {
+	font-weight: bolder;
 }
