@@ -157,7 +157,7 @@
 	},
 
 	toString: function(a){
-	  return a.toString();
+	  return a.toString(Encoder);
 	}
 	
   };
