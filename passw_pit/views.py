@@ -15,9 +15,6 @@ class Registration(edit_views.FormView):
     def form_valid(self, form):
         auth_models.User.objects.create(
             email=form.cleaned_data['email'],
-            password=crypto.make_password(
-                crypto.from_string(form.cleaned_data['password_hash']),
-                crypto.from_string(form.cleaned_data['salt']),
-            ),
+            password=crypto.make_password(form.cleaned_data['password_hash'], form.cleaned_data['salt']),
             username=form.cleaned_data['email'],
         )

@@ -1,4 +1,3 @@
-import base64
 from django import forms
 from passw_pit import crypto
 from passw_pit import validators
@@ -24,10 +23,10 @@ class Registration(Form):
 
     def clean_salt(self):
         salt = self.cleaned_data['salt']
-        salt = base64.b64decode(salt)
+        salt = crypto.from_string(salt)
         return salt
 
     def clean_password_hash(self):
         password_hash = self.cleaned_data['password_hash']
-        password_hash = base64.b64decode(password_hash)
+        password_hash = crypto.from_string(password_hash)
         return password_hash
