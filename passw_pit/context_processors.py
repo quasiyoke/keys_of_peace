@@ -14,6 +14,3 @@ def crypto(request):
             'ALPHABETS_CHOICES': models.ALPHABET_CHOICES,
         }
     }
-'''
-            'ALPHABETS': models.ALPHABETS,
-            'ALPHABETS_CHOICES': models.ALPHABET_CHOICES,'''

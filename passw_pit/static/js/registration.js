@@ -28,6 +28,20 @@ jQuery(function($){
 					required: 'Confirm your password.',
 				}
 			}
+		},
+		
+		submit: function(){
+			var password = form.find('[name=password]').val();
+			var salt = Crypto.getSalt();
+			Api.fetch({
+				type: 'POST',
+				resource: 'user',
+				data: {
+					email: form.find('[name=email]').val(),
+					salt: Crypto.toString(salt),
+					hash: Crypto.toString(Crypto.hash(password, salt))
+				}
+			});
 		}
 	});
 });

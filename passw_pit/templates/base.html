@@ -12,8 +12,10 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.validate.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/lodash.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.form.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/api.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/core.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/enc-base64.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/sha256.js"></script>
@@ -24,6 +26,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto.js"></script>
 	<script type="text/javascript">
 	  _.extend(Crypto, {{ crypto|jsonify|safe }});
+	  Api.URL = '/api/v1/';
 	</script>
 	{% block scripts %}{% endblock %}
   </body>

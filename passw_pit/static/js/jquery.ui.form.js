@@ -20,12 +20,21 @@
 		},
 
 		_validate: function(){
+			this.options.validation.submitHandler = _.bind(this._submit, this);
 			this.element.validate(this.options.validation);
 		},
 
 		_init: function(){
 			if(this.options.focus){
 				this.element.find('input:visible:first').focus();
+			}
+		},
+
+		_submit: function(form){
+			if(this.options.submit){
+				this.options.submit.call(this, form);
+			}else{
+				form.submit();
 			}
 		}
 	});
