@@ -33,7 +33,7 @@ jQuery(function($){
 		submit: function(){
 			var password = form.find('[name=password]').val();
 			var salt = Crypto.getSalt();
-			Api.fetch({
+			return Api.fetch({
 				type: 'POST',
 				resource: 'user',
 				data: {

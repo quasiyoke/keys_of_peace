@@ -70,15 +70,36 @@ input[type=submit] {
 	font-weight: bolder;
 }
 
+$error-color: mix($error-color, $fore-color, 70%);
+$error-background: mix($error-color, $back-color, 5%);
+$error-border-color: mix($error-color, $back-color, 30%);
+
 p.error-field {
-	color: mix($error-color, $fore-color, 70%);
+	color: $error-color;
 	
 	input {
-		background: mix($error-color, $back-color, 5%);
-		border-color: mix($error-color, $back-color, 30%);
+		background: $error-background;
+		border-color: $error-border-color;
 	}
 }
 
 label.error-field {
 	font-weight: bolder;
+}
+
+.form-notifications {
+	background: $error-background;
+	border: {
+		top: 1px solid $error-color;
+		bottom: 1px solid $error-color;
+	}
+	color: $error-color;
+	font-size: 1.2em;
+	font-weight: bolder;
+	padding: 0 1em;
+}
+
+.form-notification {
+	margin: .7em 0;
+	line-height: .9;
 }
