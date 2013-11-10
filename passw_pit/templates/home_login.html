@@ -7,16 +7,17 @@
 
 
 {% block scripts %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
 {% endblock %}
 
 
 {% block content %}
 <h1>Passw pit</h1>
-<form method="post">
+<form class="login-form" method="post">
   {{ form }}
   <input type="submit" value="Login">
 </form>
 <p>
-Have no account? Register <a href="{% url 'registration' %}">here.</a>
+  Have no account? Register <a href="{% url 'registration' %}">here.</a>
 </p>
 {% endblock %}

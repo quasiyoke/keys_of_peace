@@ -78,6 +78,9 @@ USE_L10N = True
 USE_TZ = True
 
 
+AUTHENTICATION_BACKENDS = ('passw_pit.backends.Backend', )
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 

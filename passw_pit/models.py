@@ -56,5 +56,6 @@ class Site(models.Model):
     
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(auth_models.User, primary_key=True, related_name='profile')
+    user = models.OneToOneField(auth_models.User, primary_key=True, related_name='profile')
     data = models.TextField(blank=True)
+    data_salt = models.CharField(blank=True, max_length=100)

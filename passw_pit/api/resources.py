@@ -4,6 +4,7 @@ from passw_pit import models
 from tastypie import exceptions
 from tastypie import fields
 from tastypie import resources
+from django.contrib import auth
 from django.contrib.auth import models as auth_models
 
 
@@ -17,6 +18,49 @@ class User(resources.ModelResource):
         filtering = {
             'email': ['exact', ]
         }
+
+    def obj_get_list(self, request=None, **kwargs):
+        filters = {}
+        if request is None:
+            request = kwargs['bundle'].request
+        if hasattr(request, 'GET'):
+            filters = request.GET.copy()
+        filters.update(kwargs)
+        try:
+            email = filters['email']
+        except KeyError:
+            raise exceptions.BadRequest('Email is not specified.')
+        try:
+            queryset = self.get_object_list(request).filter(email=email)
+        except ValueError:
+            raise exceptions.BadRequest("Invalid resource lookup data provided (mismatched type).")
+        if set(filters.keys()).issuperset(['email', 'one_time_salt', 'password_hash', 'salt', ]) and 1 == len(queryset):
+            try:
+                one_time_salt = crypto.from_string(filters['one_time_salt'])
+            except ValueError:
+                raise exceptions.BadRequest('Incorrect one_time_salt value.')
+            try:
+                password_hash = crypto.from_string(filters['password_hash'])
+            except ValueError:
+                raise exceptions.BadRequest('Incorrect password_hash value.')
+            try:
+                salt = crypto.from_string(filters['salt'])
+            except ValueError:
+                raise exceptions.BadRequest('Incorrect salt value.')
+            if auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email):
+                queryset[0].authenticated = True
+        request.session['one_time_salt'] = crypto.to_string(crypto.get_salt())
+        return queryset
+
+    def dehydrate(self, bundle):
+        password = crypto.parse_password(bundle.obj.password)
+        bundle.data['salt'] = crypto.to_string(password['salt'])
+        bundle.data['one_time_salt'] = bundle.request.session['one_time_salt']
+        if getattr(bundle.obj, 'authenticated', False):
+            profile = bundle.obj.profile
+            bundle.data['data'] = profile.data
+            bundle.data['data_salt'] = profile.data_salt
+        return bundle
 
     def obj_create(self, bundle, request=None, **kwargs):
         try:
@@ -41,6 +85,8 @@ class User(resources.ModelResource):
             )
         except db.IntegrityError:
             raise exceptions.BadRequest('There\'s already user with this email.')
+        except ValueError:
+            raise exceptions.BadRequest("Invalid data provided (mismatched type).")
         models.UserProfile.objects.create(
             user=bundle.obj,
         )
