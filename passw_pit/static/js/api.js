@@ -37,7 +37,22 @@
 					options.data = JSON.stringify(options.data);
 				}
 			}
-			return $.ajax(options);
+			return $.ajax(options).always(function(response){
+				if(response.responseText){
+					response = JSON.parse(response.responseText);
+				}
+				if(response){
+					var oneTimeSalt;
+					if(response.objects && response.objects[0]){
+						oneTimeSalt = response.objects[0].one_time_salt;
+					}else{
+						oneTimeSalt = response.one_time_salt;
+					}
+					if(oneTimeSalt){
+						Crypto.oneTimeSalt = Crypto.fromString(oneTimeSalt);
+					}
+				}
+			});
 		}
 	};
 })(jQuery);

@@ -1,8 +1,10 @@
+import json
 from django import db
 from passw_pit import crypto
 from passw_pit import models
 from tastypie import exceptions
 from tastypie import fields
+from tastypie import http
 from tastypie import resources
 from django.contrib import auth
 from django.contrib.auth import models as auth_models
@@ -34,7 +36,9 @@ class User(resources.ModelResource):
             queryset = self.get_object_list(request).filter(email=email)
         except ValueError:
             raise exceptions.BadRequest("Invalid resource lookup data provided (mismatched type).")
-        if set(filters.keys()).issuperset(['email', 'one_time_salt', 'password_hash', 'salt', ]) and 1 == len(queryset):
+        authentication_try = set(filters.keys()).issuperset(['email', 'one_time_salt', 'password_hash', 'salt', ])
+        queryset[0].authenticated = False
+        if authentication_try and 1 == len(queryset):
             try:
                 one_time_salt = crypto.from_string(filters['one_time_salt'])
             except ValueError:
@@ -49,7 +53,16 @@ class User(resources.ModelResource):
                 raise exceptions.BadRequest('Incorrect salt value.')
             if auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email):
                 queryset[0].authenticated = True
-        request.session['one_time_salt'] = crypto.to_string(crypto.get_salt())
+        one_time_salt = crypto.get_salt()
+        request.session['one_time_salt'] = crypto.to_string(one_time_salt)
+        if authentication_try and not getattr(queryset[0], 'authenticated', False):
+            raise exceptions.ImmediateHttpResponse(
+                http.HttpUnauthorized(
+                    json.dumps({
+                        'one_time_salt': crypto.to_string(one_time_salt),
+                    })
+                )
+            )
         return queryset
 
     def dehydrate(self, bundle):

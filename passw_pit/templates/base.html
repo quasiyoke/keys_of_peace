@@ -28,6 +28,7 @@
 	<script type="text/javascript">
 	  _.extend(Crypto, {{ crypto|jsonify|safe }});
 	  Api.URL = '/api/v1/';
+	  LOGIN_URL = '{% url 'home' %}';
 	</script>
 	{% block scripts %}{% endblock %}
   </body>

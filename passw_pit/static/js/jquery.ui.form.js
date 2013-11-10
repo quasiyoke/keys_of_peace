@@ -133,6 +133,8 @@
 			if(!processed){
 				if(!xhr.status){
 					this.notify('Submit was failed. Check your internet connection.');
+					}else if(401 === xhr.status){
+						this.notify('Unauthorized. <a href="' + LOGIN_URL + '">Login</a>');
 				}else if(500 === xhr.status){
 					this.notify('Server error.');
 				}else{
