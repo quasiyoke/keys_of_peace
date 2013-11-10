@@ -2,3 +2,10 @@ $back-color: #fff;
 $fore-color: #000;
 $bright-color: #f80;
 $error-color: #f00;
+
+@mixin shadow($size, $color){
+	$webkit-box-shadow-size-koefficient: 5 / 3;
+	box-shadow: 0 0 $size 0 $color;
+	-webkit-box-shadow: 0 0 $size * $webkit-box-shadow-size-koefficient 0 $color;
+	-moz-box-shadow: 0 0 $size 0 $color;
+}

@@ -38,8 +38,8 @@ input[type=text], input[type=password], input[type=email] {
 	width: $form-width - 2px;
 	
 	&:focus {
+		@include shadow(.5em, $bright-color);
 		outline: none;
-		box-shadow: 0 0 .5em $bright-color;
 	}
 }
 
