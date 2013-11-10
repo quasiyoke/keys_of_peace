@@ -39,7 +39,7 @@ jQuery(function($){
 				data: {
 					email: form.find('[name=email]').val(),
 					salt: Crypto.toString(salt),
-					hash: Crypto.toString(Crypto.hash(password, salt))
+					password_hash: Crypto.toString(Crypto.hash(password, salt))
 				}
 			});
 		}
