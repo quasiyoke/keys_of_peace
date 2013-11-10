@@ -70,6 +70,11 @@ input[type=submit] {
 	font-weight: bolder;
 }
 
+.validation-status {
+	position: absolute;
+	font-size: .7em;
+}
+
 $error-color: mix($error-color, $fore-color, 70%);
 $error-background: mix($error-color, $back-color, 5%);
 $error-border-color: mix($error-color, $back-color, 30%);

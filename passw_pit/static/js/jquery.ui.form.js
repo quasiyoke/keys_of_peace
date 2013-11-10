@@ -74,6 +74,28 @@
 			}
 		},
 
+		setStatus: function(options){
+			var input = this.element.find('[name=' + options.name + ']');
+			$('<span class="validation-status">')
+				.html(options.text)
+				.insertAfter(input)
+				.position({
+					my: 'left center',
+					at: 'right+5 center',
+					of: input
+				})
+			;			
+		},
+
+		clearStatus: function(name){
+			this.element
+				.find('[name=' + name + ']')
+				.closest('form > p')
+				.find('.validation-status')
+				.remove()
+			;
+		},
+
 		clearNotifications: function(){
 			if(this.notifications){
 				this.notifications.slideUp({
