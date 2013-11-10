@@ -26,13 +26,18 @@ class User(resources.ModelResource):
         except KeyError:
             raise exceptions.BadRequest('Specify email, salt and password_hash.')
         try:
+            salt = crypto.from_string(salt)
+        except ValueError:
+            raise exceptions.BadRequest('Incorrect salt value.')
+        try:
+            password_hash = crypto.from_string(password_hash)
+        except ValueError:
+            raise exceptions.BadRequest('Incorrect password_hash value.')
+        try:
             bundle.obj = self._meta.object_class.objects.create(
                 email = email,
                 username = email,
-                password = crypto.make_password(
-                    crypto.from_string(password_hash),
-                    crypto.from_string(salt),
-                ),
+                password = crypto.make_password(password_hash, salt),
             )
         except db.IntegrityError:
             raise exceptions.BadRequest('There\'s already user with this email.')
