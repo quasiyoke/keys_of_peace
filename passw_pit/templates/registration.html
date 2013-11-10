@@ -21,6 +21,13 @@
 
 {% block scripts %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/registration.js"></script>
+<script class="success-template" type="text/html">
+  <div class="success">
+	<h2>Congratulations</h2>
+	<p>You have registered with email <%= email %></p>
+	<a class="login-link" href="{% url 'home' %}">Login</a>
+  </div>
+</script>
 {% endblock %}
 
 

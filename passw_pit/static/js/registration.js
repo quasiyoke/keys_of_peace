@@ -117,6 +117,25 @@ jQuery(function($){
 					password_hash: Crypto.toString(Crypto.hash(password, salt))
 				}
 			});
+		},
+
+		done: function(){
+			showSuccess();
 		}
 	});
+
+	var showSuccess = function(){
+		$('h1').html('Successfully Registered');
+		form
+			.after(
+				_.template(
+					$('.success-template').html(),
+					{
+						email: form.find('[name=email]').val()
+					}
+				)
+			)
+			.remove()
+		;
+	};
 });
