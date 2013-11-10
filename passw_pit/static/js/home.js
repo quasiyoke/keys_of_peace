@@ -50,10 +50,11 @@ jQuery(function($){
 		submit: function(){
 			password = form.find('[name=password]').val();
 			passwordHash = Crypto.hash(password, Crypto.salt);
+			Crypto.email = form.find('[name=email]').val();
 			return Api.fetch({
 				resource: 'user',
 				data: {
-					email: form.find('[name=email]').val(),
+					email: Crypto.email,
 					salt: Crypto.toString(Crypto.salt),
 					one_time_salt: Crypto.toString(Crypto.oneTimeSalt),
 					password_hash: Crypto.toString(Crypto.hash(passwordHash, Crypto.oneTimeSalt))
@@ -81,6 +82,73 @@ jQuery(function($){
 	});
 
 	var showDashboard = function(){
+		$('body').html(
+			_.template(
+				$('.dashboard-template').html(),
+				{
+					email: Crypto.email
+				}
+			)
+		);
 		
+		var searchForm = $('.search-form');
+		searchForm.form({
+			focus: true
+		});
+
+		var accountForm = $('.account-form');
+		accountForm.form({
+			validation: {
+				rules: {
+					name: {
+						required: true
+					},
+					email: {
+						email: true
+					},
+					password: {
+						required: true
+					},
+					length: {
+						range: [3, 50]
+					}
+				},
+				messages: {
+					name: {
+						required: 'Enter the name of account.'
+					},
+					password: {
+						required: 'Enter password for account.'
+					},
+					length: {
+						range: 'Passw length should be ≥ 3 and ≤ 50.'
+					}
+				}
+			},
+
+			create: function(){
+				var password = accountForm.find('[name=password]');
+				var passwordRow = password.closest('form > p')
+					.addClass('account-password-row')
+				;
+				var alphabet = accountForm.find('[name=alphabet]');
+				var alphabetRow = alphabet.closest('form > p')
+					.addClass('account-alphabet-row')
+				;
+				alphabetRow.find('label').html('Alphabet');
+				var length = accountForm.find('[name=length]');
+				var lengthRow = length.closest('form > p')
+					.addClass('account-length-row')
+				;
+				var passwordGenerator = $('<div class="account-password-generator">');
+				passwordRow.prepend(passwordGenerator);
+				passwordGenerator
+					.append(alphabetRow)
+					.append('<span class="account-password-generator-action"> × </span>')
+					.append(lengthRow)
+					.append('<span class="account-password-generator-action"> = </span>')
+				;
+			}
+		});
 	};
 });

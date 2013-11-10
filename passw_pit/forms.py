@@ -1,3 +1,4 @@
+import models
 from django import forms
 from passw_pit import crypto
 from passw_pit import validators
@@ -6,6 +7,15 @@ from passw_pit import validators
 class Form(forms.Form):
     def __unicode__(self):
         return self.as_p()
+
+
+class Account(Form):
+    link = forms.CharField()
+    email = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput())
+    alphabet = forms.ChoiceField(choices=models.ALPHABET_CHOICES)
+    length = forms.IntegerField(initial=20)
+    notes = forms.CharField(widget=forms.Textarea())
 
 
 class Login(Form):

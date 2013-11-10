@@ -9,6 +9,26 @@
 {% block scripts %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/json2.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
+<script class="dashboard-template" type="text/html">
+  <h1 class="dashboard-title">Passw Pit</h1>
+  <div class="bar">
+	<%= email %>
+	<form class="logout-form" action="" method="post">
+	  <input class="logout-submit" type="submit" value="Logout">
+	</form>
+  </div>
+  <form class="search-form">
+	<input class="search-query" type="text">
+	<input class="search-submit" type="submit" value="Search">
+  </form>
+  <p class="no-accounts-notification">You have no accounts</p>
+  <p class="no-accounts-invitation">Worth to create one</p>
+  <form class="account-form">
+	<h2>New account</h2>
+	{{ account_form }}
+	<input class="account-submit" type="submit" value="Save">
+  </form>
+</script>
 {% endblock %}
 
 

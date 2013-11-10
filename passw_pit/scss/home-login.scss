@@ -1,14 +1,107 @@
-$form-width: 640px;
+@import "mixins";
 
 h1 {
 	font-size: 7em;
 }
 
-form {
+.login-form {
+	$login-form-width: 640px;
+
 	font-size: 2em;
-	width: $form-width;
+	width: $login-form-width;
+
+	input[type=text], input[type=password], input[type=email] {
+		width: $login-form-width - 2px;
+	}
 }
 
-input[type=text], input[type=password], input[type=email] {
-	width: $form-width - 2px;
+.dashboard-title {
+	float: left;
+	font-size: 4em;
+}
+
+.bar {
+	float: right;
+	margin: 2.3em 0 0;
+}
+
+.logout-form {
+	display: inline;
+}
+
+.logout-submit[type=submit] {
+	display: inline;
+	margin: 0;
+	border: none;
+	background: transparent;
+	font-size: 1em;
+	color: #00e;
+	cursor: pointer;
+	padding: 0;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.search-form {
+	margin: 0;
+	width: 500px;
+}
+
+.no-accounts-notification {
+	text-align: center;
+	font-size: 1.7em;
+	margin-top: 5.5em;
+}
+
+.no-accounts-invitation {
+	text-align: center;
+	font-size: 1.3em;
+	margin-bottom: 2.5em;
+}
+
+.account-password-row {
+	position: relative;
+}
+
+.account-password-generator {
+	position: absolute;
+	top: 10px;
+	right: 6px + $form-width;
+	font-size: .7em;
+	vertical-align: middle;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.account-alphabet-row, .account-length-row {
+	display: inline-block;
+	margin: 0;
+}
+
+.account-alphabet-row {
+	text-align: right;
+}
+
+.account-length-row {
+	text-align: left;
+}
+
+[name=alphabet] {
+	text-align: right;
+
+	& > option {
+		text-align: left;
+	}
+}
+
+[name=length] {
+	width: 3em;
+}
+
+.account-password-generator-action {
+	position: relative;
+	font-size: 1.7em;
+	top: .05em;
 }

@@ -7,6 +7,11 @@ class Home(edit_views.FormView):
     template_name = 'home_login.html'
     form_class = forms.Login
 
+    def get_context_data(self, **kwargs):
+        context = super(Home, self).get_context_data(**kwargs)
+        context['account_form'] = forms.Account()
+        return context
+
 
 class Registration(edit_views.FormView):
     template_name = 'registration.html'
