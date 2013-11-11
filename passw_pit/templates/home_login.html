@@ -8,6 +8,7 @@
 
 {% block scripts %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/json2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/store.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
 <script class="dashboard-template" type="text/html">
   <h1 class="dashboard-title">Passw Pit</h1>
@@ -22,7 +23,11 @@
 	<input class="search-submit" type="submit" value="Search">
   </form>
   <p class="no-accounts-notification">You have no accounts</p>
-  <p class="no-accounts-invitation">Worth to create one</p>
+  <p class="no-accounts-invitation">
+	Worth to create one — fill the form below<br>
+	All your data will be encoded right in your<br>
+	browser and saved on our server.
+  </p>
   <form class="account-form">
 	<h2>New account</h2>
 	{{ account_form }}

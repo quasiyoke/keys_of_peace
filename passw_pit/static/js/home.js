@@ -1,10 +1,8 @@
 'use strict';
 
 jQuery(function($){
-	var password;
-	var passwordHash;
-	var data;
-	var dataSalt;
+	var credentials = {};
+	var store;
 	
 	var form = $('.login-form');
 	form.form({
@@ -48,8 +46,8 @@ jQuery(function($){
 		},
 
 		submit: function(){
-			password = form.find('[name=password]').val();
-			passwordHash = Crypto.hash(password, Crypto.salt);
+			credentials.password = form.find('[name=password]').val();
+			credentials.passwordHash = Crypto.hash(credentials.password, Crypto.salt);
 			Crypto.email = form.find('[name=email]').val();
 			return Api.fetch({
 				resource: 'user',
@@ -57,19 +55,16 @@ jQuery(function($){
 					email: Crypto.email,
 					salt: Crypto.toString(Crypto.salt),
 					one_time_salt: Crypto.toString(Crypto.oneTimeSalt),
-					password_hash: Crypto.toString(Crypto.hash(passwordHash, Crypto.oneTimeSalt))
+					password_hash: Crypto.toString(Crypto.hash(credentials.passwordHash, Crypto.oneTimeSalt))
 				}
 			})
 		},
 
 		done: function(response){
 			var user = response.objects[0];
-			data = user.data;
-			dataSalt = user.data_salt;
-			if(data){
-				dataSalt = Crypto.fromString(dataSalt);
-				data = JSON.parse(Crypto.decode(Crypto.fromString(data), Crypto.hash(password, dataSalt)));
-			}
+			credentials.data = user.data;
+			credentials.dataSalt = user.data_salt;
+			store = new Store(credentials);
 			showDashboard();
 		},
 
@@ -82,7 +77,7 @@ jQuery(function($){
 	});
 
 	var showDashboard = function(){
-		$('body').html(
+		$('.body-wrap').html(
 			_.template(
 				$('.dashboard-template').html(),
 				{
@@ -100,33 +95,69 @@ jQuery(function($){
 		accountForm.form({
 			validation: {
 				rules: {
-					name: {
+					link: {
+						required: true
+					},
+					login: {
 						required: true
 					},
 					email: {
 						email: true
 					},
+					length: {
+						range: [3, 50]
+					},
 					password: {
 						required: true
 					},
-					length: {
-						range: [3, 50]
+					notes: {
+						maxlength: 100
 					}
 				},
 				messages: {
-					name: {
-						required: 'Enter the name of account.'
+					link: {
+						required: 'Enter the link or name for account.'
 					},
-					password: {
-						required: 'Enter password for account.'
+					login: {
+						required: 'Enter account login or email.'
 					},
 					length: {
 						range: 'Passw length should be ≥ 3 and ≤ 50.'
+					},
+					password: {
+						required: 'Enter password for account.'
 					}
 				}
 			},
 
 			create: function(){
+				var link = accountForm.find('[name=link]')
+					.qtip({
+						content: 'Link to website, name of service or any other short account description.',
+					})
+				;
+				var login = accountForm.find('[name=login]')
+					.val(store.logins.getFirst())
+					.qtip({
+						content: 'Account login or email<br>if it is used as login.'
+					})
+					.on('keyup', function(){
+						if($.validator.methods.email.call({optional: function(){}}, $(this).val(), this)){ // Check if email was used as login.
+							if(emailRow.is(':visible')){
+								emailRow.slideUp('fast');
+								emailVisible = false;
+							}
+						}else{
+							if(!emailRow.is(':visible')){
+								emailRow.slideDown('fast');
+							}
+						}
+					})
+				;
+				var email = accountForm.find('[name=email]')
+					.val(store.emails.getFirst())
+				;
+				var emailRow = email.closest('form > p');
 				var password = accountForm.find('[name=password]');
 				var passwordRow = password.closest('form > p')
 					.addClass('account-password-row')

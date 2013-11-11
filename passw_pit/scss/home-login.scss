@@ -51,14 +51,17 @@ h1 {
 
 .no-accounts-notification {
 	text-align: center;
-	font-size: 1.7em;
+	font-size: 1.9em;
 	margin-top: 5.5em;
 }
 
 .no-accounts-invitation {
 	text-align: center;
-	font-size: 1.3em;
-	margin-bottom: 2.5em;
+	margin: .3em 0 2.5em;
+	
+	&:first-line {
+		font-size: 1.2em;
+	}
 }
 
 .account-password-row {
