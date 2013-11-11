@@ -36,9 +36,9 @@ class User(resources.ModelResource):
             queryset = self.get_object_list(request).filter(email=email)
         except ValueError:
             raise exceptions.BadRequest("Invalid resource lookup data provided (mismatched type).")
+        user = 1 == len(queryset) and queryset[0]
         authentication_try = set(filters.keys()).issuperset(['email', 'one_time_salt', 'password_hash', 'salt', ])
-        queryset[0].authenticated = False
-        if authentication_try and 1 == len(queryset):
+        if authentication_try and user:
             try:
                 one_time_salt = crypto.from_string(filters['one_time_salt'])
             except ValueError:
@@ -52,10 +52,10 @@ class User(resources.ModelResource):
             except ValueError:
                 raise exceptions.BadRequest('Incorrect salt value.')
             if auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email):
-                queryset[0].authenticated = True
+                user = True
         one_time_salt = crypto.get_salt()
         request.session['one_time_salt'] = crypto.to_string(one_time_salt)
-        if authentication_try and not getattr(queryset[0], 'authenticated', False):
+        if authentication_try and user and not getattr(user, 'authenticated', False):
             raise exceptions.ImmediateHttpResponse(
                 http.HttpUnauthorized(
                     json.dumps({
