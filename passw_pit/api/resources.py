@@ -52,7 +52,7 @@ class User(resources.ModelResource):
             except ValueError:
                 raise exceptions.BadRequest('Incorrect salt value.')
             if auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email):
-                user = True
+                user.authenticated = True
         one_time_salt = crypto.get_salt()
         request.session['one_time_salt'] = crypto.to_string(one_time_salt)
         if authentication_try and user and not getattr(user, 'authenticated', False):
