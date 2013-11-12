@@ -1,7 +1,6 @@
 import models
 from django import forms
 from passw_pit import crypto
-from passw_pit import validators
 
 
 class Form(forms.Form):
