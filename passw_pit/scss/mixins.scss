@@ -2,8 +2,55 @@ $back-color: #fff;
 $fore-color: #000;
 $bright-color: #f80;
 $error-color: #f00;
+$link-link-color: #00e;
+$link-visited-color: #529;
+$link-hover-color: #f00;
+$link-active-color: #f88;
 
 $form-width: 320px;
+
+@mixin link {
+	&, &:link {
+		font-size: 1em;
+		cursor: pointer;
+		display: inline;
+		background: transparent;
+		padding: 0;
+		margin: 0;
+		border: none;
+		color: $link-link-color;
+	}
+
+	&:visited {
+		color: $link-visited-color;
+	}
+
+	&:focus {
+		&, &:link {
+			outline: none;
+			box-shadow: none;
+			text-shadow: 0 0 .4em $bright-color;
+			text-decoration: none;
+			border-bottom: .2em solid $link-link-color;
+		}
+
+		&:visited {
+			border-bottom-color: $link-visited-color;
+		}
+
+		&:hover {
+			border-bottom-color: $link-hover-color;
+		}
+	}
+
+	&:hover {
+		color: $link-hover-color;
+	}
+
+	&:active {
+		color: $link-active-color;
+	}
+}
 
 @mixin shadow($size, $color){
 	$webkit-box-shadow-size-koefficient: 5 / 3;

@@ -3,8 +3,19 @@
 .dashboard-title.logout-submit[type=submit] {
 	float: left;
 	font-size: 4em;
-	color: #000;
+	color: $fore-color;
 	@include title;
+
+	&:hover, &:active {
+		color: mix($fore-color, $back-color, 50%);
+		text-decoration: none;
+	}
+
+	&:focus {
+		border: none;
+		text-decoration: underline;
+		text-shadow: none;
+	}
 }
 
 .bar {
@@ -17,17 +28,14 @@
 }
 
 .logout-submit[type=submit] {
-	display: inline;
-	margin: 0;
-	border: none;
-	background: transparent;
-	font-size: 1em;
-	color: #00e;
-	cursor: pointer;
-	padding: 0;
+	@include link;
 
-	&:hover {
+	&:hover{
 		text-decoration: underline;
+		
+		&:focus {
+			text-decoration: none;
+		}
 	}
 }
 
@@ -91,17 +99,32 @@
 }
 
 .account-password-generator-action {
-	position: relative;
-	font-size: 1.7em;
-	top: .05em;
-	margin: 0 .4em;
+	&, &:link {
+		position: relative;
+		font-size: 1.7em;
+		top: .05em;
+		margin: 0 .4em;
+	}
 }
 
 .account-password-generate {
 	&:link, &:visited {
 		color: $fore-color;
-		text-decoration: none;
-		border-bottom: 1px dotted #888;
+		border-bottom-color: #888;
+	}
+
+	&:focus {
+		&:link, &:visited {
+			border-bottom-color: $fore-color;
+		}
+
+		&:hover {
+			border-bottom-color: #000;
+		}
+
+		&:action {
+			border-bottom-color: #aaa;
+		}
 	}
 
 	&:hover {
