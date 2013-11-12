@@ -1,20 +1,5 @@
 @import "mixins";
 
-h1 {
-	font-size: 7em;
-}
-
-.login-form {
-	$login-form-width: 640px;
-
-	font-size: 2em;
-	width: $login-form-width;
-
-	input[type=text], input[type=password], input[type=email] {
-		width: $login-form-width - 2px;
-	}
-}
-
 .dashboard-title {
 	float: left;
 	font-size: 4em;
