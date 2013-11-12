@@ -4,7 +4,7 @@
 	
 	$.widget('passwPit.accountForm', $.passwPit.form, {
 		_create: function(){
-			this._super('_create');
+			this._super();
 			
 			var link = this.element.find('[name=link]')
 				.qtip({
@@ -39,12 +39,11 @@
 			
 			this.passwordInput = this.element.find('[name=password]');
 			this._on(this.passwordInput, {
-				keyup: function(){
-					var password = this.passwordInput.val();
-					if(password.length){
-						this.lengthInput.val(password.length);
+				'passwordchange': function(e, data){
+					if(data.value.length){
+						this.lengthInput.val(data.value.length);
 					}
-					var alphabetKey = Crypto.getAlphabet(password);
+					var alphabetKey = Crypto.getAlphabet(data.value);
 					if(alphabetKey){
 						this.alphabetInput.val(alphabetKey);
 					}
@@ -53,6 +52,9 @@
 			var passwordRow = this.passwordInput.closest('form > p')
 				.addClass('account-password-row')
 			;
+			this.passwordInput.password({
+				target: passwordRow
+			});
 			
 			this.alphabetInput = this.element.find('[name=alphabet]');
 			this._on(this.alphabetInput, {
@@ -76,13 +78,13 @@
 			;
 			
 			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#">=</a>')
-			.qtip({
-				content: 'Generate new password',
-				position: {
-					my: 'top right',
-					at: 'bottom center'
-				}
-			})
+				.qtip({
+					content: 'Generate new password',
+					position: {
+						my: 'top right',
+						at: 'bottom center'
+					}
+				})
 			;
 			this._on(passwordGenerate, {
 				click: function(e){
@@ -105,7 +107,7 @@
 
 		generatePassword: function(){
 			if(this.lengthInput.valid() && this.alphabetInput.valid()){
-				this.passwordInput.val(Crypto.getPassword(this.lengthInput.val(), this.alphabetInput.val()));
+				this.passwordInput.password('value', Crypto.getPassword(this.lengthInput.val(), this.alphabetInput.val()), true);
 			}
 		}
 	});
