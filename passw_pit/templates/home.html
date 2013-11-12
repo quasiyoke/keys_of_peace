@@ -16,7 +16,8 @@
   <h1 class="dashboard-title">Passw Pit</h1>
   <div class="bar">
 	<%= email %>
-	<form class="logout-form" action="" method="post">
+	<form class="logout-form" action="{% url 'logout' %}" method="post">
+	  {% csrf_token %}
 	  <input class="logout-submit" type="submit" value="Logout">
 	</form>
   </div>
