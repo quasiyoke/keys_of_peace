@@ -106,32 +106,34 @@
 		},
 		
 		getRandomAlphabetString: function(length, alphabetKey){
-			var crypto = Crypto;
 			var alphabetBits = Crypto.ALPHABETS[alphabetKey];
-			alphabetBits = _(alphabetBits).map(function(bit){
-				return Crypto.ALPHABETS_BITS[bit].toArray();
+			alphabetBits = _.map(alphabetBits, function(bit){
+				return _.toArray(Crypto.ALPHABETS_BITS[bit]);
 			});
+			var alphabet = Array.concat.apply(null, alphabetBits);
 			var retval;
-			var ca = _.union.apply(undefined, alphabetBits); // Combined alphabet.
 			do{
 				retval = [];
-				for(var i=0; i<length; i++){
-					retval.push(randomChoice(ca));
+				for(var i=length; i--;){
+					retval.push(randomChoice(alphabet));
 				}
-			}while(!isStringRepresentative());
+			}while(!isArrayRepresentative(retval));
 			retval = retval.join('');
 			return retval;
 
+			function randomChoice(a){
+				var retval;
+				retval = Math.floor(Math.random() * a.length);
+				retval = a[retval];
+				return retval;
+			}
+
 			/* Password should contain all provided alphabet bits (if its length allows). */
-			function isStringRepresentative(){
-				var bf = 0; // Bits found.
-				var _retval = _(retval);
-				for(var i=0; i<alphabetBits.length; i++){
-					if(_retval.intersection(alphabetBits[i]).length){
-						bf++;
-					}
-				}
-				return bf == Math.min(alphabetBits.length, length);
+			function isArrayRepresentative(a){
+				var representedBits = _.filter(alphabetBits, function(bit){
+					return _.intersection(a, bit).length;
+				});
+				return representedBits.length == Math.min(alphabetBits.length, length);
 			}
 		},
 
