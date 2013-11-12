@@ -4,13 +4,14 @@
 	
 	$.widget('passwPit.accountForm', $.passwPit.form, {
 		_create: function(){
-			var generatePassword = function(){}
+			this._super('_create');
 			
 			var link = this.element.find('[name=link]')
 				.qtip({
 					content: 'Link to website, name of service or any other short account description.',
 				})
 			;
+			
 			var login = this.element.find('[name=login]')
 				.val(store.logins.getFirst())
 				.qtip({
@@ -19,10 +20,9 @@
 			;
 			this._on(login, {
 				keyup: function(){
-					if($.validator.methods.email.call({optional: function(){}}, $(this).val(), this)){ // Check if email was used as login.
+					if($.validator.methods.email.call({optional: function(){}}, login.val(), login)){ // Check if email was used as login.
 						if(emailRow.is(':visible')){
 							emailRow.slideUp('fast');
-							emailVisible = false;
 						}
 					}else{
 						if(!emailRow.is(':visible')){
@@ -31,31 +31,68 @@
 					}
 				}
 			});
+			
 			var email = this.element.find('[name=email]')
 				.val(store.emails.getFirst())
 			;
 			var emailRow = email.closest('form > p');
+			
 			this.passwordInput = this.element.find('[name=password]');
+			this._on(this.passwordInput, {
+				keyup: function(){
+					var password = this.passwordInput.val();
+					if(password.length){
+						this.lengthInput.val(password.length);
+					}
+					var alphabetKey = Crypto.getAlphabet(password);
+					if(alphabetKey){
+						this.alphabetInput.val(alphabetKey);
+					}
+				}
+			});
 			var passwordRow = this.passwordInput.closest('form > p')
 				.addClass('account-password-row')
 			;
+			
 			this.alphabetInput = this.element.find('[name=alphabet]');
+			this._on(this.alphabetInput, {
+				change: 'generatePassword'
+			});
 			var alphabetRow = this.alphabetInput.closest('form > p')
 				.addClass('account-alphabet-row')
 			;
 			alphabetRow.find('label').html('Alphabet');
+			
 			this.lengthInput = this.element.find('[name=length]');
+			this._on(this.lengthInput, {
+				keyup: function(){
+					if(Number(this.lengthInput.val())){
+						this.generatePassword()
+					}
+				}
+			});
 			var lengthRow = this.lengthInput.closest('form > p')
 				.addClass('account-length-row')
 			;
-			var passwordGenerator = $('<div class="account-password-generator">');
-			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#">=</a>');
+			
+			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#">=</a>')
+			.qtip({
+				content: 'Generate new password',
+				position: {
+					my: 'top right',
+					at: 'bottom center'
+				}
+			})
+			;
 			this._on(passwordGenerate, {
 				click: function(e){
 					e.preventDefault();
 					this.generatePassword();
 				}
 			});
+			
+			var passwordGenerator = $('<div class="account-password-generator">');
+			
 			passwordRow.prepend(passwordGenerator);
 			passwordGenerator
 				.append(alphabetRow)
@@ -63,10 +100,13 @@
 				.append(lengthRow)
 				.append(passwordGenerate)
 			;
+			this.generatePassword();
 		},
 
 		generatePassword: function(){
-			console.log(Crypto.getPassword(this.lengthInput.val(), this.alphabetInput.val()));
+			if(this.lengthInput.valid() && this.alphabetInput.valid()){
+				this.passwordInput.val(Crypto.getPassword(this.lengthInput.val(), this.alphabetInput.val()));
+			}
 		}
 	});
 
@@ -119,6 +159,10 @@
 						required: 'Enter password for account.'
 					}
 				}
+			},
+
+			submit: function(){
+
 			}
 		});
 	};
