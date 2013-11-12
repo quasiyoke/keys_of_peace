@@ -38,7 +38,7 @@
 				}
 			}
 			return $.ajax(options).always(function(response){
-				if(response.responseText){
+				if(response && response.responseText){
 					response = JSON.parse(response.responseText);
 				}
 				if(response){
