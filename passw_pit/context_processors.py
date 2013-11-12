@@ -10,7 +10,7 @@ def crypto(request):
             'SALT_BITS_COUNT': crypto_module.SALT_BITS_COUNT,
 
             'ALPHABETS_BITS': models.ALPHABETS_BITS,
-            'ALPHABETS': dict(models.ALPHABETS),
+            'ALPHABETS': models.ALPHABETS,
             'ALPHABETS_CHOICES': models.ALPHABET_CHOICES,
         }
     }

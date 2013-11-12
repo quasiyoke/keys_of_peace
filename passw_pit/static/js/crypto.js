@@ -106,7 +106,9 @@
 		},
 		
 		getRandomAlphabetString: function(length, alphabetKey){
-			var alphabetBits = Crypto.ALPHABETS[alphabetKey];
+			var alphabetBits = _.find(Crypto.ALPHABETS, function(alphabetItem){
+				return alphabetKey == alphabetItem[0];
+			})[1];
 			alphabetBits = _.map(alphabetBits, function(bit){
 				return _.toArray(Crypto.ALPHABETS_BITS[bit]);
 			});
@@ -130,11 +132,72 @@
 
 			/* Password should contain all provided alphabet bits (if its length allows). */
 			function isArrayRepresentative(a){
-				var representedBits = _.filter(alphabetBits, function(bit){
-					return _.intersection(a, bit).length;
-				});
-				return representedBits.length == Math.min(alphabetBits.length, length);
+				/* If there's only one bit, array always representative. Reduces problems with intersection of `hex` and `latin` and `Digits` bits. */
+				if(1 === alphabetBits.length){
+					return true;
+				}
+				return Crypto.getRepresentedAlphabetsBits(a).length == Math.min(alphabetBits.length, length);
 			}
+		},
+
+		getAlphabet: function(a){
+			if(!a){
+				return;
+			}
+			var retval;
+			var bits = Crypto.getRepresentedAlphabetsBits(a);
+			if(bits && bits.length){
+				for(var i=Crypto.ALPHABETS.length; i--;){
+					var alphabetBits = Crypto.ALPHABETS[i][1];
+					if(!_.difference(bits, alphabetBits).length){
+						retval = Crypto.ALPHABETS[i][0];
+						break;
+					}
+				}
+			}
+			if((!retval || 500 === retval /* latin + Digits */) && !_.difference(a.split(''), Crypto.ALPHABETS_BITS['hex'].split('')).length){
+				retval = 200; // hex
+			}
+			return retval;
+		},
+
+		getRepresentedAlphabetsBits: function(a){
+			if(_.isString(a)){
+				a = a.split('');
+			}
+			var bits = _.map(Crypto.ALPHABETS_BITS, function(bit, key){
+				return {
+					key: key,
+					represented: false,
+					contains: _.bind(bit.contains, bit)
+				};
+			});
+			/* Won't observe `hex` bit. */
+			bits = _.filter(bits, function(bit){
+				return 'hex' !== bit.key;
+			});
+			for(var i=a.length; i--;){
+				var j = bits.length;
+				for(;j--;){
+					if(bits[j].contains(a[i])){
+						bits[j].represented = true;
+						break;
+					}
+				}
+				/* If char wasn't found in any bit, we can't return represented bits list. */
+				if(j < 0){
+					return;
+				}
+			}
+			return _(bits)
+				.filter(function(bit){
+					return bit.represented;
+				})
+				.map(function(bit){
+					return bit.key;
+				})
+				.value()
+			;
 		},
 
 		getSalt: function(){
