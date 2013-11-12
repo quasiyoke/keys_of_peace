@@ -29,5 +29,3 @@ class Registration(Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput(), required=False)
     password_confirmation = forms.CharField(label='Confirm password', required=False, widget=forms.PasswordInput())
-    password_hash = forms.CharField(validators=[validators.Base64()], widget=forms.HiddenInput())
-    salt = forms.CharField(validators=[validators.Base64()], widget=forms.HiddenInput())
