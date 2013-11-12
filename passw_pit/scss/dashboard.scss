@@ -1,8 +1,10 @@
 @import "mixins";
 
-.dashboard-title {
+.dashboard-title.logout-submit[type=submit] {
 	float: left;
 	font-size: 4em;
+	color: #000;
+	@include title;
 }
 
 .bar {

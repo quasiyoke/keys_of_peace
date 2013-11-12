@@ -11,3 +11,7 @@ $form-width: 320px;
 	-webkit-box-shadow: 0 0 $size * $webkit-box-shadow-size-koefficient 0 $color;
 	-moz-box-shadow: 0 0 $size 0 $color;
 }
+
+@mixin title{
+	font-family: "palatino linotype",palatino,serif;
+}

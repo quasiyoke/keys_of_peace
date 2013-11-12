@@ -13,7 +13,10 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
 <script class="dashboard-template" type="text/html">
-  <h1 class="dashboard-title">Passw Pit</h1>
+  <form class="logout-form" action="{% url 'logout' %}" method="post">
+	{% csrf_token %}
+	<input class="dashboard-title logout-submit" type="submit" value="Passw Pit" title="Press the logo to logout">
+  </form>
   <div class="bar">
 	<%= email %>
 	<form class="logout-form" action="{% url 'logout' %}" method="post">

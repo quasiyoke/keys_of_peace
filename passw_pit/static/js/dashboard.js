@@ -111,11 +111,13 @@
 	});
 
 	var Dashboard = window.Dashboard = function(selector, _credentials){
-		var element = $(selector);
-		element.html(this.render());
-		
 		credentials = _credentials;
 		store = new Store(credentials);
+		
+		var element = $(selector);
+		element.html(this.render());
+
+		$('.dashboard-title').qtip();
 		
 		var searchForm = element.find('.search-form');
 		searchForm.form({
