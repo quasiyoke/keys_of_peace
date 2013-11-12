@@ -68,7 +68,7 @@
 	});
 
 	
-	$.widget('ui.form', {
+	$.widget('passwPit.form', {
 		options: {
 			focus: false,
 			validation: {
