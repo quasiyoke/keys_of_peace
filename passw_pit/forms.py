@@ -14,7 +14,7 @@ class Account(Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput())
     alphabet = forms.ChoiceField(choices=models.ALPHABET_CHOICES)
-    length = forms.IntegerField(initial=20)
+    length = forms.IntegerField()
     notes = forms.CharField(widget=forms.Textarea())
 
 

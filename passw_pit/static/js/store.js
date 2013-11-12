@@ -39,9 +39,14 @@
 			credentials.dataSalt = Crypto.fromString(dataSalt);
 			data = JSON.parse(Crypto.decode(Crypto.fromString(data), Crypto.hash(credentials.password, credentials.dataSalt)));
 		}else{
-			data = {};
+			data = {
+				lastPasswordAlphabet: 700,
+				lastPasswordLength: 20
+			};
 		}
 		this.emails = new Emails(data.emails);
+		this.lastPasswordAlphabet = data.lastPasswordAlphabet;
+		this.lastPasswordLength = data.lastPasswordLength;
 		this.logins = new Logins(data.logins);
 	};
 })();

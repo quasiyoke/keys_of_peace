@@ -56,7 +56,9 @@
 				target: passwordRow
 			});
 			
-			this.alphabetInput = this.element.find('[name=alphabet]');
+			this.alphabetInput = this.element.find('[name=alphabet]')
+				.val(store.lastPasswordAlphabet)
+			;
 			this._on(this.alphabetInput, {
 				change: 'generatePassword'
 			});
@@ -65,7 +67,9 @@
 			;
 			alphabetRow.find('label').html('Alphabet');
 			
-			this.lengthInput = this.element.find('[name=length]');
+			this.lengthInput = this.element.find('[name=length]')
+				.val(store.lastPasswordLength)
+			;
 			this._on(this.lengthInput, {
 				keyup: function(){
 					if(Number(this.lengthInput.val())){
