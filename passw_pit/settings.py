@@ -85,10 +85,3 @@ AUTHENTICATION_BACKENDS = ('passw_pit.backends.Backend', )
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
-
-
-from django.conf import global_settings
-TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
-    'django.core.context_processors.request',
-    'passw_pit.context_processors.crypto',
-)

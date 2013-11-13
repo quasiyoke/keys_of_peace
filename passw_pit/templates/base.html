@@ -18,6 +18,7 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.qtip.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/lodash.js"></script>
+    <script type="text/javascript" src="{% url 'configuration' %}"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/form.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/api.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/core.js"></script>
@@ -29,11 +30,6 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/aes.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/crypto.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/util.js"></script>
-	<script type="text/javascript">
-	  _.extend(Crypto, {{ crypto|jsonify|safe }});
-	  Api.URL = '/api/v1/';
-	  LOGIN_URL = '{% url 'home' %}';
-	</script>
 	{% block scripts %}{% endblock %}
   </body>
 </html>
