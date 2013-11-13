@@ -112,7 +112,7 @@
 			alphabetBits = _.map(alphabetBits, function(bit){
 				return _.toArray(Crypto.ALPHABETS_BITS[bit]);
 			});
-			var alphabet = Array.concat.apply(null, alphabetBits);
+			var alphabet = Array.prototype.concat.apply([], alphabetBits);
 			var retval;
 			do{
 				retval = [];
@@ -169,7 +169,9 @@
 				return {
 					key: key,
 					represented: false,
-					contains: _.bind(bit.contains, bit)
+					contains: function(c){
+						return bit.indexOf(c) >= 0;
+					}
 				};
 			});
 			/* Won't observe `hex` bit. */
