@@ -22,8 +22,8 @@ jQuery(function($){
 							if(!user){
 								return false;
 							}
-							Crypto.salt = Crypto.fromString(user.salt);
-							Crypto.oneTimeSalt = Crypto.fromString(user.one_time_salt);
+							credentials.salt = Crypto.fromString(user.salt);
+							credentials.oneTimeSalt = Crypto.fromString(user.one_time_salt);
 							return true;
 						}
 					},
@@ -44,19 +44,50 @@ jQuery(function($){
 			}
 		},
 
-		submit: function(){
-			credentials.password = form.find('[name=password]').val();
-			credentials.passwordHash = Crypto.hash(credentials.password, Crypto.salt);
-			Crypto.email = form.find('[name=email]').val();
-			return Api.fetch({
-				resource: 'user',
-				data: {
-					email: Crypto.email,
-					salt: Crypto.toString(Crypto.salt),
-					one_time_salt: Crypto.toString(Crypto.oneTimeSalt),
-					password_hash: Crypto.toString(Crypto.hash(credentials.passwordHash, Crypto.oneTimeSalt))
-				}
-			})
+		submit: function(form, callback){
+			var hashByOneTimeSalt = function(hash){
+				credentials.passwordHash = hash;
+				Api.make({
+					method: 'hash',
+					arguments: [hash, credentials.oneTimeSalt],
+					callback: check
+				})
+			};
+
+			var check = function(hash){
+				that.setStatus({
+					text: 'Checking…',
+					gauge: true
+				});
+				callback(
+					Api.fetch({
+						resource: 'user',
+						data: {
+							email: credentials.email,
+							salt: Crypto.toString(credentials.salt),
+							one_time_salt: Crypto.toString(credentials.oneTimeSalt),
+							password_hash: Crypto.toString(hash)
+						}
+					})
+				);
+			};
+			
+			this.setStatus({
+				text: 'Hashing password…',
+				gauge: true
+			});
+			credentials.email = this.element.find('[name=email]').val();
+			credentials.password = this.element.find('[name=password]').val();
+			var that = this;
+			Api.make({
+				method: 'hash',
+				arguments: [credentials.password, credentials.salt],
+				callback: hashByOneTimeSalt
+			});
+		},
+
+		always: function(){
+			this.clearStatus();
 		},
 
 		done: function(response){

@@ -4,7 +4,6 @@
 	$.validator.addMethod('api', function(value, el, param){
 		var element = $(el);
 		var form = element.closest('form');
-		form.form('clearStatus', el.name);
 		
 		var previous = this.previousValue(el);
 		if(!this.settings.messages[el.name]){
@@ -25,7 +24,8 @@
 
 		form.form('setStatus', {
 			name: el.name,
-			text: 'Checking…'
+			text: 'Checking…',
+			gauge: true
 		});
 		
 		previous.old = value;
@@ -84,6 +84,7 @@
 		
 		_create: function(){
 			this._validate();
+			this._statuses = {};
 		},
 
 		_validate: function(){
@@ -99,15 +100,24 @@
 
 		_submit: function(form){
 			if(this.options.submit){
-				var xhr = this.options.submit.call(this, form);
-				if(xhr){
-					xhr
-						.always(_.bind(this._always, this))
-						.done(_.bind(this._done, this))
-						.fail(_.bind(this._fail, this))
-					;
-				}
+				var that = this;
+				var callbackDone = false;
+				var callback = function(xhr){
+					if(xhr){
+						xhr
+							.always(_.bind(that._always, that))
+							.done(_.bind(that._done, that))
+							.fail(_.bind(that._fail, that))
+						;
+					}
+					callbackDone = true;
+				};
+				
 				this.clearNotifications();
+				var xhr = this.options.submit.call(this, form, callback);
+				if(xhr && !callbackDone){
+					callback(xhr);
+				}
 			}else{
 				form.submit();
 			}
@@ -134,7 +144,7 @@
 				if(!xhr.status){
 					this.notify('Submit was failed. Check your internet connection.');
 					}else if(401 === xhr.status){
-						this.notify('Unauthorized. <a href="' + LOGIN_URL + '">Login</a>');
+						this.notify('Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>');
 				}else if(500 === xhr.status){
 					this.notify('Server error.');
 				}else{
@@ -144,25 +154,37 @@
 		},
 
 		setStatus: function(options){
-			var input = this.element.find('[name=' + options.name + ']');
-			$('<span class="validation-status">')
+			var input = this.element.find(options.name ? '[name=' + options.name + ']' : '[type=submit]');
+			var status = this._statuses[options.name];
+			if(!status){
+				status = $('<span class="form-status">')
+					.insertAfter(input)
+				;
+				this._statuses[options.name] = status;
+			}
+			status
 				.html(options.text)
-				.insertAfter(input)
 				.position({
 					my: 'left center',
-					at: 'right+5 center',
+					at: 'right+10 center',
 					of: input
 				})
-			;			
+			;
+			if(options.gauge){
+				status.addClass('form-status-gauge');
+			}else{
+				status.removeClass('form-status-gauge');
+			}
+			return this;
 		},
 
 		clearStatus: function(name){
-			this.element
-				.find('[name=' + name + ']')
-				.closest('form > p')
-				.find('.validation-status')
-				.remove()
-			;
+			var status = this._statuses[name];
+			if(status){
+				status.remove();
+				delete this._statuses[name];
+			}
+			return this;
 		},
 
 		clearNotifications: function(){
