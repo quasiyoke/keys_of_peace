@@ -66,6 +66,7 @@ input {
 	&[type=submit] {
 		width: auto;
 		margin-top: .8em;
+		padding: 0 .3em;
 	}
 
 	&::-moz-focus-inner {
@@ -180,9 +181,15 @@ x:-o-prefocus, .qtip .qtip-tip{
 	font-weight: bolder;
 }
 
-.validation-status {
+.form-status {
 	position: absolute;
 	font-size: .7em;
+}
+
+.form-status-gauge {
+	background: url("/static/images/gauge.gif") no-repeat center left;
+	text-indent: 20px;
+	padding-bottom: .05em;
 }
 
 $error-color: mix($error-color, $fore-color, 70%);
