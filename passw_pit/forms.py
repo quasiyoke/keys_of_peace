@@ -21,7 +21,6 @@ class Account(Form):
 class Login(Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput())
-    salt = forms.CharField(widget=forms.HiddenInput())
 
 
 class Registration(Form):
