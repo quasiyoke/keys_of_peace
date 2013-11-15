@@ -1,4 +1,4 @@
-(function($){
+~(function($){
 	var credentials;
 	var store;
 	
@@ -178,7 +178,7 @@
 		return _.template(
 			$('.dashboard-template').html(),
 			{
-				email: Crypto.email
+				email: credentials.email
 			}
 		);
 	};

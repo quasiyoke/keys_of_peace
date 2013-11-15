@@ -1,12 +1,12 @@
 (function(){
-	var Emails = function(options){
-		if(options){
-			this.autoOrder = options.autoOrder;
-			this.objects = options.objects;
+	var Emails = function(credentials){
+		if(credentials.emails){
+			this.autoOrder = credentials.emails.autoOrder;
+			this.objects = credentials.emails.objects;
 		}else{
 			this.autoOrder = true;
 			this.objects = [{
-				email: Crypto.email,
+				email: credentials.email,
 				used: 1
 			}]
 		}
@@ -16,14 +16,14 @@
 	};
 
 
-	var Logins = function(options){
-		if(options){
-			this.autoOrder = options.autoOrder;
-			this.objects = options.objects;
+	var Logins = function(credentials){
+		if(credentials.logins){
+			this.autoOrder = credentials.logins.autoOrder;
+			this.objects = credentials.logins.objects;
 		}else{
 			this.autoOrder = true;
 			this.objects = [{
-				login: /^[^@]+/.exec(Crypto.email)[0],
+				login: /^[^@]+/.exec(credentials.email)[0],
 				used: 1
 			}]
 		}
@@ -44,9 +44,9 @@
 				lastPasswordLength: 20
 			};
 		}
-		this.emails = new Emails(data.emails);
+		this.emails = new Emails(credentials);
 		this.lastPasswordAlphabet = data.lastPasswordAlphabet;
 		this.lastPasswordLength = data.lastPasswordLength;
-		this.logins = new Logins(data.logins);
+		this.logins = new Logins(credentials);
 	};
 })();
