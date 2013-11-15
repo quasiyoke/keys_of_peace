@@ -38,3 +38,6 @@ nosetests.xml
 # SCSS
 .sass-cache
 *.css
+
+# Debug DB
+*.sqlite3
