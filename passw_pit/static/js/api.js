@@ -23,6 +23,7 @@
 				},
 				contentType: 'application/json',
 				dataType: 'json',
+				//processData: false,
 				type: 'GET',
 				url: url
 			};

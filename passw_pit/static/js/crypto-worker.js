@@ -25,7 +25,6 @@ var methods = {
 this.onmessage = function(e){
 	var m = e.data;
 	var method = methods[m.method];
-	//postMessage(m);
 	if(method){
 		m.arguments = method.getArguments(m.arguments);
 	}
