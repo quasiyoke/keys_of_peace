@@ -65,7 +65,7 @@
   };
   
   
-  var Crypto = window.Crypto = {
+  var Crypto = this.Crypto = {
 		_getCipher: function(){
 			var cipher = Crypto._cipher;
 			if(!cipher){
@@ -228,4 +228,6 @@
 		}
 		
   };
-})(CryptoJS);
+
+	_.extend(Crypto, CONFIGURATION.CRYPTO);
+}).call(this, CryptoJS);
