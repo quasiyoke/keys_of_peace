@@ -2,7 +2,7 @@
 	var credentials;
 	var store;
 	
-	$.widget('passwPit.accountForm', $.passwPit.form, {
+	$.widget('keysOfPeace.accountForm', $.keysOfPeace.form, {
 		_create: function(){
 			this._super();
 			

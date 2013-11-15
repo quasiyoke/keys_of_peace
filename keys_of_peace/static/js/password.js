@@ -1,6 +1,6 @@
 'use strict';
 (function($){
-	$.widget('passwPit.password', {
+	$.widget('keysOfPeace.password', {
 		options: {
 			mode: 'password',
 			target: null

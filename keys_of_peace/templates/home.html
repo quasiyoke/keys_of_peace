@@ -17,7 +17,7 @@
 <script class="dashboard-template" type="text/html">
   <form class="logout-form" action="{% url 'logout' %}" method="post">
 	{% csrf_token %}
-	<input class="dashboard-title logout-submit" type="submit" value="Passw Pit" title="Press the logo to logout">
+	<input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout">
   </form>
   <div class="bar">
 	<%= email %>
@@ -46,7 +46,7 @@
 
 
 {% block content %}
-<h1>Passw pit</h1>
+<h1>Keys of Peace</h1>
 <form class="login-form" method="post">
   {{ form }}
   <input type="submit" value="Login">

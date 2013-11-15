@@ -68,7 +68,7 @@
 	});
 
 	
-	$.widget('passwPit.form', {
+	$.widget('keysOfPeace.form', {
 		options: {
 			focus: false,
 			validation: {

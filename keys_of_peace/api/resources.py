@@ -1,7 +1,7 @@
 import json
 from django import db
-from passw_pit import crypto
-from passw_pit import models
+from keys_of_peace import crypto
+from keys_of_peace import models
 from tastypie import exceptions
 from tastypie import fields
 from tastypie import http

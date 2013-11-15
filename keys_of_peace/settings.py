@@ -1,5 +1,5 @@
 """
-Django settings for passw_pit project.
+Django settings for keys_of_peace project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/dev/topics/settings/
@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = (
     'django_jsonify',
-    'passw_pit',
+    'keys_of_peace',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,9 +49,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'passw_pit.urls'
+ROOT_URLCONF = 'keys_of_peace.urls'
 
-WSGI_APPLICATION = 'passw_pit.wsgi.application'
+WSGI_APPLICATION = 'keys_of_peace.wsgi.application'
 
 
 # Database
@@ -78,7 +78,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-AUTHENTICATION_BACKENDS = ('passw_pit.backends.Backend', )
+AUTHENTICATION_BACKENDS = ('keys_of_peace.backends.Backend', )
 
 
 # Static files (CSS, JavaScript, Images)

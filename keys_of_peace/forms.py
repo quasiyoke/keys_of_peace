@@ -1,6 +1,6 @@
 import models
 from django import forms
-from passw_pit import crypto
+from keys_of_peace import crypto
 
 
 class Form(forms.Form):
