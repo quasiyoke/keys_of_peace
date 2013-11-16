@@ -42,17 +42,36 @@ jQuery(function($){
 			}
 		},
 		
-		submit: function(){
+		submit: function(_form, callback){
+			var that = this;
+			var _submit = function(hash){
+				that.setStatus({
+					text: 'Registration…',
+					gauge: true
+				});
+				callback(
+					Api.fetch({
+						type: 'POST',
+						resource: 'user',
+						data: {
+							email: form.find('[name=email]').val(),
+							salt: Crypto.toString(salt),
+							password_hash: Crypto.toString(hash)
+						}
+					})
+				);
+			};
+			
+			this.setStatus({
+				text: 'Hashing password…',
+				gauge: true
+			});
 			var password = form.find('[name=password]').val();
 			var salt = Crypto.getSalt();
-			return Api.fetch({
-				type: 'POST',
-				resource: 'user',
-				data: {
-					email: form.find('[name=email]').val(),
-					salt: Crypto.toString(salt),
-					password_hash: Crypto.toString(Crypto.hash(password, salt))
-				}
+			Api.make({
+				method: 'hash',
+				arguments: [password, salt],
+				callback: _submit
 			});
 		},
 
