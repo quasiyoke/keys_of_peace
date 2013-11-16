@@ -39,25 +39,19 @@
 					options.data = JSON.stringify(options.data);
 				}
 			}
-			return $.ajax(options).always(function(response){
-				if(response && response.responseText){
-					response = JSON.parse(response.responseText);
-				}
-				if(response){
-					var oneTimeSalt;
-					if(response.objects && response.objects[0]){
-						oneTimeSalt = response.objects[0].one_time_salt;
-					}else{
-						oneTimeSalt = response.one_time_salt;
-					}
-					if(oneTimeSalt){
-						Crypto.oneTimeSalt = Crypto.fromString(oneTimeSalt);
-					}
-				}
-			});
+			return $.ajax(options);
 		},
 
 		makeMethods: {
+			encrypt: {
+				getArguments: function(args){
+					return {
+						data: args[0],
+						key: Crypto.toString(args[1])
+					};
+				}
+			},
+			
 			hash: {
 				getArguments: function(args){
 					var retval = {
@@ -87,7 +81,7 @@
 			callbacks[m.id] = m.callback;
 			delete m.callback;
 			var method = Api.makeMethods[m.method];
-			if(method){
+			if(method && method.getArguments){
 				m.arguments = method.getArguments(m.arguments);
 			}
 			cryptoWorker.postMessage(m);
@@ -96,7 +90,7 @@
 		cryptoWorker.onmessage = function(e){
 			var m = e.data;
 			var method = Api.makeMethods[m.method];
-			if(method){
+			if(method && method.getResult){
 				m.result = method.getResult(m.result);
 			}
 			callbacks[m.id](m.result);
