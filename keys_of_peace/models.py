@@ -51,7 +51,7 @@ class Accounter(models.Model):
 
 
 class Site(models.Model):
-    domain = models.CharField(max_length=50, primary_key=True)
+    host = models.CharField(max_length=50, primary_key=True)
     user = models.ForeignKey(auth_models.User)
     name = models.CharField(max_length=50)
     accounter = models.ForeignKey('Accounter', related_name='sites')
