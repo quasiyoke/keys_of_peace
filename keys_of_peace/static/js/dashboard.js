@@ -6,21 +6,21 @@
 		_create: function(){
 			this._super();
 			
-			var link = this.element.find('[name=link]')
+			this.linkInput = this.element.find('[name=link]')
 				.qtip({
 					content: 'Link to website, name of service or any other short account description.',
 				})
 			;
 			
-			var login = this.element.find('[name=login]')
-				.val(store.logins.getFirst())
+			this.loginInput = this.element.find('[name=login]')
+				.val(store.logins.last().get('login'))
 				.qtip({
 					content: 'Account login or email<br>if it is used as login.'
 				})
 			;
-			this._on(login, {
+			this._on(this.loginInput, {
 				keyup: function(){
-					if($.validator.methods.email.call({optional: function(){}}, login.val(), login)){ // Check if email was used as login.
+					if($.validator.methods.email.call({optional: $.noop}, this.loginInput.val(), this.loginInput)){ // Check if email was used as login.
 						if(emailRow.is(':visible')){
 							emailRow.slideUp('fast');
 						}
@@ -32,10 +32,10 @@
 				}
 			});
 			
-			var email = this.element.find('[name=email]')
-				.val(store.emails.getFirst())
+			this.emailInput = this.element.find('[name=email]')
+				.val(store.emails.last().get('email'))
 			;
-			var emailRow = email.closest('form > p');
+			var emailRow = this.emailInput.closest('form > p');
 			
 			this.passwordInput = this.element.find('[name=password]');
 			this._on(this.passwordInput, {
@@ -57,7 +57,7 @@
 			});
 			
 			this.alphabetInput = this.element.find('[name=alphabet]')
-				.val(store.lastPasswordAlphabet)
+				.val(store.accounters.suggestPasswordAlphabet())
 			;
 			this._on(this.alphabetInput, {
 				change: 'generatePassword'
@@ -68,7 +68,7 @@
 			alphabetRow.find('label').html('Alphabet');
 			
 			this.lengthInput = this.element.find('[name=length]')
-				.val(store.lastPasswordLength)
+				.val(store.accounters.suggestPasswordLength())
 			;
 			this._on(this.lengthInput, {
 				keyup: function(){
@@ -107,6 +107,8 @@
 				.append(passwordGenerate)
 			;
 			this.generatePassword();
+
+			this.notesInput = this.element.find('[name=notes]');
 		},
 
 		generatePassword: function(){
@@ -118,13 +120,81 @@
 
 	var Dashboard = window.Dashboard = function(selector, _credentials){
 		credentials = _credentials;
-		store = new Store(credentials);
 		
 		var element = $(selector);
 		element.html(this.render());
 
 		$('.dashboard-title').qtip();
-		
+
+		var bar = $('.bar');
+		var storeStatus;
+		var setStoreStatus = function(options){
+			if(!storeStatus){
+				storeStatus = $('<div class="status">');
+				bar.append(storeStatus);
+			}
+			if(options.error){
+				storeStatus.addClass('status-error');
+			}else{
+				storeStatus.removeClass('status-error');
+			}
+			if(options.gauge){
+				storeStatus.addClass('status-gauge');
+			}else{
+				storeStatus.removeClass('status-gauge');
+			}
+			storeStatus
+				.html(options.text)
+				.position({
+					my: 'center top',
+					at: 'center bottom+5',
+					of: bar
+				})
+			;
+		};
+		var clearStoreStatus = function(){
+			if(storeStatus){
+				storeStatus.remove();
+				storeStatus = undefined;
+			}
+		};
+
+		var that = this;
+		store = new Store(credentials)
+			.on('savingEncryption', function(){
+				setStoreStatus({
+					text: 'Encrypting…',
+					gauge: true
+				});
+			})
+			.on('savingFetching', function(){
+				setStoreStatus({
+					text: 'Fetching…',
+					gauge: true
+				})
+			})
+			.on('savingDone', function(){
+				setStoreStatus({
+					text: 'Saved at' + new Date().toLocaleTimeString()
+				})
+			})
+			.on('savingFail', function(xhr){
+				var options = {
+					error: true
+				};
+				if(!xhr.status){
+					options.text = 'Saving failed. Check your internet connection.'
+				}else if(401 === xhr.status){
+					options.text = 'Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>';
+				}else if(500 === xhr.status){
+					options.text = 'Server error during saving.';
+				}else{
+					options.text = 'Unknown error during saving.';
+				}
+				setStoreStatus(options)
+			})
+		;
+
 		var searchForm = element.find('.search-form');
 		searchForm.form({
 			focus: true
@@ -170,7 +240,15 @@
 			},
 
 			submit: function(){
-
+				store.accounts.create({
+					link: this.linkInput.val(),
+					login: this.loginInput.val(),
+					email: this.emailInput.val(),
+					password: this.passwordInput.val(),
+					passwordAlphabet: this.alphabetInput.val(),
+					passwordLength: this.lengthInput.val(),
+					notes: this.notesInput.val()
+				});
 			}
 		});
 	};

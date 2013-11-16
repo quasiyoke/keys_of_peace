@@ -181,20 +181,25 @@ x:-o-prefocus, .qtip .qtip-tip{
 	font-weight: bolder;
 }
 
-.form-status {
+$error-color: mix($error-color, $fore-color, 70%);
+$error-background: mix($error-color, $back-color, 5%);
+$error-border-color: mix($error-color, $back-color, 30%);
+
+.status {
 	position: absolute;
 	font-size: .7em;
 }
 
-.form-status-gauge {
+.status-error {
+	font-weight: bolder;
+	color: $error-color;
+}
+
+.status-gauge {
 	background: url("/static/images/gauge.gif") no-repeat center left;
 	text-indent: 20px;
 	padding-bottom: .05em;
 }
-
-$error-color: mix($error-color, $fore-color, 70%);
-$error-background: mix($error-color, $back-color, 5%);
-$error-border-color: mix($error-color, $back-color, 30%);
 
 p.error-field {
 	color: $error-color;
