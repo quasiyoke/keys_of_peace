@@ -22,6 +22,7 @@ jQuery(function($){
 							if(!user){
 								return false;
 							}
+							credentials.uri = user.resource_uri;
 							credentials.salt = Crypto.fromString(user.salt);
 							credentials.oneTimeSalt = Crypto.fromString(user.one_time_salt);
 							return true;

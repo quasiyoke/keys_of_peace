@@ -8,12 +8,12 @@
 			options = _.clone(options);
 
 			var url;
-			if(options.data.resource_uri){
-				url = options.data.resource_uri;
+			if(options.uri){
+				url = options.uri;
 			}else{
 				url = this.URL + options.resource + '/';
-				if(options.id){
-					url += options.id + '/';
+				if(options.data.id){
+					url += options.data.id + '/';
 				}
 			}
 			

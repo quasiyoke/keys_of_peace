@@ -267,17 +267,16 @@
 			var fetch = function(string){
 				that.trigger('savingFetching');
 				Api.fetch({
-					resource: 'user',
+					uri: that.credentials.uri,
 					type: 'PUT',
 					data: {
-						id: that.credentials.id,
 						data: string,
 						data_salt: Crypto.toString(that.credentials.dataSalt)
 					}
 				})
-				.always(function(xhr){that.trigger('savingAlways', xhr)})
-				.done(function(data){that.trigger('savingDone', data)})
-				.fail(function(xhr){that.trigger('savingFail', xhr)})
+					.always(function(xhr){that.trigger('savingAlways', xhr)})
+					.done(function(data){that.trigger('savingDone', data)})
+					.fail(function(xhr){that.trigger('savingFail', xhr)})
 				;
 			};
 			
