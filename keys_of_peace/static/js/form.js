@@ -114,7 +114,12 @@
 				};
 				
 				this.clearNotifications();
-				var xhr = this.options.submit.call(this, form, callback);
+				try{
+					var xhr = this.options.submit.call(this, form, callback);
+				}catch(e){
+					console.error(e);
+					return;
+				}
 				if(xhr && !callbackDone){
 					callback(xhr);
 				}
@@ -143,8 +148,8 @@
 			if(!processed){
 				if(!xhr.status){
 					this.notify('Submit was failed. Check your internet connection.');
-					}else if(401 === xhr.status){
-						this.notify('Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>');
+				}else if(401 === xhr.status){
+					this.notify('Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>');
 				}else if(500 === xhr.status){
 					this.notify('Server error.');
 				}else{
@@ -157,7 +162,7 @@
 			var input = this.element.find(options.name ? '[name=' + options.name + ']' : '[type=submit]');
 			var status = this._statuses[options.name];
 			if(!status){
-				status = $('<span class="form-status">')
+				status = $('<span class="status">')
 					.insertAfter(input)
 				;
 				this._statuses[options.name] = status;
@@ -171,9 +176,9 @@
 				})
 			;
 			if(options.gauge){
-				status.addClass('form-status-gauge');
+				status.addClass('status-gauge');
 			}else{
-				status.removeClass('form-status-gauge');
+				status.removeClass('status-gauge');
 			}
 			return this;
 		},
