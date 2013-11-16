@@ -100,6 +100,8 @@ jQuery(function($){
 		fail: function(xhr){
 			if(401 === xhr.status){
 				form.form('notify', 'Wrong email or password.');
+				response = JSON.parse(response.responseText);
+				credentials.oneTimeSalt = Crypto.fromString(response.one_time_salt);
 				return true;
 			}
 		}
