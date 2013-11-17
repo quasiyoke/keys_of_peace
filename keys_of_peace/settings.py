@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = (
     'django_jsonify',
     'keys_of_peace',
+    'permission',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -78,7 +79,11 @@ USE_L10N = True
 USE_TZ = True
 
 
-AUTHENTICATION_BACKENDS = ('keys_of_peace.backends.Backend', )
+AUTHENTICATION_BACKENDS = (
+    'keys_of_peace.backends.Backend',
+    'permission.backends.RoleBackend',
+    'permission.backends.PermissionBackend',
+)
 
 
 # Static files (CSS, JavaScript, Images)
