@@ -108,3 +108,14 @@ class User(resources.ModelResource):
             user=bundle.obj,
         )
         return bundle
+
+    def full_hydrate(self, bundle):
+        bundle = super(User, self).full_hydrate(bundle)
+        bundle.obj.profile.data = bundle.data['data']
+        bundle.obj.profile.data_salt = bundle.data['data_salt']
+        return bundle
+
+    def save(self, bundle, skip_errors=False):
+        bundle = super(User, self).save(bundle, skip_errors)
+        bundle.obj.profile.save()
+        return bundle
