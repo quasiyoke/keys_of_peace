@@ -322,15 +322,9 @@
 				this.searchResultsElement.html('');
 				var that = this;
 				this.searchResults.each(function(model){
-					var view;
-					if(model instanceof Account){
-						view = new AccountView({
-							model: model
-						});
-					}else{
-						throw 'Model is not recognized.';
-					}
-					that.searchResultsElement.append(view.render());
+					that.addSearchResult(model, {
+						effects: false
+					})
 				});
 			}else{
 				this.searchResultsElement.html($('.no-accounts-template').html());
@@ -338,9 +332,29 @@
 		},
 
 		onSearchResults: function(){
-			this.searchResults.on({
-				
+			this.searchResults.on('add', this.addSearchResult, this);
+		},
+
+		addSearchResult: function(model, options){
+			options = _.defaults(options || {}, {
+				effects: true
 			});
+			var view;
+			if(model instanceof Account){
+				view = new AccountView({
+					model: model
+				});
+			}else{
+				throw 'Model is not recognized.';
+			}
+			var element = view.render();
+			this.searchResultsElement.append(element);
+			if(options.effects){
+				element
+					.hide()
+					.slideDown('fast')
+				;
+			}
 		},
 
 		offSearchResults: function(){
