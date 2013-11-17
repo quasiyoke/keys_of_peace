@@ -143,8 +143,8 @@
 			}else{
 				storeStatus.removeClass('status-gauge');
 			}
+			storeStatus.html(options.text);
 			storeStatus
-				.html(options.text)
 				.position({
 					my: 'center top',
 					at: 'center bottom+5',
@@ -175,7 +175,7 @@
 			})
 			.on('savingDone', function(){
 				setStoreStatus({
-					text: 'Saved at' + new Date().toLocaleTimeString()
+					text: 'Saved at ' + new Date().toLocaleTimeString()
 				})
 			})
 			.on('savingFail', function(xhr){
