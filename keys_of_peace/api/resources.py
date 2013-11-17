@@ -1,3 +1,4 @@
+import authorization
 import json
 from django import db
 from keys_of_peace import crypto
@@ -20,6 +21,7 @@ class User(resources.ModelResource):
         filtering = {
             'email': ['exact', ]
         }
+        authorization = authorization.Authorization()
 
     def obj_get_list(self, request=None, **kwargs):
         filters = {}
@@ -51,7 +53,9 @@ class User(resources.ModelResource):
                 salt = crypto.from_string(filters['salt'])
             except ValueError:
                 raise exceptions.BadRequest('Incorrect salt value.')
-            if auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email):
+            authenticated_user = auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email)
+            if authenticated_user:
+                auth.login(request, authenticated_user)
                 user.authenticated = True
         one_time_salt = crypto.get_salt()
         request.session['one_time_salt'] = crypto.to_string(one_time_salt)
