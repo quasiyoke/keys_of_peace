@@ -52,6 +52,22 @@ $form-width: 320px;
 	}
 }
 
+@mixin title-link {
+	@include link;
+
+	&:link {
+		text-decoration: none;
+	}
+
+	&:hover {
+		text-decoration: underline;
+		
+		&:focus {
+			text-decoration: none;
+		}
+	}
+}
+
 @mixin shadow($size, $color){
 	$webkit-box-shadow-size-koefficient: 5 / 3;
 	box-shadow: 0 0 $size 0 $color;

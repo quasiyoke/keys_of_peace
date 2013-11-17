@@ -1,4 +1,4 @@
-~(function($){
+(function($){
 	var credentials;
 	var store;
 	
@@ -120,6 +120,38 @@
 		}
 	});
 
+	
+	var AccountView = Backbone.View.extend({
+		render: function(){
+			var element = $(
+				AccountView.template({
+					login: this.model.get('login'),
+					email: this.model.get('email'),
+					password: this.model.get('password')
+				})
+			);
+			var site = this.model.get('accounter').get('mainSite');
+			if(site){
+				var siteLink = $('<a class="account-accounter-link">')
+					.attr('href', site.get('host'))
+					.html(site.get('host'))
+				;
+				element.prepend(siteLink);
+			}
+			var password = element.find('.account-password')
+				.password({
+					target: element.find('.account-password-row')
+				})
+			;
+			return element;
+		}
+	});
+
+	$(function(){
+		AccountView.template = _.template($('.account-template').html());
+	});
+	
+
 	var Dashboard = window.Dashboard = function(selector, _credentials){
 		credentials = _credentials;
 		
@@ -171,6 +203,7 @@
 			},
 			constructionDone: function(){
 				clearStoreStatus();
+				that.setSearchResults(store.accounts);
 			},
 			savingEncryption: function(){
 				setStoreStatus({
@@ -210,6 +243,8 @@
 		searchForm.form({
 			focus: true
 		});
+
+		this.searchResultsElement = element.find('.search-results');
 
 		var accountForm = element.find('.account-form');
 		accountForm.accountForm({
@@ -265,12 +300,51 @@
 
 		store.setCredentials(credentials);
 	};
-	Dashboard.prototype.render = function(){
-		return _.template(
-			$('.dashboard-template').html(),
-			{
-				email: credentials.email
+	
+	_.extend(Dashboard.prototype, {
+		render: function(){
+			return _.template(
+				$('.dashboard-template').html(),
+				{
+					email: credentials.email
+				}
+			);
+		},
+
+		setSearchResults: function(searchResults){
+			if(this.searchResults){
+				this.offSearchResults();
 			}
-		);
-	};
+			this.searchResults = searchResults;
+			this.onSearchResults();
+
+			if(this.searchResults.length){
+				this.searchResultsElement.html('');
+				var that = this;
+				this.searchResults.each(function(model){
+					var view;
+					if(model instanceof Account){
+						view = new AccountView({
+							model: model
+						});
+					}else{
+						throw 'Model is not recognized.';
+					}
+					that.searchResultsElement.append(view.render());
+				});
+			}else{
+				this.searchResultsElement.html($('.no-accounts-template').html());
+			}
+		},
+
+		onSearchResults: function(){
+			this.searchResults.on({
+				
+			});
+		},
+
+		offSearchResults: function(){
+			
+		}
+	});
 })(jQuery);

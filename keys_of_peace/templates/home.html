@@ -32,17 +32,33 @@
 	<input class="search-query" type="text">
 	<input class="search-submit" type="submit" value="Search">
   </form>
+  <div class="search-results"></div>
+  <form class="account-form">
+	<h2>New account</h2>
+	{{ account_form }}
+	<input class="account-submit" type="submit" value="Save">
+  </form>
+</script>
+<script class="no-accounts-template" type="text/html">
   <p class="no-accounts-notification">You have no accounts</p>
   <p class="no-accounts-invitation">
 	Worth to create one — fill the form below<br>
 	All your data will be encoded right in your<br>
 	browser and saved on our server.
   </p>
-  <form class="account-form">
-	<h2>New account</h2>
-	{{ account_form }}
-	<input class="account-submit" type="submit" value="Save">
-  </form>
+</script>
+<script class="account-template" type="text/html">
+  <div class="account">
+	<p>
+	  Login: <%= login %>
+	</p>
+	<p>
+	  Email: <%= email %>
+	</p>
+	<p class="account-password-row">
+	  Password: <input class="account-password" type="password" value="<%= password %>">
+	</p>
+  </div>
 </script>
 {% endblock %}
 
