@@ -94,7 +94,7 @@
 					models.push(this.model.getFirstAttributes(options));
 				}
 			}
-			this.idCounter = Math.max(1, _(models)
+			this.idCounter = Math.max(0, _(models)
 				.pluck('id')
 				.max()
 				.value()
@@ -102,7 +102,7 @@
 		},
 
 		getUniqueId: function(){
-			return this.idCounter++;
+			return ++this.idCounter;
 		},
 
 		used: function(attrs){
@@ -193,52 +193,77 @@
 	});
 	
 	
-	var Store = global.Store = function(credentials){
-		this.credentials = credentials;
-		var data = credentials.data;
-		if(data){
-			data = JSON.parse(Crypto.decrypt(data, Crypto.hash(credentials.password, credentials.dataSalt)));
-		}else{
-			data = {
-				accounts: {
-					objects: []
-				},
-				accounters: {
-					objects: []
-				},
-				emails: {
-					objects: []
-				},
-				logins: {
-					objects: []
-				},
-				sites: {
-					objects: []
-				}
-			};
-		}
-
-		var options;
-
-		options = _.extend({store: this}, data.accounts, credentials);
-		this.accounts = new Accounts(data.accounts.objects, options)
-			.on('add', this._onAccountsAdd, this)
-		;
-		
-		options = _.extend({store: this}, data.accounters, credentials);
-		this.accounters = new Accounters(data.accounters.objects, options);
-
-		options = _.extend({store: this}, data.emails, credentials);
-		this.emails = new Emails(data.emails.objects, options);
-
-		options = _.extend({store: this}, data.logins, credentials);
-		this.logins = new Logins(data.logins.objects, options);
-
-		options = _.extend({store: this}, data.sites, credentials);
-		this.sites = new Sites(data.sites.objects, options);
-	};
+	var Store = global.Store = function(){};
 
 	_.extend(Store.prototype, Backbone.Events, {
+		setCredentials: function(credentials){
+			this.credentials = credentials;
+			var data = credentials.data;
+			if(data){
+				var that = this;
+				var decrypt = function(hash){
+					Api.make({
+						method: 'decrypt',
+						arguments: [data, hash],
+						callback: parse
+					});
+				};
+
+				var parse = function(data){
+					that.initialize(JSON.parse(data));
+				};
+
+				this.trigger('constructionDecryption');
+				Api.make({
+					method: 'hash',
+					arguments: [credentials.password, credentials.dataSalt],
+					callback: decrypt
+				});
+			}else{
+				data = {
+					accounts: {
+						objects: []
+					},
+					accounters: {
+						objects: []
+					},
+					emails: {
+						objects: []
+					},
+					logins: {
+						objects: []
+					},
+					sites: {
+						objects: []
+					}
+				};
+				this.initialize(data);
+			}
+		},
+		
+		initialize: function(data, callback){
+			var options;
+
+			options = _.extend({store: this}, data.accounts, this.credentials);
+			this.accounts = new Accounts(data.accounts.objects, options)
+				.on('add', this._onAccountsAdd, this)
+			;
+			
+			options = _.extend({store: this}, data.accounters, this.credentials);
+			this.accounters = new Accounters(data.accounters.objects, options);
+
+			options = _.extend({store: this}, data.emails, this.credentials);
+			this.emails = new Emails(data.emails.objects, options);
+
+			options = _.extend({store: this}, data.logins, this.credentials);
+			this.logins = new Logins(data.logins.objects, options);
+
+			options = _.extend({store: this}, data.sites, this.credentials);
+			this.sites = new Sites(data.sites.objects, options);
+
+			this.trigger('constructionDone');
+		},
+		
 		_onAccountsAdd: function(){
 			this.save();
 		},

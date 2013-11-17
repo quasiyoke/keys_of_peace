@@ -13,7 +13,6 @@
 			;
 			
 			this.loginInput = this.element.find('[name=login]')
-				.val(store.logins.last().get('login'))
 				.qtip({
 					content: 'Account login or email<br>if it is used as login.'
 				})
@@ -32,9 +31,7 @@
 				}
 			});
 			
-			this.emailInput = this.element.find('[name=email]')
-				.val(store.emails.last().get('email'))
-			;
+			this.emailInput = this.element.find('[name=email]');
 			var emailRow = this.emailInput.closest('form > p');
 			
 			this.passwordInput = this.element.find('[name=password]');
@@ -56,9 +53,7 @@
 				target: passwordRow
 			});
 			
-			this.alphabetInput = this.element.find('[name=alphabet]')
-				.val(store.accounters.suggestPasswordAlphabet())
-			;
+			this.alphabetInput = this.element.find('[name=alphabet]');
 			this._on(this.alphabetInput, {
 				change: 'generatePassword'
 			});
@@ -67,9 +62,7 @@
 			;
 			alphabetRow.find('label').html('Alphabet');
 			
-			this.lengthInput = this.element.find('[name=length]')
-				.val(store.accounters.suggestPasswordLength())
-			;
+			this.lengthInput = this.element.find('[name=length]');
 			this._on(this.lengthInput, {
 				keyup: function(){
 					if(Number(this.lengthInput.val())){
@@ -106,9 +99,18 @@
 				.append(lengthRow)
 				.append(passwordGenerate)
 			;
-			this.generatePassword();
 
 			this.notesInput = this.element.find('[name=notes]');
+
+			store.on('constructionDone', this._onStoreConstructionDone, this);
+		},
+
+		_onStoreConstructionDone: function(){
+			this.loginInput.val(store.logins.last().get('login'));
+			this.emailInput.val(store.emails.last().get('email'));
+			this.alphabetInput.val(store.accounters.suggestPasswordAlphabet());
+			this.lengthInput.val(store.accounters.suggestPasswordLength());
+			this.generatePassword();
 		},
 
 		generatePassword: function(){
@@ -160,25 +162,34 @@
 		};
 
 		var that = this;
-		store = new Store(credentials)
-			.on('savingEncryption', function(){
+		store = new Store().on({
+			constructionDecryption: function(){
+				setStoreStatus({
+					text: 'Decrypting…',
+					gauge: true
+				});
+			},
+			constructionDone: function(){
+				clearStoreStatus();
+			},
+			savingEncryption: function(){
 				setStoreStatus({
 					text: 'Encrypting…',
 					gauge: true
 				});
-			})
-			.on('savingFetching', function(){
+			},
+			savingFetching: function(){
 				setStoreStatus({
 					text: 'Fetching…',
 					gauge: true
 				})
-			})
-			.on('savingDone', function(){
+			},
+			savingDone: function(){
 				setStoreStatus({
 					text: 'Saved at ' + new Date().toLocaleTimeString()
 				})
-			})
-			.on('savingFail', function(xhr){
+			},
+			savingFail: function(xhr){
 				var options = {
 					error: true
 				};
@@ -192,8 +203,8 @@
 					options.text = 'Unknown error during saving.';
 				}
 				setStoreStatus(options)
-			})
-		;
+			}
+		});
 
 		var searchForm = element.find('.search-form');
 		searchForm.form({
@@ -251,6 +262,8 @@
 				});
 			}
 		});
+
+		store.setCredentials(credentials);
 	};
 	Dashboard.prototype.render = function(){
 		return _.template(
