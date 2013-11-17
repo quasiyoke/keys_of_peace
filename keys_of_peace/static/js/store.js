@@ -197,8 +197,7 @@
 		this.credentials = credentials;
 		var data = credentials.data;
 		if(data){
-			credentials.dataSalt = Crypto.fromString(dataSalt);
-			data = JSON.parse(Crypto.decode(Crypto.fromString(data), Crypto.hash(credentials.password, credentials.dataSalt)));
+			data = JSON.parse(Crypto.decrypt(data, Crypto.hash(credentials.password, credentials.dataSalt)));
 		}else{
 			data = {
 				accounts: {

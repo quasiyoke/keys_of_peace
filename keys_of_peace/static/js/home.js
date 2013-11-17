@@ -94,7 +94,7 @@ jQuery(function($){
 		done: function(response){
 			var user = response.objects[0];
 			credentials.data = user.data;
-			credentials.dataSalt = user.data_salt;
+			credentials.dataSalt = Crypto.fromString(user.data_salt);
 			var dashboard = new Dashboard('.body-wrap', credentials);
 		},
 
