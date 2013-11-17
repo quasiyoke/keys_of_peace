@@ -8,6 +8,13 @@ for(var i=scripts.length; i--;){
 importScripts.apply(this, scripts);
 
 var methods = {
+	decrypt: {
+		getArguments: function(args){
+			args.key = Crypto.fromString(args.key);
+			return [args.data, args.key];
+		}
+	},
+	
 	encrypt: {
 		getArguments: function(args){
 			args.data = JSON.stringify(args.data);

@@ -43,6 +43,15 @@
 		},
 
 		makeMethods: {
+			decrypt: {
+				getArguments: function(args){
+					return {
+						data: args[0],
+						key: Crypto.toString(args[1])
+					};
+				}
+			},
+			
 			encrypt: {
 				getArguments: function(args){
 					return {
