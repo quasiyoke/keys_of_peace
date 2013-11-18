@@ -142,6 +142,8 @@
 			if(site){
 				accounter.set('mainSite', site);
 				site.set('accounter', accounter);
+			}else{
+				accounter.set('name', attrs.link)
 			}
 
 			return Accounts.__super__.create.call(this, {
@@ -189,7 +191,16 @@
 
 
 	var Sites = global.Sites = Collection.extend({
-		model: Site
+		model: Site,
+		
+		create: function(attrs, options){
+			var model = Sites.__super__.create.call(this, attrs, options);
+			if(model){
+				var match = /((https?|s?ftp):\/\/(www2?\.)?)([^\/\?]+)/.exec(model.get('host'));
+				model.set('name', match ? match[4] : model.get('host'));
+			}
+			return model;
+		}
 	});
 	
 	
