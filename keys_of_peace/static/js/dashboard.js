@@ -134,7 +134,7 @@
 			if(site){
 				var siteLink = $('<a class="account-accounter-link">')
 					.attr('href', site.get('host'))
-					.html(site.get('host'))
+					.html(site.get('name'))
 				;
 				element.prepend(siteLink);
 			}
@@ -332,7 +332,16 @@
 		},
 
 		onSearchResults: function(){
-			this.searchResults.on('add', this.addSearchResult, this);
+			this.searchResults.on('add', this.onAddSearchResult, this);
+		},
+
+		onAddSearchResult: function(model, options){
+			if(1 === this.searchResults.length){
+				this.searchResultsElement.find('> *')
+					.slideUp('fast')
+				;
+			}
+			this.addSearchResult(model, options);
 		},
 
 		addSearchResult: function(model, options){
