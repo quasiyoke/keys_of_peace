@@ -106,6 +106,7 @@
 			this._superApply(arguments);
 			this.focus();
 			this.generatePassword();
+			this.notesInput.val('');
 		},
 
 		generatePassword: function(){
