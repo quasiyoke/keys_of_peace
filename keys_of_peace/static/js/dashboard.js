@@ -101,16 +101,6 @@
 			;
 
 			this.notesInput = this.element.find('[name=notes]');
-
-			store.on('constructionDone', this._onStoreConstructionDone, this);
-		},
-
-		_onStoreConstructionDone: function(){
-			this.loginInput.val(store.logins.last().get('login'));
-			this.emailInput.val(store.emails.last().get('email'));
-			this.alphabetInput.val(store.accounters.suggestPasswordAlphabet());
-			this.lengthInput.val(store.accounters.suggestPasswordLength());
-			this.generatePassword();
 		},
 
 		generatePassword: function(){
@@ -209,6 +199,7 @@
 			},
 			constructionDone: function(){
 				clearStoreStatus();
+				that._onStoreConstructionDone();
 				that.setSearchResults(store.accounts);
 			},
 			savingEncryption: function(){
@@ -252,8 +243,8 @@
 
 		this.searchResultsElement = element.find('.search-results');
 
-		var accountForm = element.find('.account-form');
-		accountForm.accountForm({
+		this.accountForm = element.find('.account-form');
+		this.accountForm.accountForm({
 			validation: {
 				rules: {
 					link: {
@@ -315,6 +306,14 @@
 					email: credentials.email
 				}
 			);
+		},
+
+		_onStoreConstructionDone: function(){
+			this.accountForm.accountForm('value', 'login', store.logins.last().get('login'));
+			this.accountForm.accountForm('value', 'email', store.emails.last().get('email'));
+			this.accountForm.accountForm('value', 'alphabet', store.accounters.suggestPasswordAlphabet());
+			this.accountForm.accountForm('value', 'length', store.accounters.suggestPasswordLength());
+			this.accountForm.accountForm('generatePassword');
 		},
 
 		setSearchResults: function(searchResults){
