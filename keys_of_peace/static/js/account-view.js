@@ -19,8 +19,9 @@
 					})
 				)
 			);
-			
-			var site = this.model.get('accounter').get('mainSite');
+
+			var accounter = this.model.get('accounter');
+			var site = accounter.get('mainSite');
 			var loginRow = this.$('.account-login-row');
 			var email = this.model.get('email');
 			if(email && email !== this.model.get('login')){
@@ -29,11 +30,16 @@
 				loginRow.after(emailRow);
 			}
 			if(site){
-				var siteLink = $('<a class="account-accounter-link">')
+				var siteLink = $('<a class="account-accounter-link account-title">')
 					.attr('href', site.get('host'))
 					.html(site.get('name'))
 				;
 				this.$el.prepend(siteLink);
+			}else{
+				var name = $('<span class="account-title">')
+					.html(accounter.get('name'))
+				;
+				this.$el.prepend(name);
 			}
 			
 			var password = this.$('.account-password')

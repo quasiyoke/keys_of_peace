@@ -1,7 +1,7 @@
 (function(global){
 	var Model = Backbone.RelationalModel.extend({
 		initialize: function(attrs, options){
-			if(!this.has('id')){
+			if(!this.validationError && !this.has('id')){
 				this.set('id', this.collection.getUniqueId());
 			}
 			this.set('created', new Date(this.get('created'))); // Creates new `Date` object or generates current time if no `created` attribute present.
@@ -80,7 +80,9 @@
 		],
 		
 		validate: function(attrs, options){
-			$.validator.methods.url.call({optional: $.noop}, attrs.host);
+			if(!$.validator.methods.url.call({optional: $.noop}, attrs.host)){
+				return 'Host isn\'t a correct URL.';
+			}
 		}
 	});
 

@@ -70,12 +70,14 @@
 	}
 }
 
-.account-accounter-link {
-	@include title-link;
-	
-	&:link {
+.account-title {
+	&, &:link {
 		font-size: 1.3em;
 	}
+}
+
+.account-accounter-link {
+	@include title-link;
 }
 
 .account-options-link {
