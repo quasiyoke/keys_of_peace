@@ -2,6 +2,7 @@
 (function($){
 	$.widget('keysOfPeace.password', {
 		options: {
+			class: null,
 			mode: 'password',
 			target: null
 		},
@@ -24,6 +25,10 @@
 				.val(this._value)
 				.insertAfter(this.element)
 			;
+			if(this.options.class){
+				this.element.addClass(this.options.class);
+				this.textInput.addClass(this.options.class);
+			}
 
 			var commonHandlers = {
 				keyup: '_change'
