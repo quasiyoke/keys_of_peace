@@ -162,6 +162,9 @@
 		onStoreConstructionDone: function(){
 			this.clearStoreStatus();
 			this.setSearchResults(store.accounts);
+			if(!store.accounts.length){
+				this.accountForm.accountForm('focus');
+			}
 			this.accountForm.accountForm('value', 'login', store.logins.last().get('login'));
 			this.accountForm.accountForm('value', 'email', store.emails.last().get('email'));
 			this.accountForm.accountForm('value', 'alphabet', store.accounters.suggestPasswordAlphabet());
