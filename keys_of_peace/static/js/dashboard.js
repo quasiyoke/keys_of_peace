@@ -156,66 +156,31 @@
 
 		$('.dashboard-title').qtip();
 
-		var bar = $('.bar');
-		var storeStatus;
-		var setStoreStatus = function(options){
-			if(!storeStatus){
-				storeStatus = $('<div class="status">');
-				bar.append(storeStatus);
-			}
-			if(options.error){
-				storeStatus.addClass('status-error');
-			}else{
-				storeStatus.removeClass('status-error');
-			}
-			if(options.gauge){
-				storeStatus.addClass('status-gauge');
-			}else{
-				storeStatus.removeClass('status-gauge');
-			}
-			storeStatus.html(options.text);
-			storeStatus
-				.position({
-					my: 'center top',
-					at: 'center bottom+5',
-					of: bar
-				})
-			;
-		};
-		var clearStoreStatus = function(){
-			if(storeStatus){
-				storeStatus.remove();
-				storeStatus = undefined;
-			}
-		};
+		this.bar = $('.bar');
 
 		var that = this;
 		store = new Store().on({
 			constructionDecryption: function(){
-				setStoreStatus({
+				that.setStoreStatus({
 					text: 'Decrypting…',
 					gauge: true
 				});
 			},
-			constructionDone: function(){
-				clearStoreStatus();
-				that._onStoreConstructionDone();
-				that.setSearchResults(store.accounts);
-			},
+			constructionDone: _.bind(this.onStoreConstructionDone, this),
 			savingEncryption: function(){
-				setStoreStatus({
+				that.setStoreStatus({
 					text: 'Encrypting…',
 					gauge: true
 				});
 			},
 			savingFetching: function(){
-				setStoreStatus({
+				that.setStoreStatus({
 					text: 'Fetching…',
 					gauge: true
 				})
 			},
 			savingDone: function(){
-				setStoreStatus({
+				that.setStoreStatus({
 					text: 'Saved at ' + new Date().toLocaleTimeString()
 				})
 			},
@@ -232,7 +197,7 @@
 				}else{
 					options.text = 'Unknown error during saving.';
 				}
-				setStoreStatus(options)
+				that.setStoreStatus(options)
 			}
 		});
 
@@ -308,7 +273,41 @@
 			);
 		},
 
-		_onStoreConstructionDone: function(){
+		setStoreStatus: function(options){
+			if(!this.storeStatus){
+				this.storeStatus = $('<div class="status">');
+				this.bar.append(this.storeStatus);
+			}
+			if(options.error){
+				this.storeStatus.addClass('status-error');
+			}else{
+				this.storeStatus.removeClass('status-error');
+			}
+			if(options.gauge){
+				this.storeStatus.addClass('status-gauge');
+			}else{
+				this.storeStatus.removeClass('status-gauge');
+			}
+			this.storeStatus.html(options.text);
+			this.storeStatus
+				.position({
+					my: 'center top',
+					at: 'center bottom+5',
+					of: this.bar
+				})
+			;
+		},
+
+		clearStoreStatus: function(){
+			if(this.storeStatus){
+				this.storeStatus.remove();
+				delete this.storeStatus;
+			}
+		},
+
+		onStoreConstructionDone: function(){
+			this.clearStoreStatus();
+			this.setSearchResults(store.accounts);
 			this.accountForm.accountForm('value', 'login', store.logins.last().get('login'));
 			this.accountForm.accountForm('value', 'email', store.emails.last().get('email'));
 			this.accountForm.accountForm('value', 'alphabet', store.accounters.suggestPasswordAlphabet());
