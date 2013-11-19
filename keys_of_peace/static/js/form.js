@@ -94,7 +94,7 @@
 
 		_init: function(){
 			if(this.options.focus){
-				this.element.find('input:visible:first').focus();
+				this.focus();
 			}
 		},
 
@@ -156,6 +156,12 @@
 					this.notify('Unknown error.');
 				}
 			}
+		},
+
+		focus: function(){
+			this.element.find('input:visible:first')
+				.focus()
+			;
 		},
 
 		setStatus: function(options){
