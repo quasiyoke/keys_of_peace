@@ -51,6 +51,7 @@
 			});
 			
 			this.alphabetInput = this.element.find('[name=alphabet]');
+			this.alphabetInput.attr('tabindex', -1);
 			this._on(this.alphabetInput, {
 				change: 'generatePassword'
 			});
@@ -60,6 +61,7 @@
 			alphabetRow.find('label').html('Alphabet');
 			
 			this.lengthInput = this.element.find('[name=length]');
+			this.lengthInput.attr('tabindex', -1);
 			this._on(this.lengthInput, {
 				keyup: function(){
 					if(Number(this.lengthInput.val())){
@@ -71,7 +73,7 @@
 				.addClass('account-length-row')
 			;
 			
-			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#">=</a>')
+			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#" tabindex="-1">=</a>')
 				.qtip({
 					content: 'Generate new password',
 					position: {
