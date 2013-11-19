@@ -71,7 +71,7 @@
 				.addClass('account-length-row')
 			;
 			
-			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate modal-link" href="#">=</a>')
+			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#">=</a>')
 				.qtip({
 					content: 'Generate new password',
 					position: {

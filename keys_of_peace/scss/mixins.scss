@@ -11,12 +11,8 @@ $form-width: 320px;
 
 @mixin link {
 	&, &:link {
-		font-size: 1em;
 		cursor: pointer;
-		display: inline;
 		background: transparent;
-		padding: 0;
-		margin: 0;
 		border: none;
 		color: $link-link-color;
 	}
@@ -68,7 +64,32 @@ $form-width: 320px;
 	}
 }
 
-@mixin shadow($size, $color){
+@mixin modal-link($color: $link-link-color) {
+	@include link;
+
+	&:link, &:visited {
+		color: $color;
+		text-decoration: none;
+		border-bottom: 1px dotted mix($color, $back-color, 50%);
+	}
+
+	&:focus {
+		&:link, &:visited {
+			border-bottom: .2em dotted $color;
+		}
+	}
+
+	&:hover {
+		border-bottom-color: $color;
+	}
+
+	&:active {
+		color: mix($color, $back-color, 10%);
+		border-bottom-color: mix($color, $back-color, 10%);
+	}	
+}
+
+@mixin shadow($size: .3em, $color: #ccc){
 	$webkit-box-shadow-size-koefficient: 5 / 3;
 	box-shadow: 0 0 $size 0 $color;
 	-webkit-box-shadow: 0 0 $size * $webkit-box-shadow-size-koefficient 0 $color;

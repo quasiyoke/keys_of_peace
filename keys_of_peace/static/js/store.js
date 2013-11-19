@@ -14,6 +14,8 @@
 		save: $.noop
 	});
 
+	Backbone.sync = $.noop;
+
 
 	var Account = global.Account = Model.extend({
 		relations: [
@@ -258,6 +260,7 @@
 			options = _.extend({store: this}, data.accounts, this.credentials);
 			this.accounts = new Accounts(data.accounts.objects, options)
 				.on('add', this._onAccountsAdd, this)
+				.on('remove', this._onAccountsRemove, this)
 			;
 			
 			options = _.extend({store: this}, data.accounters, this.credentials);
@@ -276,6 +279,10 @@
 		},
 		
 		_onAccountsAdd: function(){
+			this.save();
+		},
+		
+		_onAccountsRemove: function(){
 			this.save();
 		},
 

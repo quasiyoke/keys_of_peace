@@ -78,31 +78,6 @@ a {
 	@include link;
 }
 
-.modal-link {
-	&:link, &:visited {
-		text-decoration: none;
-		border-bottom: 1px dotted mix($link-link-color, $back-color, 50%);
-	}
-
-	&:focus {
-		&:link, &:visited {
-			border-bottom: {
-				size: .2em;
-				style: dotted;
-			}
-		}
-	}
-
-	&:hover {
-		border-bottom-color: $link-hover-color;
-	}
-
-	&:active {
-		color: #aaa;
-		border-bottom-color: $link-active-color;
-	}	
-}
-
 .qtip{
 	position: absolute;
 	left: -28000px;
@@ -120,7 +95,7 @@ a {
 	border: 1px solid #aaa;
 	color: #555;
 	background: #f8f8f8;
-	@include shadow(.3em, #ccc);
+	@include shadow;
 }
 
 .qtip-content{
