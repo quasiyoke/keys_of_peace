@@ -21,7 +21,7 @@
 <script class="dashboard-template" type="text/html">
   <form class="logout-form" action="{% url 'logout' %}" method="post">
 	{% csrf_token %}
-	<input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout">
+	<input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
   </form>
   <div class="bar">
 	<%= email %>
@@ -32,7 +32,7 @@
   </div>
   <form class="search-form">
 	<input class="search-query" type="text">
-	<input class="search-submit" type="submit" value="Search">
+	<input class="search-submit" type="submit" value="Search" tabindex="-1">
   </form>
   <div class="search-results"></div>
   <form class="account-form">
