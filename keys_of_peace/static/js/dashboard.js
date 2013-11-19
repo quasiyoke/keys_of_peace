@@ -214,10 +214,10 @@
 			}else{
 				throw 'Model is not recognized.';
 			}
-			var element = view.render();
-			this.searchResultsElement.append(element);
+			view.render();
+			this.searchResultsElement.append(view.$el);
 			if(options.effects){
-				element
+				view.$el
 					.hide()
 					.slideDown('fast')
 				;
