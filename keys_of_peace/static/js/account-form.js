@@ -102,6 +102,12 @@
 			this.notesInput = this.element.find('[name=notes]');
 		},
 
+		_submit: function(){
+			this._superApply(arguments);
+			this.focus();
+			this.generatePassword();
+		},
+
 		generatePassword: function(){
 			if(this.lengthInput.valid() && this.alphabetInput.valid()){
 				this.passwordInput.password('value', Crypto.getPassword(this.lengthInput.val(), this.alphabetInput.val()), true);
