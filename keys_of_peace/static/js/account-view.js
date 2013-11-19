@@ -42,6 +42,14 @@
 				})
 			;
 
+			var notes = this.model.get('notes');
+			if(notes){
+				var notesRow = $('<p>');
+				notesRow.html('Notes: ' + notes);
+				this.$('.account-options').prepend(notesRow);
+				this.$('.account-options-link').append(' notes');
+			}
+
 			return this;
 		},
 
