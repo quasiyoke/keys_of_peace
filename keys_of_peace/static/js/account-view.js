@@ -3,9 +3,7 @@
 	var AccountView = global.AccountView = Backbone.View.extend({
 		events: {
 			'click .account-options-link': 'onOptionsLinkClick',
-			'click .account-remove-link': 'onRemoveClick',
-			'mouseleave .account-options': 'onOptionsMouseleave',
-			'click .account-options': 'onOptionsClick'
+			'click .account-remove-link': 'onRemoveClick'
 		},
 
 		initialize: function(){
@@ -49,20 +47,16 @@
 
 		onOptionsLinkClick: function(e){
 			e.preventDefault();
-			this.showOptions();
+			if(this.$('.account-options').is(':visible')){
+				this.hideOptions();
+			}else{
+				this.showOptions();
+			}
 		},
 
 		onRemoveClick: function(e){
 			e.preventDefault();
 			this.model.destroy();
-		},
-
-		onOptionsMouseleave: function(){
-			this.hideOptions();
-		},
-
-		onOptionsClick: function(){
-			this.hideOptions();
 		},
 
 		onModelRemove: function(){
@@ -71,18 +65,13 @@
 
 		showOptions: function(){
 			this.$('.account-options')
-				.show()
-				.position({
-					my: 'center bottom',
-					at: 'center top-10',
-					of: this.$('.account-options-link')
-				})
+				.slideDown('fast')
 			;
 		},
 
 		hideOptions: function(){
 			this.$('.account-options')
-				.hide()
+				.slideUp('fast')
 			;
 		},
 

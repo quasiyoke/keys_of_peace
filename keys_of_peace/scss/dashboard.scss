@@ -88,17 +88,11 @@
 
 .account-options {
 	display: none;
-	position: absolute;
-	border: 1px solid mix($fore-color, $back-color, 30%);
-	padding: .2em .35em;
-	background: $back-color;
-	@include shadow;
 }
 
 .account-option-link {
 	&:link, &:visited {
-		@include modal-link($fore-color);
-		display: block;
+		@include modal-link;
 	}
 }
 
