@@ -225,6 +225,16 @@
 					.slideDown('fast')
 				;				
 			}
+		},
+
+		value: function(name, value){
+			var input = this.element.find('[name=' + name + ']');
+			if(undefined === value){
+				return input.val();
+			}else{
+				input.val(value);
+				return this;
+			}
 		}
 	});
 })(jQuery);
