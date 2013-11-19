@@ -185,21 +185,30 @@
 					})
 				});
 			}else{
-				this.searchResultsElement.html($('.no-accounts-template').html());
+				this.showNoSearchResults({
+					effects: false
+				});
 			}
 		},
 
 		onSearchResults: function(){
-			this.searchResults.on('add', this.onAddSearchResult, this);
+			this.searchResults.on({
+				add: _.bind(this.onAddSearchResult, this),
+				remove: _.bind(this.onRemoveSearchResult, this)
+			});
 		},
 
 		onAddSearchResult: function(model, options){
 			if(1 === this.searchResults.length){
-				this.searchResultsElement.find('> *')
-					.slideUp('fast')
-				;
+				this.hideNoSearchResults(options);
 			}
 			this.addSearchResult(model, options);
+		},
+
+		onRemoveSearchResult: function(model, options){
+			if(!this.searchResults.length){
+				this.showNoSearchResults(options);
+			}
 		},
 
 		addSearchResult: function(model, options){
@@ -226,6 +235,33 @@
 
 		offSearchResults: function(){
 			
+		},
+
+		showNoSearchResults: function(options){
+			var element = $($('.no-accounts-template').html());
+			this.searchResultsElement.append(element);
+			if(options.effects !== false){
+				element
+					.hide()
+					.slideDown('fast')
+				;
+			}
+		},
+
+		hideNoSearchResults: function(options){
+			var element = this.searchResultsElement.find('.no-search-results');
+			if(false === options.effects){
+				element.remove();
+			}else{
+				element
+					.slideUp({
+						duration: 'fast',
+						complete: function(){
+							element.remove();
+						}
+					})
+				;
+			}
 		}
 	});
 })(jQuery);
