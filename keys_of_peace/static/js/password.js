@@ -20,21 +20,31 @@
 				mouseleave: '_mouseleave'
 			});
 
-			this._value = this.element.val();
-			this.textInput = $('<input type="text">')
-				.val(this._value)
-				.insertAfter(this.element)
+			if(this.element.is('input')){
+				this._value = this.element.val();
+				this.textElement = $('<input type="text">')
+					.val(this._value)
+				;
+			}else{
+				this._value = this.element.html();
+				this.element.html(this._value.replace(/./g, '•'));
+				this.textElement = $('<span>')
+					.html(this._value)
+				;
+			}
+			this.element
+				.after(this.textElement)
 			;
 			if(this.options.class){
 				this.element.addClass(this.options.class);
-				this.textInput.addClass(this.options.class);
+				this.textElement.addClass(this.options.class);
 			}
 
 			var commonHandlers = {
 				keyup: '_change'
 			};
 			this._on(this.element, commonHandlers);
-			this._on(this.textInput, commonHandlers);
+			this._on(this.textElement, commonHandlers);
 			
 			this._setMode();
 		},
@@ -65,16 +75,13 @@
 			var last;
 			var current;
 			if('password' === this.options.mode){
-				last = this.textInput;
+				last = this.textElement;
 				current = this.element;
 			}else{
 				last = this.element;
-				current = this.textInput;
+				current = this.textElement;
 			}
-			current
-				.show()
-				.val(this._value)
-			;
+			current.show();
 			if(last.is(':focus')){
 				current.caret(last.caret());
 			}
@@ -86,7 +93,7 @@
 				return this._value;
 			}else{
 				this.element.val(value);
-				this.textInput.val(value);
+				this.textElement.val(value);
 				this._value = value;
 				if(!silent){
 					this._trigger('change', {}, {
