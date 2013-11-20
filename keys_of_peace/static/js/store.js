@@ -42,7 +42,19 @@
 				relatedModel: 'Site',
 				includeInJSON: 'id'
 			}
-		]
+		],
+
+		initialize: function(attrs, options){
+			this.get('accounts')
+				.on('destroy', this.onAccountDestroy, this)
+			;
+		},
+
+		onAccountDestroy: function(account){
+			if(!this.get('accounts').length){
+				this.destroy();
+			}
+		}
 	});
 	
 
@@ -78,6 +90,24 @@
 				}
 			}
 		],
+
+		initialize: function(){
+			var accounter = this.get('accounter');
+			accounter && this.onAccounter(accounter);
+			this.on('change:accounter', this.onAccounterChange, this);
+		},
+
+		onAccounter: function(accounter){
+			accounter.on('destroy', this.onAccounterDestroy, this);
+		},
+
+		onAccounterChange: function(accounter){
+			this.onAccounter(accounter);
+		},
+
+		onAccounterDestroy: function(accounter){
+			this.destroy();
+		},
 		
 		validate: function(attrs, options){
 			if(!$.validator.methods.url.call({optional: $.noop}, attrs.host)){
