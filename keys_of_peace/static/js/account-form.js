@@ -1,8 +1,6 @@
 (function($){
 	$.widget('keysOfPeace.accountForm', $.keysOfPeace.form, {
 		_create: function(){
-			this._super();
-			
 			this.linkInput = this.element.find('[name=link]')
 				.qtip({
 					content: 'Link to website, name of service or any other short account description.',
@@ -14,8 +12,58 @@
 					content: 'Account login or email<br>if it is used as login.'
 				})
 			;
+			
+			this.emailInput = this.element.find('[name=email]');
+			
+			this.passwordInput = this.element.find('[name=password]');
+			var passwordRow = this.passwordInput.closest('form > p')
+				.addClass('account-password-row')
+			;
+			this.passwordInput.password({
+				target: passwordRow
+			});
+			
+			this.alphabetInput = this.element.find('[name=alphabet]');
+			this.alphabetInput.attr('tabindex', -1);
+			var alphabetRow = this.alphabetInput.closest('form > p')
+				.addClass('account-alphabet-row')
+			;
+			alphabetRow.find('label').html('Alphabet');
+			
+			this.lengthInput = this.element.find('[name=length]');
+			this.lengthInput.attr('tabindex', -1);
+			var lengthRow = this.lengthInput.closest('form > p')
+				.addClass('account-length-row')
+			;
+			
+			this.passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#" tabindex="-1">=</a>')
+				.qtip({
+					content: 'Generate new password',
+					position: {
+						my: 'top right',
+						at: 'bottom center'
+					}
+				})
+			;
+			var passwordGenerator = $('<div class="account-password-generator">');
+			passwordRow.prepend(passwordGenerator);
+			passwordGenerator
+				.append(alphabetRow)
+				.append('<span class="account-password-generator-action">×</span>')
+				.append(lengthRow)
+				.append(this.passwordGenerate)
+			;
+
+			this.notesInput = this.element.find('[name=notes]');
+
+			this._super();
+		},
+
+		_delegateEvents: function(){
+			this._super();
 			this._on(this.loginInput, {
 				keyup: function(){
+					var emailRow = this.emailInput.closest('form > p');
 					if($.validator.methods.email.call({optional: $.noop}, this.loginInput.val(), this.loginInput)){ // Check if email was used as login.
 						if(emailRow.is(':visible')){
 							emailRow.slideUp('fast');
@@ -27,11 +75,6 @@
 					}
 				}
 			});
-			
-			this.emailInput = this.element.find('[name=email]');
-			var emailRow = this.emailInput.closest('form > p');
-			
-			this.passwordInput = this.element.find('[name=password]');
 			this._on(this.passwordInput, {
 				'passwordchange': function(e, data){
 					if(data.value.length){
@@ -43,25 +86,9 @@
 					}
 				}
 			});
-			var passwordRow = this.passwordInput.closest('form > p')
-				.addClass('account-password-row')
-			;
-			this.passwordInput.password({
-				target: passwordRow
-			});
-			
-			this.alphabetInput = this.element.find('[name=alphabet]');
-			this.alphabetInput.attr('tabindex', -1);
 			this._on(this.alphabetInput, {
 				change: 'generatePassword'
 			});
-			var alphabetRow = this.alphabetInput.closest('form > p')
-				.addClass('account-alphabet-row')
-			;
-			alphabetRow.find('label').html('Alphabet');
-			
-			this.lengthInput = this.element.find('[name=length]');
-			this.lengthInput.attr('tabindex', -1);
 			this._on(this.lengthInput, {
 				keyup: function(){
 					if(Number(this.lengthInput.val())){
@@ -69,37 +96,12 @@
 					}
 				}
 			});
-			var lengthRow = this.lengthInput.closest('form > p')
-				.addClass('account-length-row')
-			;
-			
-			var passwordGenerate = $('<a class="account-password-generator-action account-password-generate" href="#" tabindex="-1">=</a>')
-				.qtip({
-					content: 'Generate new password',
-					position: {
-						my: 'top right',
-						at: 'bottom center'
-					}
-				})
-			;
-			this._on(passwordGenerate, {
+			this._on(this.passwordGenerate, {
 				click: function(e){
 					e.preventDefault();
 					this.generatePassword();
 				}
 			});
-			
-			var passwordGenerator = $('<div class="account-password-generator">');
-			
-			passwordRow.prepend(passwordGenerator);
-			passwordGenerator
-				.append(alphabetRow)
-				.append('<span class="account-password-generator-action">×</span>')
-				.append(lengthRow)
-				.append(passwordGenerate)
-			;
-
-			this.notesInput = this.element.find('[name=notes]');
 		},
 
 		_submit: function(){
