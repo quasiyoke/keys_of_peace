@@ -85,6 +85,7 @@
 		_create: function(){
 			this._validate();
 			this._statuses = {};
+			this._delegateEvents();
 		},
 
 		_validate: function(){
@@ -92,10 +93,20 @@
 			this.element.validate(this.options.validation);
 		},
 
+		_delegateEvents: function(){
+			this._on(this.element.find('input:visible'), {
+				keyup: '_change'
+			});
+		},
+
 		_init: function(){
 			if(this.options.focus){
 				this.focus();
 			}
+		},
+
+		_change: function(e){
+			this._trigger('change', e);
 		},
 
 		_submit: function(form){
