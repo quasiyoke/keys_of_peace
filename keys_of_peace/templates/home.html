@@ -33,7 +33,7 @@
 	</div>
   </div>
   <form class="search-form">
-	<input class="search-query" type="text">
+	<input class="search-query" name="query" type="text">
 	<input class="search-submit" type="submit" value="Search" tabindex="-1">
   </form>
   <div class="search-results"></div>
@@ -42,6 +42,11 @@
 	{{ account_form }}
 	<input class="account-submit" type="submit" value="Save">
   </form>
+</script>
+<script class="no-search-results-template" type="text/html">
+  <div class="no-search-results">
+	<p class="no-search-results-notification">No accounts found</p>
+  </div>
 </script>
 <script class="no-accounts-template" type="text/html">
   <div class="no-search-results">

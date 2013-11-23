@@ -30,7 +30,12 @@
 					includeInJSON: false
 				}
 			}
-		]
+		],
+
+		contains: function(s){
+			return this.get('login').contains(s) || (this.has('email') && this.get('email').contains(s)) || (this.has('notes') && this.get('notes').contains(s)) ||
+				this.get('accounter').contains(s);
+		}
 	});
 
 
@@ -55,6 +60,10 @@
 			if(!this.get('accounts').length){
 				this.destroy();
 			}
+		},
+
+		contains: function(s){
+			return (this.has('name') && this.get('name').contains(s)) || this.get('sites').containsQuery(s);
 		}
 	});
 	
@@ -87,6 +96,7 @@
 				includeInJSON: 'id',
 				reverseRelation: {
 					key: 'sites',
+					collectionType: 'Sites',
 					includeInJSON: false
 				}
 			}
@@ -115,12 +125,17 @@
 			if(!$.validator.methods.url.call({optional: $.noop}, attrs.host)){
 				return 'Host isn\'t a correct URL.';
 			}
+		},
+
+		contains: function(s){
+			return this.get('host').contains(s) || this.get('name').contains(s);
 		}
 	});
 
 	
 	var Collection = Backbone.Collection.extend({
 		initialize: function(models, options){
+			options || (options = {});
 			this.store = options.store;
 			if('order' in options){
 				this.order = options.order;
@@ -228,6 +243,15 @@
 
 	var Sites = global.Sites = Collection.extend({
 		model: Site,
+
+		containsQuery: function(s){
+			for(var i=this.length; i--;){
+				if(this.models[i].contains(s)){
+					return true;
+				}
+			}
+			return false;
+		},
 		
 		create: function(attrs, options){
 			var model = Sites.__super__.create.call(this, attrs, options);

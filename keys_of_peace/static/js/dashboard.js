@@ -57,7 +57,13 @@
 
 		var searchForm = element.find('.search-form');
 		searchForm.form({
-			focus: true
+			focus: true,
+			submit: function(){
+				that.search(searchForm.find('[name=query]').val());
+			}
+		});
+		searchForm.on('formdelayedchange', function(){
+			that.search(searchForm.find('[name=query]').val());
 		});
 
 		this.searchResultsElement = element.find('.search-results');
@@ -179,8 +185,8 @@
 			this.searchResults = searchResults;
 			this.onSearchResults();
 
+			this.searchResultsElement.html('');
 			if(this.searchResults.length){
-				this.searchResultsElement.html('');
 				var that = this;
 				this.searchResults.each(function(model){
 					that.addSearchResult(model, {
@@ -241,7 +247,8 @@
 		},
 
 		showNoSearchResults: function(options){
-			var element = $($('.no-accounts-template').html());
+			var element = $(this.query ? '.no-search-results-template' : '.no-accounts-template');
+			element = $(element.html());
 			this.searchResultsElement.append(element);
 			if(options.effects !== false){
 				element
@@ -265,6 +272,23 @@
 					})
 				;
 			}
+		},
+
+		search: function(query){
+			if(this.query === query){
+				return;
+			}
+			var accounts;
+			if(query){
+				accounts = store.accounts.filter(function(account){
+					return account.contains(query);
+				});
+				accounts = new Accounts(accounts);
+			}else{
+				accounts = store.accounts;
+			}
+			this.query = query;
+			this.setSearchResults(accounts);
 		}
 	});
 })(jQuery);
