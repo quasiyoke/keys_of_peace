@@ -45,6 +45,7 @@
 		],
 
 		initialize: function(attrs, options){
+			Accounter.__super__.initialize.apply(this, arguments);
 			this.get('accounts')
 				.on('destroy', this.onAccountDestroy, this)
 			;
@@ -92,6 +93,7 @@
 		],
 
 		initialize: function(){
+			Site.__super__.initialize.apply(this, arguments);
 			var accounter = this.get('accounter');
 			accounter && this.onAccounter(accounter);
 			this.on('change:accounter', this.onAccounterChange, this);
