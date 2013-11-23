@@ -83,7 +83,7 @@
 .account {
 	.account + & {
 		margin-top: 1em;
-		border-top: 1px solid #ccc;
+		border-top: 1px solid mix($title-color, $back-color, 50%);
 		padding-top: .7em;
 	}
 }
