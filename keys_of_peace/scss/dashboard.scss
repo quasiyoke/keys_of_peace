@@ -119,6 +119,10 @@
 
 .account-password-row {
 	position: relative;
+
+	& > div {
+		display: inline;
+	}
 }
 
 .account-password-generator {

@@ -11,6 +11,8 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/json2.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.caret.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/password.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/ZeroClipboard.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/clipboard.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/backbone.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/backbone-relational.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/store.js"></script>
@@ -62,7 +64,7 @@
   <div class="account">
 	<a class="account-options-link" href="#" tabindex="-1">▼</a>
 	<p class="account-login-row">
-	  Login: <%= login %>
+	  Login: <span class="account-login"><%= login %></span>
 	</p>
 	<p class="account-password-row">
 	  Password: <span class="account-password"><%= password %></span>

@@ -261,3 +261,8 @@ label.error-field {
 	margin: .7em 0;
 	line-height: .9;
 }
+
+
+.clipboard-active {
+	color: mix($fore-color, $back-color, 50%);
+}

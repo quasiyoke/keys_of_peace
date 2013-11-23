@@ -22,11 +22,18 @@
 
 			var accounter = this.model.get('accounter');
 			var site = accounter.get('mainSite');
+			var login = this.$('.account-login');
 			var loginRow = this.$('.account-login-row');
+			login.clipboard();
 			var email = this.model.get('email');
 			if(email && email !== this.model.get('login')){
+				var emailElement = $('<span>')
+					.clipboard()
+				;
+				emailElement.html(email);
 				var emailRow = $('<p>');
-				emailRow.html('Email: ' + email);
+				emailRow.html('Email: ');
+				emailRow.append(emailElement);
 				loginRow.after(emailRow);
 			}
 			if(site){
@@ -43,9 +50,8 @@
 			}
 			
 			var password = this.$('.account-password')
-				.password({
-					target: this.$('.account-password-row')
-				})
+				.password()
+				.clipboard()
 			;
 
 			var notes = this.model.get('notes');
