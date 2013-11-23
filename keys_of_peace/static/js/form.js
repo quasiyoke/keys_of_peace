@@ -16,7 +16,7 @@
 			if(previous.valid){
 				form.form('setStatus', {
 					name: el.name,
-					text: 'OK'
+					class: 'ok'
 				});
 			}
 			return previous.valid;
@@ -25,7 +25,7 @@
 		form.form('setStatus', {
 			name: el.name,
 			text: 'Checking…',
-			gauge: true
+			class: 'gauge'
 		});
 		
 		previous.old = value;
@@ -51,7 +51,7 @@
 					that.showErrors();
 					form.form('setStatus', {
 						name: el.name,
-						text: 'OK'
+						class: 'ok'
 					});
 				}else{
 					var errors = {};
@@ -167,24 +167,37 @@
 		setStatus: function(options){
 			var input = this.element.find(options.name ? '[name=' + options.name + ']' : '[type=submit]');
 			var status = this._statuses[options.name];
+
+			var match = /input\-status\-\S+/.exec(input[0].className)
+			if(match){
+				input.removeClass(match[0]);
+			}
+			
 			if(!status){
-				status = $('<span class="status">')
-					.insertAfter(input)
-				;
+				status = $('<span>').insertAfter(input);
 				this._statuses[options.name] = status;
 			}
 			status
-				.html(options.text)
-				.position({
+				.attr('class', 'status')
+				.html(options.text || '')
+			;
+			if(options.class){
+				status.addClass('status-' + options.class);
+				input.addClass('input-status-' + options.class);
+			}
+			if('ok' === options.class){
+				var width = Number.parseInt(status.width());
+				status.position({
+					my: 'right bottom',
+					at: 'right+' + width * .3 + ' bottom-' + width * .05,
+					of: input
+				});
+			}else{
+				status.position({
 					my: 'left center',
 					at: 'right+10 center',
 					of: input
-				})
-			;
-			if(options.gauge){
-				status.addClass('status-gauge');
-			}else{
-				status.removeClass('status-gauge');
+				});
 			}
 			return this;
 		},
@@ -194,6 +207,12 @@
 			if(status){
 				status.remove();
 				delete this._statuses[name];
+				
+				var input = this.element.find(name ? '[name=' + name + ']' : '[type=submit]');
+				var match = /input\-status\-\S+/.exec(input[0].className)
+				if(match){
+					input.removeClass(match[0]);
+				}
 			}
 			return this;
 		},

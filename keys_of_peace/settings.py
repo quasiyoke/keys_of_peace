@@ -90,3 +90,7 @@ AUTHENTICATION_BACKENDS = (
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+import mimetypes
+mimetypes.add_type('image/svg+xml', '.svg', True)

@@ -19,16 +19,18 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
 <script class="dashboard-template" type="text/html">
-  <form class="logout-form" action="{% url 'logout' %}" method="post">
-	{% csrf_token %}
-	<input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
-  </form>
-  <div class="bar">
-	<%= email %>
+  <div class="dashboard-header">
 	<form class="logout-form" action="{% url 'logout' %}" method="post">
 	  {% csrf_token %}
-	  <input class="logout-submit" type="submit" value="Logout">
+	  <input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
 	</form>
+	<div class="bar">
+	  <%= email %>
+	  <form class="logout-form" action="{% url 'logout' %}" method="post">
+		{% csrf_token %}
+		<input class="logout-submit" type="submit" value="Logout">
+	  </form>
+	</div>
   </div>
   <form class="search-form">
 	<input class="search-query" type="text">
@@ -69,12 +71,14 @@
 
 
 {% block content %}
-<h1>Keys of Peace</h1>
+<div class="main-title">
+  <h1>Keys of Peace</h1>
+</div>
 <form class="login-form" method="post">
   {{ form }}
   <input type="submit" value="Login">
+  <p class="registration-invitation">
+	Have no account? <a href="{% url 'registration' %}">Sign up.</a>
+  </p>
 </form>
-<p>
-  Have no account? Register <a href="{% url 'registration' %}">here.</a>
-</p>
 {% endblock %}

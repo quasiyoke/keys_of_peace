@@ -1,13 +1,19 @@
 @import "mixins";
 
+.dashboard-header {
+	margin-top: 1em;
+	overflow: hidden;
+}
+
 .dashboard-title.logout-submit[type=submit] {
+	@include main-title;
 	float: left;
 	font-size: 4em;
-	color: $fore-color;
-	@include title;
 
 	&:hover, &:active {
-		color: mix($fore-color, $back-color, 50%);
+		@include main-title-background;
+		color: mix($title-color, $back-color, 100%);
+		opacity: .8;
 		text-decoration: none;
 	}
 
@@ -35,6 +41,12 @@
 	margin: 0;
 	padding: 0;
 	font-size: 1em;
+	text-shadow: none;
+	border-radius: 0;
+
+	&:hover {
+		background: none;
+	}
 }
 
 .search-form {

@@ -47,7 +47,7 @@ jQuery(function($){
 			var _submit = function(hash){
 				that.setStatus({
 					text: 'Registration…',
-					gauge: true
+					class: 'gauge'
 				});
 				callback(
 					Api.fetch({
@@ -64,7 +64,7 @@ jQuery(function($){
 			
 			this.setStatus({
 				text: 'Hashing password…',
-				gauge: true
+				class: 'gauge'
 			});
 			var password = form.find('[name=password]').val();
 			var salt = Crypto.getSalt();

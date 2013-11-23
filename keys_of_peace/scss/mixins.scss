@@ -1,9 +1,9 @@
-$back-color: #fff;
+$back-color: #f9fcff;
 $fore-color: #000;
-$bright-color: #f80;
-$error-color: #f00;
-$link-link-color: #00e;
-$link-visited-color: #529;
+$bright-color: #0cf;
+$title-color: #79c8ff;
+$link-link-color: #6380c5;
+$link-visited-color: #a263c5;
 $link-hover-color: #f00;
 $link-active-color: #f88;
 
@@ -96,6 +96,20 @@ $form-width: 320px;
 	-moz-box-shadow: 0 0 $size 0 $color;
 }
 
-@mixin title{
+@mixin title {
 	font-family: "palatino linotype",palatino,serif;
+	color: $title-color;
+}
+
+$main-title-background-size: 1.4em;
+@mixin main-title-background {
+	background: url("/static/images/logo.svg") 0 .05em no-repeat;
+	background-size: $main-title-background-size $main-title-background-size;
+}
+
+@mixin main-title {
+	@include title;
+	@include main-title-background;
+	text-indent: $main-title-background-size + .3em;
+	padding-bottom: .15em;
 }

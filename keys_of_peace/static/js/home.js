@@ -58,7 +58,7 @@ jQuery(function($){
 			var check = function(hash){
 				that.setStatus({
 					text: 'Checking…',
-					gauge: true
+					class: 'gauge'
 				});
 				callback(
 					Api.fetch({
@@ -75,7 +75,7 @@ jQuery(function($){
 			
 			this.setStatus({
 				text: 'Hashing password…',
-				gauge: true
+				class: 'gauge'
 			});
 			credentials.email = this.element.find('[name=email]').val();
 			credentials.password = this.element.find('[name=password]').val();
