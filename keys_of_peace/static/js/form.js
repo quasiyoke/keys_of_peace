@@ -70,6 +70,7 @@
 	
 	$.widget('keysOfPeace.form', {
 		options: {
+			delay: 700,
 			focus: false,
 			validation: {
 				errorClass: 'error-field',
@@ -83,8 +84,9 @@
 		},
 		
 		_create: function(){
-			this._validate();
 			this._statuses = {};
+			this._delays = {};
+			this._validate();
 			this._delegateEvents();
 		},
 
@@ -107,6 +109,15 @@
 
 		_change: function(e){
 			this._trigger('change', e);
+			
+			var name = e.target.name;
+			var that = this;
+			var timeout = setTimeout(function(){
+				if(that._delays[name] === timeout){
+					that._trigger('delayedchange', e);
+				}
+			}, this.options.delay);
+			this._delays[name] = timeout;
 		},
 
 		_submit: function(form){
