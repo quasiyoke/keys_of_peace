@@ -70,7 +70,7 @@
 	
 	$.widget('keysOfPeace.form', {
 		options: {
-			delay: 700,
+			delay: 250,
 			focus: false,
 			validation: {
 				errorClass: 'error-field',
