@@ -30,7 +30,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'django_jsonify',
     'keys_of_peace',
     'permission',
     'django.contrib.admin',
