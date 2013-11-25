@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import setuptools
 import os
+import setuptools
+from distutils.command.build import build
+from setuptools.command.install import install
 
 
 SETUP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +36,16 @@ class BuildCSS(setuptools.Command):
         pass
 
 
+class Build(build):
+    sub_commands = build.sub_commands + [('build_css', None)]
+
+
+class Install(install):
+    def run(self):
+        self.run_command('build_css')
+        install.run(self)
+
+
 setuptools.setup(
     name='keys_of_peace',
     version='0.0.1',
@@ -63,6 +75,8 @@ setuptools.setup(
         'django_tastypie>=0.9',
     ],
     cmdclass={
+        'build': Build,
         'build_css': BuildCSS,
+        'install': Install,
     },
 )
