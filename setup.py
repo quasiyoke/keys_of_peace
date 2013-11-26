@@ -2,7 +2,10 @@
 
 import os
 import setuptools
+from distutils import dir_util
+from distutils import log
 from distutils.command.build import build
+from distutils.command.clean import clean as _clean
 from setuptools.command.install import install
 
 
@@ -61,6 +64,16 @@ class Build(build):
     sub_commands = build.sub_commands + [('build_css', None)]
 
 
+class clean(_clean):
+    def run(self):
+        sass_cache_dir = '.sass-cache'
+        if os.path.exists(sass_cache_dir):
+            dir_util.remove_tree(sass_cache_dir, dry_run=self.dry_run)
+        else:
+            log.warn("'%s' does not exist -- can't clean it", sass_cache_dir)
+        _clean.run(self)
+
+
 class Install(install):
     def do_egg_install(self):
         self.run_command('build_css')
@@ -100,6 +113,7 @@ setuptools.setup(
     cmdclass={
         'build': Build,
         'build_css': BuildCSS,
+        'clean': clean,
         'install': Install,
     },
 )
