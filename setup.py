@@ -18,6 +18,7 @@ class BuildCSS(setuptools.Command):
         pass
     
     def run(self):
+        current_dir = os.getcwd()
         os.chdir(os.path.join(SETUP_DIR, 'keys_of_peace', 'keys_of_peace'))
         import platform
         if 'Windows' == platform.system():
@@ -30,7 +31,7 @@ class BuildCSS(setuptools.Command):
         except (subprocess.CalledProcessError, OSError):
             print 'ERROR: problems with compiling Sass. Is Compass installed?'
             raise SystemExit
-        os.chdir(SETUP_DIR)
+        os.chdir(current_dir)
     
     def finalize_options(self):
         pass
@@ -41,9 +42,9 @@ class Build(build):
 
 
 class Install(install):
-    def run(self):
+    def do_egg_install(self):
         self.run_command('build_css')
-        install.run(self)
+        install.do_egg_install(self)
 
 
 setuptools.setup(
@@ -73,6 +74,7 @@ setuptools.setup(
         'django>=1.6',
         'django_permission>=0.4',
         'django_tastypie>=0.9',
+        'mimeparse>=0.1.3',
     ],
     cmdclass={
         'build': Build,
