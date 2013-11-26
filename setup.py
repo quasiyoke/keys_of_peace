@@ -12,29 +12,49 @@ SETUP_DIR = os.path.dirname(os.path.abspath(__file__))
 class BuildCSS(setuptools.Command):
     description = 'build CSS from SCSS'
     
-    user_options = []
+    user_options = [
+        ('sass-dir=', None,
+         'the source directory where SCSS stylesheets were placed'),
+        ('css-dir=', None,
+         'the target directory for CSS'),
+        ('css-mode=', None,
+         'select a CSS output mode (default: compressed)'),
+    ]
     
     def initialize_options(self):
-        pass
+        self.sass_dir = None
+        self.css_dir = None
+        self.css_mode = None
+    
+    def finalize_options(self):
+        if self.sass_dir is None:
+            self.sass_dir = os.path.join(SETUP_DIR, 'keys_of_peace', 'keys_of_peace', 'scss')
+        if self.css_dir is None:
+            build = self.distribution.get_command_obj('build')
+            build.ensure_finalized()
+            self.css_dir = os.path.join(build.build_lib, 'keys_of_peace', 'keys_of_peace', 'static', 'css')
+        if self.css_mode is None:
+            self.css_mode = 'compressed'
     
     def run(self):
-        current_dir = os.getcwd()
-        os.chdir(os.path.join(SETUP_DIR, 'keys_of_peace', 'keys_of_peace'))
         import platform
         if 'Windows' == platform.system():
-            command = 'compass.bat compile'
+            executable = 'compass.bat'
         else:
-            command = 'compass compile'
+            executable = 'compass'
+        command = (
+            executable,
+            'compile',
+            '--sass-dir', self.sass_dir,
+            '--css-dir', self.css_dir,
+            '--output-style', self.css_mode,
+        )
         import subprocess
         try:
-            subprocess.check_call(command.split())
+            subprocess.check_call(command)
         except (subprocess.CalledProcessError, OSError):
             print 'ERROR: problems with compiling Sass. Is Compass installed?'
             raise SystemExit
-        os.chdir(current_dir)
-    
-    def finalize_options(self):
-        pass
 
 
 class Build(build):
