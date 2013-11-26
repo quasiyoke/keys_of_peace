@@ -7,6 +7,7 @@ from distutils import log
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
+from setuptools.command.develop import develop as _develop
 
 
 SETUP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -36,12 +37,17 @@ class build_css(setuptools.Command):
         self.css_mode = None
     
     def finalize_options(self):
+
         if self.sass_dir is None:
             self.sass_dir = os.path.join(SETUP_DIR, 'keys_of_peace', 'keys_of_peace', 'scss')
         if self.css_dir is None:
-            build = self.distribution.get_command_obj('build')
-            build.ensure_finalized()
-            self.css_dir = os.path.join(build.build_lib, 'keys_of_peace', 'keys_of_peace', 'static', 'css')
+            print 
+            if getattr(self, 'develop', False):
+                self.css_dir = os.path.join('keys_of_peace', 'keys_of_peace', 'static', 'css')
+            else:
+                build = self.distribution.get_command_obj('build')
+                build.ensure_finalized()
+                self.css_dir = os.path.join(build.build_lib, 'keys_of_peace', 'keys_of_peace', 'static', 'css')
         if self.css_mode is None:
             self.css_mode = 'compressed'
     
@@ -77,7 +83,21 @@ class clean(_clean):
             dir_util.remove_tree(sass_cache_dir, dry_run=self.dry_run)
         else:
             log.warn("'%s' does not exist -- can't clean it", sass_cache_dir)
+        if self.all:
+            css_dir = os.path.join('keys_of_peace', 'keys_of_peace', 'static', 'css')
+            if os.path.exists(css_dir):
+                dir_util.remove_tree(css_dir, dry_run=self.dry_run)
+            else:
+                log.warn("'%s' does not exist -- can't clean it", css_dir)            
         _clean.run(self)
+
+
+class develop(_develop):
+    def run(self):
+        build_css = self.distribution.get_command_obj('build_css')
+        build_css.develop = True
+        self.run_command('build_css')
+        _develop.run(self)
 
 
 setuptools.setup(
@@ -115,5 +135,6 @@ setuptools.setup(
         'build': build,
         'build_css': build_css,
         'clean': clean,
+        'develop': develop,
     },
 )
