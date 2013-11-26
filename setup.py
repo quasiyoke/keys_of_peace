@@ -66,6 +66,7 @@ setuptools.setup(
             'static/images/*.jpg',
             'static/images/*.svg',
             'static/js/*.js',
+            'static/js/crypto/*.js',
             'static/swf/*.swf',
             'templates/*.html',
         ],
