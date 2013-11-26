@@ -4,15 +4,21 @@ import os
 import setuptools
 from distutils import dir_util
 from distutils import log
-from distutils.command.build import build
+from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
-from setuptools.command.install import install
+from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
 
 
 SETUP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class BuildCSS(setuptools.Command):
+class bdist_egg(_bdist_egg):
+    def run(self):
+        self.run_command('build_css')
+        _bdist_egg.run(self)
+
+
+class build_css(setuptools.Command):
     description = 'build CSS from SCSS'
     
     user_options = [
@@ -60,8 +66,8 @@ class BuildCSS(setuptools.Command):
             raise SystemExit
 
 
-class Build(build):
-    sub_commands = build.sub_commands + [('build_css', None)]
+class build(_build):
+    sub_commands = _build.sub_commands + [('build_css', None)]
 
 
 class clean(_clean):
@@ -72,12 +78,6 @@ class clean(_clean):
         else:
             log.warn("'%s' does not exist -- can't clean it", sass_cache_dir)
         _clean.run(self)
-
-
-class Install(install):
-    def do_egg_install(self):
-        self.run_command('build_css')
-        install.do_egg_install(self)
 
 
 setuptools.setup(
@@ -111,9 +111,9 @@ setuptools.setup(
         'mimeparse>=0.1.3',
     ],
     cmdclass={
-        'build': Build,
-        'build_css': BuildCSS,
+        'bdist_egg': bdist_egg,
+        'build': build,
+        'build_css': build_css,
         'clean': clean,
-        'install': Install,
     },
 )
