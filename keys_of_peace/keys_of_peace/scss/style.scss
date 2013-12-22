@@ -22,6 +22,16 @@ h2 {
 	font-size: 3em;
 }
 
+em {
+	font-style: italic;
+}
+
+ol, ul {
+	li + li {
+		margin-top: .5em;
+	}
+}
+
 form {
 	width: $form-width;
 	margin: 3em auto;

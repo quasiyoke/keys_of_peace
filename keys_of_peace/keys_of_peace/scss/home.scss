@@ -20,33 +20,43 @@ h1 {
 	padding-bottom: .45em;
 }
 
-.slogan {
+h2 {
 	font-size: 2em;
-	color: $title-color;
-	text-align: center;
+	text-align: right;
+	margin-bottom: .3em;
+
+	ol + & {
+		margin-top: 1em;
+	}
 }
 
 $prospectus-picture-height: $prospectus-picture-width * 461 / 320;
-$prospectus-width: $body-wrap-width - $login-form-width - $login-form-margin - $prospectus-picture-width;
+$prospectus-width: $body-wrap-width - $login-form-width - $login-form-margin;
 
 .prospectus {
 	float: right;
 	width: $prospectus-width;
-	height: $prospectus-picture-height;
-	padding-left: $prospectus-picture-width;
-	background: url("../images/prospectus.png") no-repeat left top;
 	margin-right: $login-form-margin;
+
+	ol, p {
+		padding-left: $prospectus-picture-width;
+	}
 }
 
 .prospectus-points {
+	$first-point-top: 0.15;
+	
 	position: relative;
+	height: $prospectus-picture-height;
+	background: url("../images/prospectus.png") no-repeat left top;
+	margin-top: -$prospectus-picture-height * $first-point-top;
 
 	li {
 		position: absolute;
 	}
 
 	.prospectus-point-client {
-		top: $prospectus-picture-height * 0.24;
+		top: $prospectus-picture-height * $first-point-top;
 	}
 
 	.prospectus-point-transmission {
@@ -54,7 +64,7 @@ $prospectus-width: $body-wrap-width - $login-form-width - $login-form-margin - $
 	}
 
 	.prospectus-point-server {
-		top: $prospectus-picture-height * 0.81;
+		top: $prospectus-picture-height * 0.8;
 	}
 }
 
@@ -66,7 +76,7 @@ $status-ok-padding: $status-ok-size * (1 - .3);
 	float: right;
 	width: $login-form-width;
 	font-size: 1.2em;
-	margin-top: 4.75em;
+	margin: 0;
 	
 
 	label {
