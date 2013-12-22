@@ -27,6 +27,12 @@ To run Keys of Peace after described installation, execute:
 
 After that you may go at http://127.0.0.1:8000 and observe the site running on your machine.
 
+## Building CSS
+
+Execute this to compile SASS files:
+
+    $ python setup.py build_css
+
 
 
   [1]: http://www.python.org/
