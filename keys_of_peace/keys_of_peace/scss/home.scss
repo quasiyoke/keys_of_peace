@@ -28,15 +28,18 @@ h1 {
 }
 
 $prospectus-picture-height: $prospectus-picture-width * 461 / 320;
+$prospectus-width: $body-wrap-width - $login-form-width - $login-form-margin - $prospectus-picture-width;
 
 .prospectus {
+	float: right;
+	width: $prospectus-width;
 	height: $prospectus-picture-height;
-	padding: 0 0 2em $prospectus-picture-width;
+	padding-left: $prospectus-picture-width;
 	background: url("../images/prospectus.png") no-repeat left top;
+	margin-right: $login-form-margin;
 }
 
 .prospectus-points {
-	width: $body-wrap-width - $login-form-width - $prospectus-picture-width - $login-form-margin;
 	position: relative;
 
 	li {
@@ -64,7 +67,7 @@ $status-ok-padding: $status-ok-size * (1 - .3);
 	float: right;
 	width: $login-form-width;
 	font-size: 1.2em;
-	margin: 4.75em 0 0 $login-form-margin;
+	margin-top: 4.75em;
 	
 
 	label {
