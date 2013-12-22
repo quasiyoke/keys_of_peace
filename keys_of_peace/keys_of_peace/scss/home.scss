@@ -6,7 +6,8 @@ $login-form-margin: 78px;
 $prospectus-picture-width: 320px;
 
 .body-wrap {
-	width: $body-wrap-width;
+	width: auto;
+	max-width: $body-wrap-width;
 }
 
 .main-title {
@@ -26,20 +27,32 @@ h1 {
 	text-align: center;
 }
 
+$prospectus-picture-height: $prospectus-picture-width * 461 / 320;
+
 .prospectus {
-	padding: 7em 0 2em $prospectus-picture-width;
+	height: $prospectus-picture-height;
+	padding: 0 0 2em $prospectus-picture-width;
 	background: url("../images/prospectus.png") no-repeat left top;
 }
 
 .prospectus-points {
 	width: $body-wrap-width - $login-form-width - $prospectus-picture-width - $login-form-margin;
-	
-	li + li {
-		margin-top: 5.5em;
+	position: relative;
+
+	li {
+		position: absolute;
+	}
+
+	.prospectus-point-client {
+		top: $prospectus-picture-height * 0.24;
+	}
+
+	.prospectus-point-transmission {
+		top: $prospectus-picture-height * 0.52;
 	}
 
 	.prospectus-point-server {
-		margin-top: 3.5em;
+		top: $prospectus-picture-height * 0.81;
 	}
 }
 

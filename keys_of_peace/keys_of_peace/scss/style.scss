@@ -2,8 +2,9 @@
 @import "compass/reset";
 @import "mixins";
 
+$font-size: 16px;
 body {
-	font: 16px/1.3 tahoma,geneva,sans-serif;
+	font: #{$font-size}/1.3 tahoma,geneva,sans-serif;
 	background: $back-color;
 }
 
