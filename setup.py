@@ -40,12 +40,10 @@ class build_css(setuptools.Command):
         self.css_mode = None
     
     def finalize_options(self):
-
         if self.sass_dir is None:
             self.sass_dir = os.path.join(SETUP_DIR, 'keys_of_peace', 'keys_of_peace', 'scss')
         if self.css_dir is None:
-            print 
-            if getattr(self, 'develop', False):
+            if getattr(self, 'develop', False) or not getattr(self, 'install', False):
                 self.css_dir = os.path.join('keys_of_peace', 'keys_of_peace', 'static', 'css')
             else:
                 build = self.distribution.get_command_obj('build')
