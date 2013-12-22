@@ -1,12 +1,14 @@
 # Keys of Peace
 
+Never lose your passwords. Keys of Peace will give you free access to your passwords even from public computers and portable devices. Keep your secrets at [keysofpeace.com][1]
+
 ## Requirements
 
-Keys of Peace was written on [Python 2.7][1] and [Django 1.6][2], uses [Tastypie][3] to provide API and [Compass][4] for stylesheets compilation.
+Keys of Peace was written on [Python 2.7][2] and [Django 1.6][3], uses [Tastypie][4] to provide API and [Compass][5] for stylesheets compilation.
 
-If you have [Setuptools][5] installed, all requirements except Compass will be installed automatically.
+If you have [Setuptools][6] installed, all requirements except Compass will be installed automatically.
 
-To install Compass follow instructions [here.][6]
+To install Compass follow instructions [here.][7]
 
 ## Installation
 
@@ -34,10 +36,10 @@ Execute this to compile SASS files:
     $ python setup.py build_css
 
 
-
-  [1]: http://www.python.org/
-  [2]: https://www.djangoproject.com/
-  [3]: http://tastypieapi.org/
-  [4]: http://compass-style.org/
-  [5]: https://pypi.python.org/pypi/setuptools/
-  [6]: http://compass-style.org/install/
+  [1]: http://keysofpeace.com
+  [2]: http://www.python.org/
+  [3]: https://www.djangoproject.com/
+  [4]: http://tastypieapi.org/
+  [5]: http://compass-style.org/
+  [6]: https://pypi.python.org/pypi/setuptools/
+  [7]: http://compass-style.org/install/
