@@ -41,3 +41,6 @@ nosetests.xml
 
 # Debug DB
 *.sqlite3
+
+# Deployment configuration
+deployment.json

@@ -69,7 +69,7 @@ class build_css(setuptools.Command):
         try:
             subprocess.check_call(command)
         except (subprocess.CalledProcessError, OSError):
-            print 'ERROR: problems with compiling Sass. Is Compass installed?'
+            log.error('Problems with compiling Sass. Is Compass installed?')
             raise SystemExit
 
 
@@ -92,6 +92,53 @@ class clean(_clean):
                 log.warn("'%s' does not exist -- can't clean it", css_dir)            
         _clean.run(self)
 
+
+class deploy(setuptools.Command):
+    FILE_NAME = 'deployment.json'
+    
+    description = 'deploy the site'
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        import json
+        try:
+            f = open(deploy.FILE_NAME, 'rb')
+            try:
+                self.deployment = json.load(f)
+            except ValueError:
+                log.error('Wrong `%s` file format.' % deploy.FILE_NAME)
+                raise SystemExit
+            f.close()
+        except OSError:
+            log.error('Cant\'t read `%s`' % deploy.FILE_NAME)
+            raise SystemExit
+        
+    def run(self):
+        from ftpsync.targets import FsTarget, UploadSynchronizer
+        from ftpsync.ftp_target import FtpTarget
+        ftp_configuration = self.deployment['FTP']
+        local = FsTarget(os.path.join(SETUP_DIR, 'keys_of_peace'))
+        remote = FtpTarget(ftp_configuration['PATH'], self.deployment['SERVER'], ftp_configuration['USER'], ftp_configuration['PASSWORD'])
+        s = UploadSynchronizer(local, remote, {
+                'delete_unmatched': True,
+                'dry_run': False,
+                'force': False,
+                'omit': '*.sqlite3,*.pyc',
+                })
+        s.run()
+        import paramiko
+        ssh_configuration = self.deployment['SSH']
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(self.deployment['SERVER'], username=ssh_configuration['USER'], password=ssh_configuration['PASSWORD'])
+        _in, _out, _err = client.exec_command(';'.join(ssh_configuration['COMMANDS']))
+        _in.write(ssh_configuration['IN'])
+        client.close()
+        
 
 class develop(_develop):
     def run(self):
@@ -136,6 +183,7 @@ setuptools.setup(
         'build': build,
         'build_css': build_css,
         'clean': clean,
+        'deploy': deploy,
         'develop': develop,
     },
 )
