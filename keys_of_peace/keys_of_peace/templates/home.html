@@ -81,6 +81,7 @@
 <div class="main-title">
   <h1>Keys of Peace</h1>
 </div>
+<div class="slogan">Never lose your passwords</div>
 <form class="login-form" method="post">
   {{ form }}
   <input type="submit" value="Login">
@@ -88,4 +89,17 @@
 	Have no account? <a href="{% url 'registration' %}">Sign up.</a>
   </p>
 </form>
+<div class="prospectus">
+  <ol class="prospectus-points">
+	<li>
+	  Passwords are encrypted right at your computer or mobile.
+	</li>
+	<li>
+	  We don't transmit any non-ciphered data. Even most curious raven won't know your secrets.
+	</li>
+	<li class="prospectus-point-server">
+	  Our server just stores encrypted passwords &mdash; your device does the work.
+	</li>
+  </ol>
+</div>
 {% endblock %}

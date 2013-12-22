@@ -1,24 +1,58 @@
 @import "mixins";
 
+$body-wrap-width: 1000px;
+$login-form-width: 350px;
+$login-form-margin: 78px;
+$prospectus-picture-width: 320px;
+
+.body-wrap {
+	width: $body-wrap-width;
+}
+
 .main-title {
 	text-align: center;
 }
 
 h1 {
 	display: inline-block;
-	border-bottom: 1px solid #0096ef;
+	//border-bottom: 1px solid #0096ef;
 	font-size: 6em;
 	padding-bottom: .45em;
 }
 
-$login-form-width: 640px;
+.slogan {
+	font-size: 2em;
+	color: $title-color;
+	text-align: center;
+}
+
+.prospectus {
+	padding: 7em 0 2em $prospectus-picture-width;
+	background: url("../images/prospectus.png") no-repeat left top;
+}
+
+.prospectus-points {
+	width: $body-wrap-width - $login-form-width - $prospectus-picture-width - $login-form-margin;
+	
+	li + li {
+		margin-top: 5.5em;
+	}
+
+	.prospectus-point-server {
+		margin-top: 3.5em;
+	}
+}
+
 $login-form-input-width: $login-form-width - 4px;
 
-$status-ok-size: 80px;
+$status-ok-size: 48px;
 $status-ok-padding: $status-ok-size * (1 - .3);
 .login-form {
-	font-size: 2em;
+	float: right;
 	width: $login-form-width;
+	font-size: 1.2em;
+	margin: 4.75em 0 0 $login-form-margin;
+	
 
 	label {
 		color: mix($fore-color, $back-color, 18%);

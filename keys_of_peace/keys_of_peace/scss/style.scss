@@ -115,6 +115,10 @@ a {
 	@include link;
 }
 
+ol {
+	list-style-type: decimal;
+}
+
 .qtip{
 	position: absolute;
 	left: -28000px;
