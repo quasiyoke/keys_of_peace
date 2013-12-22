@@ -95,6 +95,7 @@ jQuery(function($){
 			var user = response.objects[0];
 			credentials.data = user.data;
 			credentials.dataSalt = Crypto.fromString(user.data_salt);
+			$('.body-wrap-home').removeClass('body-wrap-home');
 			var dashboard = new Dashboard('.body-wrap', credentials);
 		},
 

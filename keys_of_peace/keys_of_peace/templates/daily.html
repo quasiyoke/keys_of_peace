@@ -5,14 +5,16 @@
 
 
 {% block content %}
-{% block header %}{% endblock %}
-<div class="breadcrumbs">
-  {% spaceless %}
-  <a class="breadcrumb" href="{% url 'home' %}">Keys of Peace</a>
-  {% block breadcrumbs %}{% endblock %}
-  {% endspaceless %}
-</div>
 <div class="body-wrap">
-  {% block daily_content %}{% endblock %}
+  {% block header %}{% endblock %}
+  <div class="breadcrumbs">
+	{% spaceless %}
+	<a class="breadcrumb" href="{% url 'home' %}">Keys of Peace</a>
+	{% block breadcrumbs %}{% endblock %}
+	{% endspaceless %}
+  </div>
+  <div class="body-wrap">
+	{% block daily_content %}{% endblock %}
+  </div>
 </div>
 {% endblock %}

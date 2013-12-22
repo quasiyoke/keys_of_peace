@@ -7,9 +7,7 @@
 	{% block stylesheets %}{% endblock %}
   </head>
   <body>
-	<div class="body-wrap">
-	  {% block content %}{% endblock %}
-	</div>
+	{% block content %}{% endblock %}
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.validate.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>

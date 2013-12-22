@@ -1,11 +1,11 @@
 @import "mixins";
 
 $body-wrap-width: 1000px;
-$login-form-width: 350px;
-$login-form-margin: 78px;
+$login-form-width: 358px;
+$login-form-margin: 70px;
 $prospectus-picture-width: 320px;
 
-.body-wrap {
+.body-wrap.body-wrap-home {
 	width: auto;
 	max-width: $body-wrap-width;
 }
@@ -16,7 +16,6 @@ $prospectus-picture-width: 320px;
 
 h1 {
 	display: inline-block;
-	//border-bottom: 1px solid #0096ef;
 	font-size: 6em;
 	padding-bottom: .45em;
 }
