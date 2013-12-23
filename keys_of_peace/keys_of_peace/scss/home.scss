@@ -20,16 +20,6 @@ h1 {
 	padding-bottom: .45em;
 }
 
-h2 {
-	font-size: 2em;
-	text-align: right;
-	margin-bottom: .3em;
-
-	ol + & {
-		margin-top: 1em;
-	}
-}
-
 $prospectus-picture-height: $prospectus-picture-width * 461 / 320;
 $prospectus-width: $body-wrap-width - $login-form-width - $login-form-margin;
 
@@ -38,8 +28,18 @@ $prospectus-width: $body-wrap-width - $login-form-width - $login-form-margin;
 	width: $prospectus-width;
 	margin-right: $login-form-margin;
 
+	h2 {
+		font-size: 2em;
+		text-align: right;
+		margin-bottom: .3em;
+	}
+
 	ol, p {
 		padding-left: $prospectus-picture-width;
+	}
+
+	ol + h2 {
+		margin-top: 1em;
 	}
 }
 
