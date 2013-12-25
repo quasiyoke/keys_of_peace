@@ -23,13 +23,13 @@
 <script class="dashboard-template" type="text/html">
   <div class="dashboard-header">
 	<form class="logout-form" action="{% url 'logout' %}" method="post">
-	  {% csrf_token %}
+	  <input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
 	  <input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
 	</form>
 	<div class="bar">
 	  <%= email %>
 	  <form class="logout-form" action="{% url 'logout' %}" method="post">
-		{% csrf_token %}
+		<input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
 		<input class="logout-submit" type="submit" value="Logout">
 	  </form>
 	</div>

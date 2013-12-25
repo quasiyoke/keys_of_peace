@@ -128,6 +128,7 @@
 			return _.template(
 				$('.dashboard-template').html(),
 				{
+					csrftoken: $.cookie('csrftoken'),
 					email: credentials.email
 				}
 			);
