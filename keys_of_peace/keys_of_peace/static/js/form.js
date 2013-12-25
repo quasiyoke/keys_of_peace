@@ -208,7 +208,7 @@
 				input.addClass('input-status-' + options.class);
 			}
 			if('ok' === options.class){
-				var width = Number.parseInt(status.width());
+				var width = parseInt(status.width());
 				status.position({
 					my: 'right bottom',
 					at: 'right+' + width * .3 + ' bottom-' + width * .05,
