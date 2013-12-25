@@ -90,11 +90,8 @@
 				change: 'generatePassword'
 			});
 			this._on(this.lengthInput, {
-				keyup: function(){
-					if(Number(this.lengthInput.val())){
-						this.generatePassword()
-					}
-				}
+				change: this._onChangeLength,
+				keyup: this._onChangeLength
 			});
 			this._on(this.passwordGenerate, {
 				click: function(e){
@@ -102,6 +99,12 @@
 					this.generatePassword();
 				}
 			});
+		},
+
+		_onChangeLength: function(){
+			if(Number(this.lengthInput.val())){
+				this.generatePassword()
+			}
 		},
 
 		_submit: function(){
