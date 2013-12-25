@@ -1,19 +1,19 @@
 import api
 import views
+from django.conf import urls
 from django.contrib import admin
-from django.conf.urls import patterns, include, url
 from django.contrib.auth import views as auth_views
 
 
 admin.autodiscover()
 
 
-urlpatterns = patterns(
+urlpatterns = urls.patterns(
     '',
-    url(r'^configuration/$', views.configuration, name='configuration'),
-    url(r'^$', views.Home.as_view(), name='home'),
-    url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
-    url(r'^register/$', views.Registration.as_view(), name='registration'),
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include(api.v1.urls)),
-)
+    urls.url(r'^configuration/$', views.configuration, name='configuration'),
+    urls.url(r'^$', views.Home.as_view(), name='home'),
+    urls.url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
+    urls.url(r'^register/$', views.Registration.as_view(), name='registration'),
+    urls.url(r'^admin/', urls.include(admin.site.urls)),
+    urls.url(r'^api/', urls.include(api.v1.urls)),
+    )
