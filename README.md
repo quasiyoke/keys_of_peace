@@ -27,7 +27,7 @@ To run Keys of Peace after described installation, execute:
     $ cd src/keys_of_peace
     $ python manage.py runserver
 
-After that you may go at http://127.0.0.1:8000 and observe the site running on your machine.
+After that you may go to http://127.0.0.1:8000 and observe the site running on your machine.
 
 ## Building CSS
 
