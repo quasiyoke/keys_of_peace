@@ -24,7 +24,7 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', ]
 
 # json_settings module allows to keep your project's configuration in JSON file. It replaces all settings defined before this import.
 from json_settings import *
@@ -56,6 +56,8 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'keys_of_peace.urls'
+
+CSRF_FAILURE_VIEW = 'keys_of_peace.views.csrf_failure'
 
 WSGI_APPLICATION = 'keys_of_peace.wsgi.application'
 

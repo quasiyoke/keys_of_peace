@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Error {% block title_error %}{% endblock %} &mdash; Keys of Peace{% endblock %}
+
+
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/error.css" media="screen">
+{% endblock %}
+
+
+{% block content %}
+<h1>{% block header_error %}{% endblock %}</h1>
+<div class="description-wrap">
+  <div class="notification">Error happened</div>
+  <div class="description">
+	{% block description %}{% endblock %}
+  </div>
+</div>
+<div class="home-link-wrap">
+  <a class="home-link" href="{%url 'home'%}">Home</a>
+</div>
+{% endblock %}

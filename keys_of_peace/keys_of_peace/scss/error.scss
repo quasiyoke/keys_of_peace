@@ -1,0 +1,32 @@
+@import "mixins";
+
+
+body {
+	color: $title-color;
+	font-size: 2em;
+	padding-top: 4em;
+	text-align: center;
+}
+
+h1 {
+	display: inline-block;
+	font-size: 5em;
+	margin: 0;
+	vertical-align: -.3em;
+}
+
+.description-wrap {
+	display: inline-block;
+	margin-left: 2em;
+	vertical-align: middle;
+	text-align: left;
+	max-width: 50%;
+}
+
+.notification {
+	font-size: 1.4em;
+}
+
+.home-link-wrap {
+	margin-top: 2em;
+}

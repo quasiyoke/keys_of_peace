@@ -3,6 +3,7 @@ import forms
 import json
 import models
 from django import http
+from django import template
 from django.core import urlresolvers
 from django.views.generic import edit as edit_views
 
@@ -32,10 +33,16 @@ def configuration(request):
             'ALPHABETS_BITS': models.ALPHABETS_BITS,
             'ALPHABETS': models.ALPHABETS,
             'ALPHABETS_CHOICES': models.ALPHABET_CHOICES,
-        },
+            },
 
         'API_URL': '/api/v1/',
         'LOGIN_URL': urlresolvers.reverse('home'),
-    }
+        }
     response = 'CONFIGURATION = %s;' % json.dumps(configuration)
     return http.HttpResponse(response)
+
+
+def csrf_failure(request, reason=''):
+    context = template.RequestContext(request, {})
+    t = template.loader.get_template('403.html')
+    return http.HttpResponseForbidden(t.render(context))
