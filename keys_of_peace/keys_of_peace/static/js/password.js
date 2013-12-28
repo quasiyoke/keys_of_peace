@@ -8,7 +8,7 @@
 		},
 		
 		_create: function(){
-			var target = this.options.target
+			var target = this.options.target;
 			if(!target){
 				target = this.element
 					.wrap('<div>')
@@ -25,6 +25,11 @@
 				this.textElement = $('<input type="text">')
 					.val(this._value)
 				;
+				var commonHandlers = {
+					keyup: '_change'
+				};
+				this._on(this.element, commonHandlers);
+				this._on(this.textElement, commonHandlers);
 			}else{
 				this._value = this.element.html();
 				this.element.html(this._value.replace(/./g, '•'));
@@ -35,16 +40,10 @@
 			this.element
 				.after(this.textElement)
 			;
-			if(this.options.class){
-				this.element.addClass(this.options.class);
-				this.textElement.addClass(this.options.class);
+			if(this.options['class']){
+				this.element.addClass(this.options['class']);
+				this.textElement.addClass(this.options['class']);
 			}
-
-			var commonHandlers = {
-				keyup: '_change'
-			};
-			this._on(this.element, commonHandlers);
-			this._on(this.textElement, commonHandlers);
 			
 			this._setMode();
 		},
@@ -58,10 +57,9 @@
 		},
 
 		_change: function(e){
-			this._value = $(e.target).val();
-			this._trigger('change', e, {
-				value: this._value
-			});
+			this.value(
+				$(e.target).val()
+			);
 		},
 
 		_setOption: function(key, value){
