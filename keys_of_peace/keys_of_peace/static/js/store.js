@@ -157,6 +157,9 @@
 			return ++this.idCounter;
 		},
 
+		/**
+			 Tries to find instance and increment its `used` field. If instance not found, tries to create it.
+		 */
 		used: function(attrs){
 			var instance = this.findWhere(attrs);
 			if(instance){
@@ -183,21 +186,28 @@
 		model: Account,
 		
 		create: function(attrs, options){
-			var accounter = this.store.accounters.create({
-				passwordAlphabet: attrs.passwordAlphabet,
-				passwordLength: attrs.passwordLength
-			});
-			
+			var accounter;			
 			var site = this.store.sites.used({
 				host: attrs.link
 			});
 			if(site){
-				accounter.set('mainSite', site);
-				site.set('accounter', accounter);
-			}else{
-				accounter.set('name', attrs.link)
+				accounter = site.get('accounter');
 			}
-
+			/*
+				If no site was found or site was created just now and has no `accounter`.
+				@see Collection.used
+			 */
+			if(!accounter){
+				accounter = this.store.accounters.create({
+					name: attrs.link,
+					passwordAlphabet: attrs.passwordAlphabet,
+					passwordLength: attrs.passwordLength
+				});
+				if(site){
+					site.set('accounter', accounter);
+					accounter.set('mainSite', site);
+				}
+			}
 			return Accounts.__super__.create.call(this, {
 				accounter: accounter,
 				login: attrs.login,
