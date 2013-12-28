@@ -3,7 +3,7 @@
 		_create: function(){
 			this.linkInput = this.element.find('[name=link]')
 				.qtip({
-					content: 'Link to website, name of service or any other short account description.',
+					content: 'Link to website or name of service. E.g.: <strong>Wi-fi</strong>, <strong>Google</strong>.',
 				})
 			;
 			
