@@ -26,6 +26,8 @@ TIME_ZONE = 'UTC'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', ]
 
+ADMIN_URL_REGEX = r'^admin/'
+
 # json_settings module allows to keep your project's configuration in JSON file. It replaces all settings defined before this import.
 from json_settings import *
 
