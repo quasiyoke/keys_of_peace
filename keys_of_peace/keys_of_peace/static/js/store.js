@@ -4,7 +4,8 @@
 			if(!this.validationError && !this.has('id')){
 				this.set('id', this.collection.getUniqueId());
 			}
-			this.set('created', new Date(this.get('created'))); // Creates new `Date` object or generates current time if no `created` attribute present.
+			var created = this.get('created');
+			this.set('created', created ? new Date(created) : new Date());
 		},
 		
 		increment: function(key, options){
