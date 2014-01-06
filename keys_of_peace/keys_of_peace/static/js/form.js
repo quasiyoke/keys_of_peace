@@ -212,13 +212,15 @@
 				status.position({
 					my: 'right bottom',
 					at: 'right+' + width * .3 + ' bottom-' + width * .05,
-					of: input
+					of: input,
+					collision: 'fit'
 				});
 			}else{
 				status.position({
 					my: 'left center',
 					at: 'right+10 center',
-					of: input
+					of: input,
+					collision: 'fit'
 				});
 			}
 			return this;
