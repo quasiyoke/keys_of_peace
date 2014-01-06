@@ -108,4 +108,35 @@ jQuery(function($){
 			}
 		}
 	});
+
+	/* At small screens prospectus and form should be positioned vertically and centered. */
+	var win = $(window);
+	var prospectus = $('.prospectus');
+	var position = function(){
+		if(win.width() < prospectus.width() + parseInt(prospectus.css('marginRight')) + form.width()){
+			form.css({
+				position: 'absolute',
+				left: win.width() / 2 - form.width() / 2
+			});
+			var prospectusMargin = 45;
+			prospectus.position({
+				my: 'center top',
+				at: 'center bottom+' + prospectusMargin,
+				of: form
+			});
+		}else{
+			form.css({
+				position: 'relative',
+				left: 'auto',
+				top: 'auto'
+			});
+			prospectus.css({
+				position: 'static'
+			});
+		}
+	};
+	position();
+	win.on('resize', function(e){
+		position();
+	});
 });
