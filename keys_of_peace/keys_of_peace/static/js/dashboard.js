@@ -124,6 +124,42 @@
 	};
 	
 	_.extend(Dashboard.prototype, {
+		searchResultsEvents: {
+			add: function(model, options){
+				if(1 === this.searchResults.length){
+					this.hideNoSearchResults(options);
+				}
+				this.addSearchResult(model, options);
+			},
+			remove: function(model, options){
+				if(!this.searchResults.length){
+					this.showNoSearchResults(options);
+				}
+			}
+		},
+
+		addSearchResult: function(model, options){
+			options = _.defaults(options || {}, {
+				effects: true
+			});
+			var view;
+			if(model instanceof Account){
+				view = new AccountView({
+					model: model
+				});
+			}else{
+				throw 'Model is not recognized.';
+			}
+			view.render();
+			this.searchResultsElement.append(view.$el);
+			if(options.effects){
+				view.$el
+					.hide()
+					.slideDown('fast')
+				;
+			}
+		},
+
 		render: function(){
 			return _.template(
 				$('.dashboard-template').html(),
@@ -168,6 +204,12 @@
 
 		onStoreConstructionDone: function(){
 			this.clearStoreStatus();
+			
+			/* Bind events' handlers to dashboard instance. */
+			for(var name in this.searchResultsEvents){
+				this.searchResultsEvents[name] = _.bind(this.searchResultsEvents[name], this);
+			}
+			
 			this.setSearchResults(store.accounts);
 			if(!store.accounts.length){
 				this.accountForm.accountForm('focus');
@@ -202,49 +244,11 @@
 		},
 
 		onSearchResults: function(){
-			this.searchResults.on({
-				add: _.bind(this.onAddSearchResult, this),
-				remove: _.bind(this.onRemoveSearchResult, this)
-			});
-		},
-
-		onAddSearchResult: function(model, options){
-			if(1 === this.searchResults.length){
-				this.hideNoSearchResults(options);
-			}
-			this.addSearchResult(model, options);
-		},
-
-		onRemoveSearchResult: function(model, options){
-			if(!this.searchResults.length){
-				this.showNoSearchResults(options);
-			}
-		},
-
-		addSearchResult: function(model, options){
-			options = _.defaults(options || {}, {
-				effects: true
-			});
-			var view;
-			if(model instanceof Account){
-				view = new AccountView({
-					model: model
-				});
-			}else{
-				throw 'Model is not recognized.';
-			}
-			view.render();
-			this.searchResultsElement.append(view.$el);
-			if(options.effects){
-				view.$el
-					.hide()
-					.slideDown('fast')
-				;
-			}
+			this.searchResults.on(this.searchResultsEvents);
 		},
 
 		offSearchResults: function(){
-			
+			this.searchResults.off(this.searchResultsEvents);
 		},
 
 		showNoSearchResults: function(options){
