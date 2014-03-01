@@ -39,7 +39,7 @@ def configuration(request):
         'LOGIN_URL': urlresolvers.reverse('home'),
         }
     response = 'CONFIGURATION = %s;' % json.dumps(configuration)
-    return http.HttpResponse(response, mimetype='application/json')
+    return http.HttpResponse(response, mimetype='text/javascript')
 
 
 def csrf_failure(request, reason=''):
