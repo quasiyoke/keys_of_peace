@@ -61,20 +61,6 @@
 
 		_delegateEvents: function(){
 			this._super();
-			this._on(this.loginInput, {
-				keyup: function(){
-					var emailRow = this.emailInput.closest('form > p');
-					if($.validator.methods.email.call({optional: $.noop}, this.loginInput.val(), this.loginInput)){ // Check if email was used as login.
-						if(emailRow.is(':visible')){
-							emailRow.slideUp('fast');
-						}
-					}else{
-						if(!emailRow.is(':visible')){
-							emailRow.slideDown('fast');
-						}
-					}
-				}
-			});
 			this._on(this.passwordInput, {
 				'passwordchange': function(e, data){
 					if(data.value.length){

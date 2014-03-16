@@ -10,12 +10,12 @@ class Form(forms.Form):
 
 class Account(Form):
     link = forms.CharField(label='Link or name')
-    login = forms.CharField(label='Login or email')
-    email = forms.EmailField()
+    login = forms.CharField(label='Login (optional)')
+    email = forms.EmailField(label='Email (optional)')
     password = forms.CharField(widget=forms.PasswordInput())
     alphabet = forms.ChoiceField(choices=models.ALPHABET_CHOICES)
     length = forms.IntegerField()
-    notes = forms.CharField(widget=forms.Textarea())
+    notes = forms.CharField(label='Notes (optional)', widget=forms.Textarea())
 
 
 class Login(Form):

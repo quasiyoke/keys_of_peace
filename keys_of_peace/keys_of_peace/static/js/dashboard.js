@@ -72,51 +72,37 @@
 		this.accountForm.accountForm({
 			validation: {
 				rules: {
-					link: {
-						required: true
-					},
-					login: {
-						required: true
-					},
-					email: {
-						email: true
-					},
-					length: {
-						range: [3, 50]
-					},
-					password: {
-						required: true
-					},
-					notes: {
-						maxlength: 100
-					}
+					link: { required: true},
+					email: { email: true},
+					length: { range: [3, 50]},
+					password: { required: true},
+					notes: { maxlength: 100}
 				},
 				messages: {
-					link: {
-						required: 'Enter the link or name for account.'
-					},
-					login: {
-						required: 'Enter account login or email.'
-					},
-					length: {
-						range: 'Passw length should be ≥ 3 and ≤ 50.'
-					},
-					password: {
-						required: 'Enter password for account.'
-					}
+					link: { required: 'Enter the link or name for account.'},
+					length: { range: 'Passw length should be ≥ 3 and ≤ 50.'},
+					password: { required: 'Enter password for account.'}
 				}
 			},
 
 			submit: function(){
-				store.accounts.create({
-					link: this.linkInput.val(),
-					login: this.loginInput.val(),
-					email: this.emailInput.val(),
-					password: this.passwordInput.val(),
-					passwordAlphabet: this.alphabetInput.val(),
-					passwordLength: this.lengthInput.val(),
-					notes: this.notesInput.val()
-				});
+				if(this.loginInput.val() || this.emailInput.val()){
+					store.accounts.create({
+						link: this.linkInput.val(),
+						login: this.loginInput.val(),
+						email: this.emailInput.val(),
+						password: this.passwordInput.val(),
+						passwordAlphabet: this.alphabetInput.val(),
+						passwordLength: this.lengthInput.val(),
+						notes: this.notesInput.val()
+					});
+				}else{
+					this.notify('Enter account login or email.');
+					var errorClass = this.options.validation.errorClass;
+					this.options.validation.highlight(this.loginInput, errorClass);
+					this.options.validation.highlight(this.emailInput, errorClass);
+					this.loginInput.focus();
+				}
 			}
 		});
 
