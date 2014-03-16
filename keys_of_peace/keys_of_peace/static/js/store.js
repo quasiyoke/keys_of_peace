@@ -146,15 +146,14 @@
 					models.push(this.model.getFirstAttributes(options));
 				}
 			}
-			this.idCounter = Math.max(0, _(models)
-																.pluck('id')
-																.max()
-																.value()
-															 );
 		},
 
 		getUniqueId: function(){
-			return ++this.idCounter;
+			var id;
+			do {
+				id = Math.round(Math.random() * 1e9)
+			} while (this.get(id));
+			return id;
 		},
 
 		/**
