@@ -76,7 +76,6 @@ class User(resources.ModelResource):
         if getattr(bundle.obj, 'authenticated', False):
             profile = bundle.obj.profile
             bundle.data['data'] = profile.data
-            bundle.data['data_salt'] = profile.data_salt
         return bundle
 
     def obj_create(self, bundle, request=None, **kwargs):
@@ -112,7 +111,6 @@ class User(resources.ModelResource):
     def full_hydrate(self, bundle):
         bundle = super(User, self).full_hydrate(bundle)
         bundle.obj.profile.data = bundle.data['data']
-        bundle.obj.profile.data_salt = bundle.data['data_salt']
         return bundle
 
     def save(self, bundle, skip_errors=False):

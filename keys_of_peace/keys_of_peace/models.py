@@ -27,4 +27,3 @@ ALPHABET_CHOICES = [(k, ' + '.join(v), ) for k, v in ALPHABETS]
 class UserProfile(models.Model):
     user = models.OneToOneField(auth_models.User, primary_key=True, related_name='profile')
     data = models.TextField(blank=True)
-    data_salt = models.CharField(blank=True, max_length=100)

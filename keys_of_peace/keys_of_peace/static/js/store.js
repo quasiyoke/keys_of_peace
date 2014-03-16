@@ -147,10 +147,10 @@
 				}
 			}
 			this.idCounter = Math.max(0, _(models)
-				.pluck('id')
-				.max()
-				.value()
-			);
+																.pluck('id')
+																.max()
+																.value()
+															 );
 		},
 
 		getUniqueId: function(){
@@ -159,7 +159,7 @@
 
 		/**
 			 Tries to find instance and increment its `used` field. If instance not found, tries to create it.
-		 */
+		*/
 		used: function(attrs){
 			var instance = this.findWhere(attrs);
 			if(instance){
@@ -196,7 +196,7 @@
 			/*
 				If no site was found or site was created just now and has no `accounter`.
 				@see Collection.used
-			 */
+			*/
 			if(!accounter){
 				accounter = this.store.accounters.create({
 					name: attrs.link,
@@ -283,13 +283,6 @@
 			var data = credentials.data;
 			if(data){
 				var that = this;
-				var decrypt = function(hash){
-					Api.make({
-						method: 'decrypt',
-						arguments: [data, hash],
-						callback: parse
-					});
-				};
 
 				var parse = function(data){
 					that.initialize(JSON.parse(data));
@@ -297,9 +290,9 @@
 
 				this.trigger('constructionDecryption');
 				Api.make({
-					method: 'hash',
-					arguments: [credentials.password, credentials.dataSalt],
-					callback: decrypt
+					method: 'decrypt',
+					arguments: [data, credentials.password],
+					callback: parse
 				});
 			}else{
 				data = {
@@ -367,23 +360,13 @@
 
 		save: function(){
 			var that = this;
-			var encrypt = function(hash){
-				Api.make({
-					method: 'encrypt',
-					arguments: [that.credentials.data, hash],
-					callback: fetch
-				});
-			};
 			
 			var fetch = function(string){
 				that.trigger('savingFetching');
 				Api.fetch({
 					uri: that.credentials.uri,
 					type: 'PUT',
-					data: {
-						data: string,
-						data_salt: Crypto.toString(that.credentials.dataSalt)
-					}
+					data: {	data: string}
 				})
 					.always(function(xhr){that.trigger('savingAlways', xhr)})
 					.done(function(data){that.trigger('savingDone', data)})
@@ -393,11 +376,10 @@
 			
 			this.trigger('savingEncryption');
 			this.credentials.data = this.toJSON();
-			this.credentials.dataSalt = Crypto.getSalt();
 			Api.make({
-				method: 'hash',
-				arguments: [this.credentials.password, this.credentials.dataSalt],
-				callback: encrypt
+				method: 'encrypt',
+				arguments: [this.credentials.data, this.credentials.password],
+				callback: fetch
 			});
 		}
 	});
