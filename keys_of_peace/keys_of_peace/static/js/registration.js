@@ -81,7 +81,6 @@ jQuery(function($){
 	});
 
 	var showSuccess = function(){
-		$('h1').html('Successfully Registered');
 		form
 			.after(
 				_.template(

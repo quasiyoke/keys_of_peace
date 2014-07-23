@@ -5,7 +5,7 @@
 
 
 {% block header %}
-<h1>Registration</h1>
+<h1>Keys of Peace</h1>
 {% endblock %}
 
 
@@ -24,7 +24,7 @@
 <script class="success-template" type="text/html">
   <div class="success">
 	<h2>Congratulations</h2>
-	<p>You have registered with email <%= email %></p>
+	<p class="success-email">You was registered with email <strong><%= email %></strong></p>
 	<a class="login-link" href="{% url 'home' %}">Login</a>
   </div>
 </script>
