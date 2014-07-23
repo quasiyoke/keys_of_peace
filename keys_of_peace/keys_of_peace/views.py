@@ -4,6 +4,7 @@ import json
 import models
 from django import http
 from django import template
+from django.conf import settings
 from django.core import urlresolvers
 from django.views.generic import edit as edit_views
 
@@ -37,6 +38,7 @@ def configuration(request):
 
         'API_URL': '/api/v1/',
         'LOGIN_URL': urlresolvers.reverse('home'),
+        'LOGOUT_TIME': settings.SESSION_COOKIE_AGE,
         }
     response = 'CONFIGURATION = %s;' % json.dumps(configuration)
     return http.HttpResponse(response, mimetype='text/javascript')

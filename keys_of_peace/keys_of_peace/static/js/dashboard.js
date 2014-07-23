@@ -2,11 +2,11 @@
 	var credentials;
 	var store;
 
-	var Dashboard = window.Dashboard = function(selector, _credentials){
+	var Dashboard = window.Dashboard = function(element, _credentials){
 		credentials = _credentials;
 		
-		var element = $(selector);
-		element.html(this.render());
+		this.element = element;
+		this.element.html(this.render());
 
 		$('.dashboard-title').qtip();
 
@@ -107,6 +107,8 @@
 		});
 
 		store.setCredentials(credentials);
+
+		setTimeout(_.bind(this.onLogout, this), CONFIGURATION.LOGOUT_TIME * 1000);
 	};
 	
 	_.extend(Dashboard.prototype, {
@@ -186,6 +188,12 @@
 				this.storeStatus.remove();
 				delete this.storeStatus;
 			}
+		},
+
+		onLogout: function(){
+			var home = new Home(this.element, {
+				email: credentials.email
+			});
 		},
 
 		onStoreConstructionDone: function(){

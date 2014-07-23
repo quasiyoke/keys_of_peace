@@ -20,65 +20,8 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/account-view.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
-<script class="dashboard-template" type="text/html">
-  <div class="dashboard-header">
-	<form class="logout-form" action="{% url 'logout' %}" method="post">
-	  <input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
-	  <input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
-	</form>
-	<div class="bar">
-	  <%= email %>
-	  <form class="logout-form" action="{% url 'logout' %}" method="post">
-		<input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
-		<input class="logout-submit" type="submit" value="Logout">
-	  </form>
-	</div>
-  </div>
-  <form class="search-form">
-	<input class="search-query" name="query" type="text">
-	<input class="search-submit" type="submit" value="Search" tabindex="-1">
-  </form>
-  <div class="search-results"></div>
-  <form class="account-form">
-	<h2>New account</h2>
-	{{ account_form }}
-	<input class="account-submit" type="submit" value="Save">
-  </form>
-</script>
-<script class="no-search-results-template" type="text/html">
-  <div class="no-search-results">
-	<p class="no-search-results-notification">No accounts found</p>
-  </div>
-</script>
-<script class="no-accounts-template" type="text/html">
-  <div class="no-search-results">
-	<p class="no-accounts-notification">You have no accounts</p>
-	<p class="no-accounts-invitation">
-	  Worth to create one — fill the form below<br>
-	  All your data will be encoded right in your<br>
-	  browser and saved on our server.
-	</p>
-  </div>
-</script>
-<script class="account-template" type="text/html">
-  <div class="account">
-	<a class="account-options-link" href="#" tabindex="-1">▼</a>
-	<p class="account-login-row">
-	  Login: <span class="account-login"><%= login %></span>
-	</p>
-	<p class="account-password-row">
-	  Password: <span class="account-password"><%= password %></span>
-	</p>
-	<div class="account-options">
-	  <a class="account-option-link account-remove-link" href="#">Remove</a>
-	</div>
-  </div>
-</script>
-{% endblock %}
 
-
-{% block content %}
-<div class="body-wrap body-wrap-home">
+<script class="home-template" type="text/html">
   <div class="main-title">
 	<h1>Keys of Peace</h1>
   </div>
@@ -115,5 +58,68 @@
 	  </li>
 	</ol>
   </div>
-</div>
+</script>
+
+<script class="dashboard-template" type="text/html">
+  <div class="dashboard-header">
+	<form class="logout-form" action="{% url 'logout' %}" method="post">
+	  <input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
+	  <input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
+	</form>
+	<div class="bar">
+	  <%= email %>
+	  <form class="logout-form" action="{% url 'logout' %}" method="post">
+		<input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
+		<input class="logout-submit" type="submit" value="Logout">
+	  </form>
+	</div>
+  </div>
+  <form class="search-form">
+	<input class="search-query" name="query" type="text">
+	<input class="search-submit" type="submit" value="Search" tabindex="-1">
+  </form>
+  <div class="search-results"></div>
+  <form class="account-form">
+	<h2>New account</h2>
+	{{ account_form }}
+	<input class="account-submit" type="submit" value="Save">
+  </form>
+</script>
+
+<script class="no-search-results-template" type="text/html">
+  <div class="no-search-results">
+	<p class="no-search-results-notification">No accounts found</p>
+  </div>
+</script>
+
+<script class="no-accounts-template" type="text/html">
+  <div class="no-search-results">
+	<p class="no-accounts-notification">You have no accounts</p>
+	<p class="no-accounts-invitation">
+	  Worth to create one — fill the form below<br>
+	  All your data will be encoded right in your<br>
+	  browser and saved on our server.
+	</p>
+  </div>
+</script>
+
+<script class="account-template" type="text/html">
+  <div class="account">
+	<a class="account-options-link" href="#" tabindex="-1">▼</a>
+	<p class="account-login-row">
+	  Login: <span class="account-login"><%= login %></span>
+	</p>
+	<p class="account-password-row">
+	  Password: <span class="account-password"><%= password %></span>
+	</p>
+	<div class="account-options">
+	  <a class="account-option-link account-remove-link" href="#">Remove</a>
+	</div>
+  </div>
+</script>
+{% endblock %}
+
+
+{% block content %}
+<div class="body-wrap"></div>
 {% endblock %}

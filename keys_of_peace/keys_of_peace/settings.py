@@ -69,5 +69,7 @@ AUTHENTICATION_BACKENDS = (
     'permission.backends.PermissionBackend',
 )
 
+SESSION_COOKIE_AGE = 15 * 60 # 15 minutes
+
 import mimetypes
 mimetypes.add_type('image/svg+xml', '.svg', True)
