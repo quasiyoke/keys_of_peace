@@ -36,6 +36,12 @@
 		contains: function(s){
 			return this.get('login').contains(s) || (this.has('email') && this.get('email').contains(s)) || (this.has('notes') && this.get('notes').contains(s)) ||
 				this.get('accounter').contains(s);
+		},
+
+		toJSON: function(){
+			var json = Model.__super__.toJSON.apply(this, arguments);
+			delete json.even;
+			return json;
 		}
 	});
 

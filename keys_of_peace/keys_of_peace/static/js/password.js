@@ -2,7 +2,7 @@
 (function($){
 	$.widget('keysOfPeace.password', {
 		options: {
-			class: null,
+			'class': null,
 			mode: 'password',
 			target: null
 		},
@@ -39,7 +39,9 @@
 			}
 			this.element
 				.after(this.textElement)
+				.addClass('keys-of-peace-password')
 			;
+			this.textElement.addClass('keys-of-peace-password');
 			if(this.options['class']){
 				this.element.addClass(this.options['class']);
 				this.textElement.addClass(this.options['class']);
@@ -49,11 +51,15 @@
 		},
 
 		_mouseenter: function(){
-			this._setOption('mode', 'text');
+			if(this.options.showOnHover){
+				this._setOption('mode', 'text');
+			}
 		},
 
 		_mouseleave: function(){
-			this._setOption('mode', 'password');
+			if(this.options.showOnHover){
+				this._setOption('mode', 'password');
+			}
 		},
 
 		_change: function(e){

@@ -238,6 +238,7 @@
 						effects: false
 					})
 				});
+				this.updateSearchResultsColors();
 			}else{
 				this.showNoSearchResults({
 					effects: false
@@ -296,6 +297,14 @@
 			}
 			this.query = query;
 			this.setSearchResults(accounts);
+		},
+
+		updateSearchResultsColors: function(){
+			this.searchResults.each(function(account, i){
+				var even = !!(i % 2);
+				account.set('even', even);
+				account.trigger('changeorder', even);
+			});
 		}
 	});
 })(jQuery);

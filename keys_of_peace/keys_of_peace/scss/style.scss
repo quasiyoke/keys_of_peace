@@ -345,7 +345,7 @@ label.error-field {
 	}
 
 	&:hover {
-		background-color: darken($back-color, 6%);
+		background-color: $back-hover-color;
 	}
 }
 
@@ -365,4 +365,8 @@ label.error-field {
 	&:link, &:visited {
 		background-image: url("/static/images/opera.png");
 	}
+}
+
+.keys-of-peace-password {
+	font-family: "Lucida Console", Monaco, monospace;
 }

@@ -39,7 +39,7 @@
 				element = element.parent();
 			}
 			element.qtip({
-				content: 'Copy',
+				content: 'Click to copy',
 				position: {
 					my: 'left center',
 					at: 'right center',

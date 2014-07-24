@@ -2,19 +2,24 @@
 (function($, global){
 	var AccountView = global.AccountView = Backbone.View.extend({
 		events: {
-			'click .account-options-link': 'onOptionsLinkClick',
-			'click .account-remove-link': 'onRemoveClick'
+			'click .account-additional-show': 'onAdditionalShowClick',
+			'mousedown .account-password-show': 'onPasswordShowMousedown',
+			'mouseup .account-password-show': 'onPasswordShowMouseup',
 		},
 
 		initialize: function(){
 			this.model.on('remove', this.onModelRemove, this);
+			this.model.on('changeorder', this.onModelChangeOrder, this);
 		},
 		
 		render: function(){
+			var email = this.model.get('email');
+			var login = this.model.get('login') || email;
+			var notes = this.model.get('notes');
 			this.setElement(
 				$(
 					AccountView.template({
-						login: this.model.get('login'),
+						login: login,
 						password: this.model.get('password')
 					})
 				)
@@ -22,76 +27,120 @@
 
 			var accounter = this.model.get('accounter');
 			var site = accounter.get('mainSite');
-			var login = this.$('.account-login');
-			var loginRow = this.$('.account-login-row');
-			login.clipboard();
-			var email = this.model.get('email');
-			if(email && email !== this.model.get('login')){
-				var emailElement = $('<span>')
-					.clipboard()
-				;
-				emailElement.html(email);
-				var emailRow = $('<p>');
-				emailRow.html('Email: ');
-				emailRow.append(emailElement);
-				loginRow.after(emailRow);
-			}
+			var loginWrap = this.$('.account-login-wrap');
+			loginWrap.find('.account-login')
+				.clipboard()
+			;
+			var title = this.$('.account-title');
 			if(site){
 				var siteLink = $('<a class="account-accounter-link account-title">')
 					.attr('href', site.get('host'))
 					.html(site.get('name'))
 				;
-				this.$el.prepend(siteLink);
+				title.append(siteLink);
 			}else{
-				var name = $('<span class="account-title">')
-					.html(accounter.get('name'))
-				;
-				this.$el.prepend(name);
+				title.html(accounter.get('name'));
 			}
 			
-			var password = this.$('.account-password')
+			this.password = this.$('.account-password')
 				.password()
 				.clipboard()
 			;
 
-			var notes = this.model.get('notes');
-			if(notes){
-				var notesRow = $('<p>');
-				notesRow.html('Notes: ' + notes);
-				this.$('.account-options').prepend(notesRow);
-				this.$('.account-options-link').append(' notes');
+			if(notes || (email && email !== login)){
+				this.additionalShow = $('<td class="account-additional-show-wrap"><button class="account-additional-show"></button></td>')
+					.appendTo(this.$el)
+					.find('.account-additional-show')
+				;
 			}
-
 			return this;
 		},
 
-		onOptionsLinkClick: function(e){
-			e.preventDefault();
-			if(this.$('.account-options').is(':visible')){
-				this.hideOptions();
-			}else{
-				this.showOptions();
+		renderAdditional: function(){
+			var email = this.model.get('email');
+			var login = this.model.get('login') || email;
+			var notes = this.model.get('notes');
+			this.additional = $('<tr class="account-additional"><td class="account-additional-wrap" colspan="5"><table>')
+				.insertAfter(this.$el)
+			;
+			if(this.model.get('even')){
+				this.additional.addClass('account-even');
 			}
+			var additional = this.additional.find('table');
+			if(email && email !== login){
+				$('<tr>')
+					.append('<th class="account-additional-title">Email:</th>')
+					.append('<td>' + email + '</td>')
+					.appendTo(additional)
+				;
+			}
+			if(notes){
+				$('<tr>')
+					.append('<th class="account-additional-title">Notes:</th>')
+					.append('<td>' + notes + '</td>')
+					.appendTo(additional)
+				;
+			}			
 		},
 
-		onRemoveClick: function(e){
+		onAdditionalShowClick: function(e){
 			e.preventDefault();
-			this.model.destroy();
+			if(this.additional && this.additional.is(':visible')){
+				this.additionalShow.removeClass('account-additional-show-undo');
+				this.hideAdditional();
+			}else{
+				this.additionalShow.addClass('account-additional-show-undo');
+				this.showAdditional();
+			}			
+		},
+
+		onPasswordShowMousedown: function(e){
+			e.preventDefault();
+			this.password.password('option', 'mode', 'text');
+		},
+
+		onPasswordShowMouseup: function(e){
+			e.preventDefault();
+			this.password.password('option', 'mode', 'password');
+		},
+
+		onModelChangeOrder: function(even){
+			if(even){
+				this.$el.addClass('account-even');
+				if(this.additional){
+					this.additional.addClass('account-even');
+				}
+			}else{
+				this.$el.removeClass('account-even');
+				if(this.additional){
+					this.additional.removeClass('account-even');
+				}
+			}
 		},
 
 		onModelRemove: function(){
 			this.remove();
 		},
 
-		showOptions: function(){
-			this.$('.account-options')
-				.slideDown('fast')
+		showAdditional: function(){
+			if(!this.additional){
+				this.renderAdditional();
+			}
+			this.additional
+				.hide()
+				.slideDown({
+					duration: 'fast',
+					queue: false
+				})
 			;
 		},
 
-		hideOptions: function(){
-			this.$('.account-options')
-				.slideUp('fast')
+		hideAdditional: function(){
+			this.additional
+				.slideUp({
+					duration: 'fast',
+					queue: false
+				})
 			;
 		},
 

@@ -81,21 +81,48 @@
 }
 
 .account {
-	.account + & {
-		margin-top: 1em;
-		border-top: 1px solid mix($title-color, $back-color, 50%);
-		padding-top: .7em;
+	font-size: 1.6em;
+	border-bottom: {
+		color: transparent;
+		style: solid;
+	}
+
+	& > td {
+		padding: 0 5px;
 	}
 }
 
-.account-title {
-	&, &:link {
-		font-size: 1.3em;
-	}
+.account-even {
+	background-color: $white-color;
 }
 
 .account-accounter-link {
 	@include title-link;
+}
+
+.account-password-show {
+	@include button("/static/images/eye.svg");
+}
+
+.account-additional-show {
+	@include button("/static/images/expand.svg");
+
+	&.account-additional-show-undo {
+		@include button-flipped();
+	}
+}
+
+.account-additional {
+}
+
+.account-additional-wrap {
+	color: $gray-color;
+	padding: 5px 30px 12px;
+}
+
+.account-additional-title {
+	text-align: right;
+	padding: 2px 7px;
 }
 
 .account-options-link {

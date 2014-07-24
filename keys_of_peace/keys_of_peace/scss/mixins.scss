@@ -1,4 +1,8 @@
+@import "compass/css3/transform";
+@import "compass/css3/transition";
+
 $back-color: #f9fcff;
+$back-hover-color: darken($back-color, 6%);
 $fore-color: #000;
 $bright-color: #0cf;
 $title-color: #79c8ff;
@@ -6,6 +10,8 @@ $link-link-color: #6380c5;
 $link-visited-color: #a263c5;
 $link-hover-color: #f00;
 $link-active-color: #f88;
+$white-color: #fff;
+$gray-color: #888;
 
 $form-width: 340px;
 
@@ -113,4 +119,44 @@ $main-title-background-size: 1.4em;
 	text-indent: $main-title-background-size + .3em;
 	padding-bottom: .15em;
 	white-space: nowrap;
+}
+
+@mixin button($image) {
+	$size: 40px;
+	position: relative;
+	cursor: pointer;
+	width: $size;
+	height: $size;
+	border: none;
+	vertical-align: middle;
+	border-radius: 2px;
+	background-color: transparent;
+
+	&:before {
+		content: "";
+		position: absolute;
+		width: 200%;
+		height: 200%;
+		top: -50%;
+		left: -50%;
+		background: {
+			color: transparent;
+			image: url($image);
+			repeat: no-repeat;
+			position: center center;
+			size: $size*0.7 $size*0.7;
+		}
+		@include transition-property(transform);
+		@include transition-duration(.3s);
+	}
+
+	&:hover {
+		background-color: $back-hover-color;
+	}
+}
+
+@mixin button-flipped() {
+	&:before {
+		@include rotate(180deg);
+	}
 }

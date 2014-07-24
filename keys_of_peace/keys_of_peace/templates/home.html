@@ -78,7 +78,7 @@
 	<input class="search-query" name="query" type="text">
 	<input class="search-submit" type="submit" value="Search" tabindex="-1">
   </form>
-  <div class="search-results"></div>
+  <table class="search-results"></table>
   <form class="account-form">
 	<h2>New account</h2>
 	{{ account_form }}
@@ -104,18 +104,18 @@
 </script>
 
 <script class="account-template" type="text/html">
-  <div class="account">
-	<a class="account-options-link" href="#" tabindex="-1">▼</a>
-	<p class="account-login-row">
-	  Login: <span class="account-login"><%= login %></span>
-	</p>
-	<p class="account-password-row">
-	  Password: <span class="account-password"><%= password %></span>
-	</p>
-	<div class="account-options">
-	  <a class="account-option-link account-remove-link" href="#">Remove</a>
-	</div>
-  </div>
+  <tr class="account">
+	<td class="account-title"></td>
+	<td class="account-login-wrap">
+	  <span class="account-login"><%= login %></span>
+	</td>
+	<td class="account-password-wrap">
+	  <span class="account-password"><%= password %></span>
+	</td>
+	<td class="account-password-show-wrap">
+	  <button class="account-password-show"></button>
+	</td>
+  </tr>
 </script>
 {% endblock %}
 
