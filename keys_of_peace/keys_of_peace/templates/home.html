@@ -122,19 +122,21 @@
 
 {% block content %}
 <div class="body-wrap">
-  <div class="error">
-	<h1 class="error-title">JS</h1>
-	<div class="error-description-wrap">
-	  <div class="error-notification">No JavaScript found</div>
-	  <div class="error-description">
-		<p>JavaScript need to be supported in order to use the site. To be able to use all of the site's functions, download and install one of the following browsers:</p>
-		<p class="browser-links">
-		  <a class="browser-link browser-link-firefox" href="https://www.mozilla.org/firefox/desktop/">Firefox</a>
-		  <a class="browser-link browser-link-chrome" href="https://www.google.com/chrome/browser/">Chrome</a>
-		  <a class="browser-link browser-link-opera" href="http://www.opera.com/">Opera</a>
-		<p>
+  <noscript>
+	<div class="error">
+	  <h1 class="error-title">JS</h1>
+	  <div class="error-description-wrap">
+		<div class="error-notification">No JavaScript found</div>
+		<div class="error-description">
+		  <p>JavaScript need to be supported in order to use the site. To be able to use all of the site's functions, download and install one of the following browsers:</p>
+		  <p class="browser-links">
+			<a class="browser-link browser-link-firefox" href="https://www.mozilla.org/firefox/desktop/">Firefox</a>
+			<a class="browser-link browser-link-chrome" href="https://www.google.com/chrome/browser/">Chrome</a>
+			<a class="browser-link browser-link-opera" href="http://www.opera.com/">Opera</a>
+		  <p>
+		</div>
 	  </div>
 	</div>
-  </div>
+  </noscript>
 </div>
 {% endblock %}
