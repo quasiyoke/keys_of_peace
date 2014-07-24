@@ -96,7 +96,7 @@ class clean(_clean):
 class deploy(setuptools.Command):
     FILE_NAME = 'deployment.json'
     
-    description = 'deploy the site'
+    description = 'deploy the site. To use this command, you should install "pyftpsync" and "paramiko" (+"pycrypto") packages'
 
     user_options = []
 
@@ -177,6 +177,7 @@ setuptools.setup(
         'django_permission>=0.4',
         'django_tastypie>=0.9',
         'mimeparse>=0.1.3',
+        'django_json_settings',
     ],
     cmdclass={
         'bdist_egg': bdist_egg,

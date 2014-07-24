@@ -6,7 +6,10 @@
 		credentials = _credentials;
 		
 		this.element = element;
-		this.element.html(this.render());
+		this.element
+			.addClass('body-wrap-daily')
+			.html(this.render())
+		;
 
 		$('.dashboard-title').qtip();
 
@@ -148,6 +151,10 @@
 			}
 		},
 
+		destroy: function(){
+			this.element.removeClass('body-wrap-daily');
+		},
+
 		render: function(){
 			return _.template(
 				$('.dashboard-template').html(),
@@ -191,6 +198,7 @@
 		},
 
 		onLogout: function(){
+			this.destroy();
 			var home = new Home(this.element, {
 				email: credentials.email
 			});

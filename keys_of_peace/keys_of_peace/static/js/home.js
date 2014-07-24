@@ -108,7 +108,7 @@ jQuery(function($){
 			done: function(response){
 				var user = response.objects[0];
 				credentials.data = user.data;
-				home.element.removeClass('body-wrap-home');
+				home.destroy();
 				var dashboard = new Dashboard(home.element, credentials);
 			},
 
@@ -155,6 +155,10 @@ jQuery(function($){
 	};
 
 	_.extend(Home.prototype, {
+		destroy: function(){
+			this.element.removeClass('body-wrap-home');
+		},
+		
 		render: function(){
 			return _.template(
 				$('.home-template').html()
