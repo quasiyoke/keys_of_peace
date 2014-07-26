@@ -75,6 +75,8 @@
 					.append('<th class="account-additional-title">Email:</th>')
 					.append('<td>' + email + '</td>')
 					.appendTo(additional)
+					.find('td')
+					.clipboard()
 				;
 			}
 			if(notes){
