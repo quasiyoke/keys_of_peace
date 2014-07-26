@@ -19,9 +19,10 @@
 			var passwordRow = this.passwordInput.closest('form > p')
 				.addClass('account-password-row')
 			;
-			this.passwordInput.password({
-				target: passwordRow
-			});
+			this.passwordInput.password();
+			this.passwordShow = $('<button class="account-form-password-show"></button>')
+				.appendTo(passwordRow)
+			;
 			
 			this.alphabetInput = this.element.find('[name=alphabet]');
 			this.alphabetInput.attr('tabindex', -1);
@@ -82,7 +83,28 @@
 			this._on(this.passwordGenerate, {
 				click: function(e){
 					e.preventDefault();
+				},
+				mousedown: function(e){
+					e.preventDefault();
 					this.generatePassword();
+					this.passwordInput.password('option', 'mode', 'text');
+				},
+				mouseup: function(e){
+					e.preventDefault();
+					this.passwordInput.password('option', 'mode', 'password');
+				}
+			});
+			this._on(this.passwordShow, {
+				click: function(e){
+					e.preventDefault();
+				},
+				mousedown: function(e){
+					e.preventDefault();
+					this.passwordInput.password('option', 'mode', 'text');
+				},
+				mouseup: function(e){
+					e.preventDefault();
+					this.passwordInput.password('option', 'mode', 'password');
 				}
 			});
 		},

@@ -163,6 +163,13 @@
 	white-space: nowrap;
 }
 
+.account-form-password-show {
+	@include button("/static/images/eye.svg");
+	position: absolute;
+	right: -44px;
+	top: 17px;
+}
+
 .account-alphabet-row, .account-length-row {
 	display: inline-block;
 	margin: 0;
