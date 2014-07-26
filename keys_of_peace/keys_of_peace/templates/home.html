@@ -86,25 +86,39 @@
   </form>
 </script>
 
-<script class="no-search-results-template" type="text/html">
-  <div class="no-search-results">
-	<p class="no-search-results-notification">No accounts found</p>
+<script class="checked-accounts-menu-template" type="text/html">
+  <div class="checked-accounts-menu">
+	<h2 class="checked-accounts-menu-title"><span class="checked-accounts-menu-count"></span> selected</h2>
+	<button class="checked-accounts-menu-select-all">Select All</button>
+	<button class="checked-accounts-menu-remove">Remove</button>
+	<button class="checked-accounts-menu-close"></button>
   </div>
 </script>
 
+<script class="no-search-results-template" type="text/html">
+  <tr class="no-search-results">
+	<td class="no-search-results-notification">No accounts found</td>
+  </tr>
+</script>
+
 <script class="no-accounts-template" type="text/html">
-  <div class="no-search-results">
-	<p class="no-accounts-notification">You have no accounts</p>
-	<p class="no-accounts-invitation">
-	  Worth to create one — fill the form below<br>
-	  All your data will be encoded right in your<br>
-	  browser and saved on our server.
-	</p>
-  </div>
+  <tr class="no-search-results">
+	<td>
+	  <p class="no-accounts-notification">You have no accounts</p>
+	  <p class="no-accounts-invitation">
+		Worth to create one — fill the form below<br>
+		All your data will be encoded right in your<br>
+		browser and saved on our server.
+	  </p>
+	</td>
+  </tr>
 </script>
 
 <script class="account-template" type="text/html">
   <tr class="account">
+	<td class="account-check-wrap">
+	  <input class="account-check" type="checkbox" title="">
+	</td>
 	<td class="account-title"></td>
 	<td class="account-login-wrap">
 	  <span class="account-login"><%= login %></span>

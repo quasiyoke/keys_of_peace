@@ -78,6 +78,7 @@
 
 .search-results {
 	margin-top: 2.5em;
+	width: 100%;
 }
 
 .account {
@@ -173,6 +174,10 @@
 
 .account-length-row {
 	text-align: left;
+
+	[name=length] {
+		width: 3em;
+	}
 }
 
 [name=alphabet] {
@@ -181,10 +186,6 @@
 	& > option {
 		text-align: left;
 	}
-}
-
-[name=length] {
-	width: 3em;
 }
 
 .account-password-generator-action {
@@ -198,4 +199,32 @@
 
 .account-password-generate {
 	@include modal-link($fore-color);
+}
+
+.checked-accounts-menu {
+	position: fixed;
+	top: 203px;
+	left: 30px;
+	padding: 30px 35px 20px;
+	background: $back-hover-color;
+	border-radius: 6px;
+	text-align: center;
+}
+
+.checked-accounts-menu-title {
+	font-size: 1.2em;
+	margin-bottom: .3em;
+}
+
+.checked-accounts-menu-select-all, .checked-accounts-menu-remove {
+	display: block;
+	margin: .2em auto 0;
+}
+
+.checked-accounts-menu-close {
+	@include button("/static/images/close.svg", .6, $title-color);
+	position: absolute;
+	$offset: 6px;
+	right: $offset;
+	top: $offset;
 }

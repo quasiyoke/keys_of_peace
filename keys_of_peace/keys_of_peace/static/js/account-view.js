@@ -3,13 +3,15 @@
 	var AccountView = global.AccountView = Backbone.View.extend({
 		events: {
 			'click .account-additional-show': 'onAdditionalShowClick',
+			'change .account-check': 'onCheckChange',
 			'mousedown .account-password-show': 'onPasswordShowMousedown',
 			'mouseup .account-password-show': 'onPasswordShowMouseup',
 		},
 
 		initialize: function(){
-			this.model.on('remove', this.onModelRemove, this);
+			this.model.on('check', this.onModelCheck, this);
 			this.model.on('changeorder', this.onModelChangeOrder, this);
+			this.model.on('remove', this.onModelRemove, this);
 		},
 		
 		render: function(){
@@ -25,6 +27,7 @@
 				)
 			);
 
+			this.check = this.$('.account-check');
 			var accounter = this.model.get('accounter');
 			var site = accounter.get('mainSite');
 			var loginWrap = this.$('.account-login-wrap');
@@ -60,7 +63,7 @@
 			var email = this.model.get('email');
 			var login = this.model.get('login') || email;
 			var notes = this.model.get('notes');
-			this.additional = $('<tr class="account-additional"><td class="account-additional-wrap" colspan="5"><table>')
+			this.additional = $('<tr class="account-additional"><td class="account-additional-wrap" colspan="6"><table>')
 				.insertAfter(this.$el)
 			;
 			if(this.model.get('even')){
@@ -94,6 +97,10 @@
 			}			
 		},
 
+		onCheckChange: function(){
+			this.model.collection.trigger('checked', this.model, this.check.prop('checked'));
+		},
+
 		onPasswordShowMousedown: function(e){
 			e.preventDefault();
 			this.password.password('option', 'mode', 'text');
@@ -102,6 +109,10 @@
 		onPasswordShowMouseup: function(e){
 			e.preventDefault();
 			this.password.password('option', 'mode', 'password');
+		},
+
+		onModelCheck: function(checked){
+			this.check.prop('checked', checked);
 		},
 
 		onModelChangeOrder: function(even){
@@ -146,6 +157,7 @@
 
 		remove: function(){
 			this.$el
+				.add(this.additional)
 				.slideUp({
 					duration: 'fast',
 					complete: _.bind(AccountView.__super__.remove, this)

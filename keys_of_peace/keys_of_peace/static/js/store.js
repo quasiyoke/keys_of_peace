@@ -162,6 +162,13 @@
 			return id;
 		},
 
+		remove: function(models, options){
+			options = options || {};
+			var retval = Collection.__super__.remove.call(this, models, options);
+			this.trigger('removemodels', models);
+			return retval
+		},
+
 		/**
 			 Tries to find instance and increment its `used` field. If instance not found, tries to create it.
 		*/
@@ -327,7 +334,7 @@
 			options = _.extend({store: this}, data.accounts, this.credentials);
 			this.accounts = new Accounts(data.accounts.objects, options)
 				.on('add', this._onAccountsAdd, this)
-				.on('remove', this._onAccountsRemove, this)
+				.on('removemodels', this._onAccountsRemove, this)
 			;
 			
 			options = _.extend({store: this}, data.accounters, this.credentials);

@@ -58,6 +58,11 @@
 			}
 		});
 
+		this.checkedAccounts = new Accounts();
+		this.element.on('click', '.checked-accounts-menu-close', _.bind(this.onCheckedAccountsMenuCloseClick, this));
+		this.element.on('click', '.checked-accounts-menu-select-all', _.bind(this.onCheckedAccountsMenuSelectAllClick, this));
+		this.element.on('click', '.checked-accounts-menu-remove', _.bind(this.onCheckedAccountsMenuRemoveClick, this));
+
 		var searchForm = element.find('.search-form');
 		searchForm.form({
 			focus: true,
@@ -115,17 +120,29 @@
 	};
 	
 	_.extend(Dashboard.prototype, {
-		searchResultsEvents: {
-			add: function(model, options){
-				if(1 === this.searchResults.length){
-					this.hideNoSearchResults(options);
+		onAccountAdd: function(model, options){
+			if(this.query){
+				if(this.searchFilter(model)){
+					this.searchResults.add(model);
+				}else{
+					return;
 				}
-				this.addSearchResult(model, options);
-			},
-			remove: function(model, options){
-				if(!this.searchResults.length){
-					this.showNoSearchResults(options);
-				}
+			}
+			if(1 === this.searchResults.length){
+				this.hideNoSearchResults(options);
+			}
+			this.addSearchResult(model, options);
+			this.updateSearchResultsColors();
+		},
+
+		onAccountsRemove: function(models){
+			if(this.searchResults !== store.accounts){
+				this.searchResults.remove(models);
+			}
+			if(this.searchResults.length){
+				this.updateSearchResultsColors();
+			}else{
+				this.showNoSearchResults();
 			}
 		},
 
@@ -151,6 +168,49 @@
 			}
 		},
 
+		showCheckedAccountsMenu: function(){
+			this.checkedAccountsMenu = $($('.checked-accounts-menu-template').html())
+				.appendTo(this.element)
+			;
+		},
+
+		updateCheckedAccountsMenu: function(){
+			this.checkedAccountsMenu.find('.checked-accounts-menu-count')
+				.html(this.checkedAccounts.length + ' ' + (1 === this.checkedAccounts.length ? 'account' : 'accounts'))
+			;
+		},
+
+		hideCheckedAccountsMenu: function(){
+			this.checkedAccountsMenu.remove();
+		},
+
+		onCheckedAccountsMenuCloseClick: function(e){
+			e.preventDefault();
+			store.accounts.each(function(account){
+				account.trigger('check', false);
+			});
+			this.checkedAccounts.reset();
+			this.hideCheckedAccountsMenu();
+		},
+
+		onCheckedAccountsMenuSelectAllClick: function(e){
+			e.preventDefault();
+			store.accounts.each(function(account){
+				account.trigger('check', true);
+			});
+			this.checkedAccounts.add(this.searchResults.toArray());
+			this.updateCheckedAccountsMenu();
+		},
+
+		onCheckedAccountsMenuRemoveClick: function(e){
+			e.preventDefault();
+			if(confirm('Are you sure you want to remove ' + this.checkedAccounts.length + ' ' + (1 === this.checkedAccounts.length ? 'account' : 'accounts') + '?')){
+				store.accounts.remove(this.checkedAccounts.toArray());
+				this.checkedAccounts.reset();
+				this.hideCheckedAccountsMenu();
+			}
+		},
+
 		destroy: function(){
 			this.element.removeClass('body-wrap-daily');
 		},
@@ -163,6 +223,22 @@
 					email: credentials.email
 				}
 			);
+		},
+
+		onAccountChecked: function(account, checked){
+			this.checkedAccounts[checked ? 'add' : 'remove'](account, {silent: true});
+			if(checked){
+				if(1 === this.checkedAccounts.length){
+					this.showCheckedAccountsMenu();
+				}
+				this.updateCheckedAccountsMenu();
+			}else{
+				if(!this.checkedAccounts.length){
+					this.hideCheckedAccountsMenu();
+				}else{
+					this.updateCheckedAccountsMenu();
+				}
+			}
 		},
 
 		setStoreStatus: function(options){
@@ -206,13 +282,11 @@
 
 		onStoreConstructionDone: function(){
 			this.clearStoreStatus();
-			
-			/* Bind events' handlers to dashboard instance. */
-			for(var name in this.searchResultsEvents){
-				this.searchResultsEvents[name] = _.bind(this.searchResultsEvents[name], this);
-			}
-			
+
+			store.accounts.on('checked', this.onAccountChecked, this);
 			this.setSearchResults(store.accounts);
+			store.accounts.on('add', this.onAccountAdd, this);
+			store.accounts.on('removemodels', this.onAccountsRemove, this);
 			if(!store.accounts.length){
 				this.accountForm.accountForm('focus');
 			}
@@ -224,11 +298,7 @@
 		},
 
 		setSearchResults: function(searchResults){
-			if(this.searchResults){
-				this.offSearchResults();
-			}
 			this.searchResults = searchResults;
-			this.onSearchResults();
 
 			this.searchResultsElement.html('');
 			if(this.searchResults.length){
@@ -246,16 +316,9 @@
 			}
 		},
 
-		onSearchResults: function(){
-			this.searchResults.on(this.searchResultsEvents);
-		},
-
-		offSearchResults: function(){
-			this.searchResults.off(this.searchResultsEvents);
-		},
-
 		showNoSearchResults: function(options){
 			var element = $(this.query ? '.no-search-results-template' : '.no-accounts-template');
+			options = options || {};
 			element = $(element.html());
 			this.searchResultsElement.append(element);
 			if(options.effects !== false){
@@ -287,16 +350,18 @@
 				return;
 			}
 			var accounts;
+			this.query = query;
 			if(query){
-				accounts = store.accounts.filter(function(account){
-					return account.contains(query);
-				});
+				accounts = store.accounts.filter(_.bind(this.searchFilter, this));
 				accounts = new Accounts(accounts);
 			}else{
 				accounts = store.accounts;
 			}
-			this.query = query;
 			this.setSearchResults(accounts);
+		},
+
+		searchFilter: function(account){
+			return account.contains(this.query);
 		},
 
 		updateSearchResultsColors: function(){

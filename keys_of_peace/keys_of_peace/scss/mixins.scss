@@ -12,6 +12,7 @@ $link-hover-color: #f00;
 $link-active-color: #f88;
 $white-color: #fff;
 $gray-color: #888;
+$input-border-color: #2badff;
 
 $form-width: 340px;
 
@@ -121,16 +122,18 @@ $main-title-background-size: 1.4em;
 	white-space: nowrap;
 }
 
-@mixin button($image) {
-	$size: 40px;
+@mixin button($image, $scale: 1, $hover-color: $back-hover-color) {
+	$size: 40px * $scale;
 	position: relative;
+	margin: 0;
 	cursor: pointer;
 	width: $size;
 	height: $size;
+	padding: 0;
 	border: none;
 	vertical-align: middle;
 	border-radius: 2px;
-	background-color: transparent;
+	background: transparent;
 
 	&:before {
 		content: "";
@@ -151,7 +154,7 @@ $main-title-background-size: 1.4em;
 	}
 
 	&:hover {
-		background-color: $back-hover-color;
+		background: $hover-color;
 	}
 }
 
