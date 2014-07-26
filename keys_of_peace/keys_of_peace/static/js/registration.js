@@ -93,4 +93,27 @@ jQuery(function($){
 			.remove()
 		;
 	};
+
+	_.each(['password', 'password_confirmation'], function(name){
+		var input = $('[name=' + name + ']')
+			.password()
+		;
+		var row = input.closest('form > p')
+			.addClass('password-row')
+		;
+		var show = $('<button class="password-show"></button>')
+			.appendTo(row)
+		;
+		show.on('click', function(e){
+			e.preventDefault();
+		});
+		show.on('mouseup', function(e){
+			e.preventDefault();
+			input.password('option', 'mode', 'password');
+		});
+		show.on('mousedown', function(e){
+			e.preventDefault();
+			input.password('option', 'mode', 'text');
+		});
+	});
 });

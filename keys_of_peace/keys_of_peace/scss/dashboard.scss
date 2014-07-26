@@ -164,10 +164,7 @@
 }
 
 .account-form-password-show {
-	@include button("/static/images/eye.svg");
-	position: absolute;
-	right: -44px;
-	top: 17px;
+	@include button-password-show();
 }
 
 .account-alphabet-row, .account-length-row {

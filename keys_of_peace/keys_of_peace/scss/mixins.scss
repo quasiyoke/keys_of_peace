@@ -163,3 +163,10 @@ $main-title-background-size: 1.4em;
 		@include rotate(180deg);
 	}
 }
+
+@mixin button-password-show() {
+	@include button("/static/images/eye.svg");
+	position: absolute;
+	right: -44px;
+	top: 17px;
+}
