@@ -12,7 +12,8 @@
 		previous.originalMessage = this.settings.messages[el.name].remote;
 		this.settings.messages[el.name].remote = previous.message;
 
-		if(previous.old === value){
+		if(previous.old === value && !previous.valid.fail){
+			console.log(previous.valid);
 			if(previous.valid){
 				form.form('setStatus', {
 					name: el.name,
@@ -27,6 +28,7 @@
 			text: 'Checking…',
 			class: 'gauge'
 		});
+		form.form('clearNotifications');
 		
 		previous.old = value;
 		this.startRequest(el);
@@ -60,6 +62,21 @@
 					that.invalid[el.name] = true;
 					that.showErrors(errors);
 				}
+				previous.valid = valid;
+				that.stopRequest(el, valid);
+			})
+			.fail(function(response){
+				that.settings.messages[el.name].remote = previous.originalMessage;
+				var submitted = that.formSubmitted;
+				that.prepareElement(el);
+				that.formSubmitted = submitted;
+				that.successList.push(el);
+				delete that.invalid[el.name];
+				that.showErrors();
+				form.form('notify', 'Can\'t validate. ' + (response.status ? 'Server error.' : 'Connection error.'));
+				var valid = {
+					fail: true
+				};
 				previous.valid = valid;
 				that.stopRequest(el, valid);
 			})
