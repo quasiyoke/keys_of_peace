@@ -13,7 +13,6 @@
 		this.settings.messages[el.name].remote = previous.message;
 
 		if(previous.old === value && !previous.valid.fail){
-			console.log(previous.valid);
 			if(previous.valid){
 				form.form('setStatus', {
 					name: el.name,

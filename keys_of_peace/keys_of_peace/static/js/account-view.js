@@ -21,8 +21,8 @@
 			this.setElement(
 				$(
 					AccountView.template({
-						login: login,
-						password: this.model.get('password')
+						login: login.shorten(),
+						password: this.model.get('password').shorten()
 					})
 				)
 			);
@@ -32,13 +32,15 @@
 			var site = accounter.get('mainSite');
 			var loginWrap = this.$('.account-login-wrap');
 			loginWrap.find('.account-login')
-				.clipboard()
+				.clipboard({
+					data: login
+				})
 			;
 			var title = this.$('.account-title');
 			if(site){
 				var siteLink = $('<a class="account-accounter-link account-title">')
 					.attr('href', site.get('host'))
-					.html(site.get('name'))
+					.html(site.get('name').shorten())
 				;
 				title.append(siteLink);
 			}else{
@@ -47,7 +49,10 @@
 			
 			this.password = this.$('.account-password')
 				.password()
-				.clipboard()
+				.clipboard({
+					data: this.model.get('password'),
+					tip: 'Click to copy password'
+				})
 			;
 
 			if(notes || (email && email !== login)){

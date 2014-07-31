@@ -21,7 +21,7 @@
 	});
 
 	clip.on('dataRequested', function(client, e){
-		clip.setText($(this).clipboard('getData'));
+		clip.setText($(this).clipboard('option', 'data'));
 	});
 	
 
@@ -38,8 +38,14 @@
 			if(element.is(':keysofpeace-password')){
 				element = element.parent();
 			}
+			if(undefined === this.options.data){
+				this.options.data = this.element.html();
+			}
+			if(undefined === this.options.tip){
+				this.options.tip = 'Click to copy <strong>' + this.options.data + '</strong>';
+			}
 			element.qtip({
-				content: 'Click to copy',
+				content: this.options.tip,
 				position: {
 					my: 'left center',
 					at: 'right center',
@@ -87,14 +93,6 @@
 				element = element.parent();
 			}
 			element.removeClass(this.options.activeClass);
-		},
-
-		getData: function(){
-			if(this.element.is(':keysofpeace-password')){
-				return this.element.password('value');
-			}else{
-				return this.element.html();
-			}
 		}
 	});
 })(jQuery);
