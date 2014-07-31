@@ -65,11 +65,15 @@ WSGI_APPLICATION = 'keys_of_peace.wsgi.application'
 
 AUTHENTICATION_BACKENDS = (
     'keys_of_peace.backends.Backend',
-    'permission.backends.RoleBackend',
+    'django.contrib.auth.backends.ModelBackend',
     'permission.backends.PermissionBackend',
 )
 
 SESSION_COOKIE_AGE = 15 * 60 # 15 minutes
+
+PERMISSION_DEFAULT_OSPL_ANY_PERMISSION = False
+PERMISSION_DEFAULT_OSPL_CHANGE_PERMISSION = True
+PERMISSION_DEFAULT_OSPL_DELETE_PERMISSION = True
 
 import mimetypes
 mimetypes.add_type('image/svg+xml', '.svg', True)

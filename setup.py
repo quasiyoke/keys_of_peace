@@ -173,7 +173,7 @@ setuptools.setup(
         ],
     },
     install_requires=[
-        'django_permission>=0.4',
+        'django_permission>=0.8',
         'django_tastypie>=0.9',
         'mimeparse>=0.1.3',
         'django_json_settings',

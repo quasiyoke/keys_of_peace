@@ -1,3 +1,5 @@
+import oneself_permission_logic
+import permission
 from django.db import models
 from django.contrib.auth import models as auth_models
 
@@ -27,3 +29,6 @@ ALPHABET_CHOICES = [(k, ' + '.join(v), ) for k, v in ALPHABETS]
 class UserProfile(models.Model):
     user = models.OneToOneField(auth_models.User, primary_key=True, related_name='profile')
     data = models.TextField(blank=True)
+
+
+permission.add_permission_logic(auth_models.User, oneself_permission_logic.OneselfPermissionLogic())
