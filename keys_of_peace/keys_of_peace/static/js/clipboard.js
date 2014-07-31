@@ -85,6 +85,8 @@
 				element = element.parent();
 			}
 			element.addClass(this.options.activeClass);
+			element.qtip('option', 'content.previous', element.qtip('option', 'content.text'));
+			element.qtip('option', 'content.text', 'Copied!');
 		},
 
 		_mouseup: function(){

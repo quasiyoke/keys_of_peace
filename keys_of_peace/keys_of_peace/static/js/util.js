@@ -14,8 +14,23 @@
 			return this.substr(0, maxLength - length - 1) + '…' + this.substr(this.length - length);
 		}
 	};
-		
+
 	_.merge($.fn.qtip.defaults, {
+		events: {
+			hide: function(e, api){
+				var previousContent = api.get('content.previous');
+				if(previousContent){
+					api.set('content.text', previousContent);
+				}
+			},
+			show: function(e, api){
+				/**
+					 "content.previous" option allows to show some tip only once.
+					 @see clipboard.js
+				 */
+				api.set('content.previous', '');
+			}
+		},
 		position: {
 			my: 'right center',
 			at: 'left center'
