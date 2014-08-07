@@ -2,124 +2,7 @@
 	var credentials;
 	var store;
 
-	var Dashboard = window.Dashboard = function(element, _credentials){
-		credentials = _credentials;
-		
-		this.element = element;
-		this.element
-			.addClass('body-wrap-daily')
-			.html(this.render())
-		;
-
-		$('.dashboard-title').qtip();
-
-		this.bar = $('.bar');
-
-		var that = this;
-		store = new Store().on({
-			constructionDecryption: function(){
-				that.setStoreStatus({
-					text: 'Decrypting…',
-					gauge: true
-				});
-			},
-			constructionDone: _.bind(this.onStoreConstructionDone, this),
-			savingEncryption: function(){
-				that.setStoreStatus({
-					text: 'Encrypting…',
-					gauge: true
-				});
-			},
-			savingFetching: function(){
-				that.setStoreStatus({
-					text: 'Fetching…',
-					gauge: true
-				})
-			},
-			savingDone: function(){
-				that.setStoreStatus({
-					text: 'Saved at ' + new Date().toLocaleTimeString()
-				})
-			},
-			savingFail: function(xhr){
-				var options = {
-					error: true
-				};
-				if(!xhr.status){
-					options.text = 'Saving failed. Check your internet connection.'
-				}else if(401 === xhr.status){
-					options.text = 'Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>';
-				}else if(500 === xhr.status){
-					options.text = 'Server error during saving.';
-				}else{
-					options.text = 'Unknown error during saving.';
-				}
-				that.setStoreStatus(options)
-			}
-		});
-
-		this.checkedAccounts = new Accounts();
-		this.element.on('click', '.checked-accounts-menu-close', _.bind(this.onCheckedAccountsMenuCloseClick, this));
-		this.element.on('click', '.checked-accounts-menu-select-all', _.bind(this.onCheckedAccountsMenuSelectAllClick, this));
-		this.element.on('click', '.checked-accounts-menu-remove', _.bind(this.onCheckedAccountsMenuRemoveClick, this));
-
-		var searchForm = element.find('.search-form');
-		searchForm.form({
-			focus: true,
-			submit: function(){
-				that.search(searchForm.find('[name=query]').val());
-			}
-		});
-		searchForm.on('formdelayedchange', function(){
-			that.search(searchForm.find('[name=query]').val());
-		});
-
-		this.searchResultsElement = element.find('.search-results');
-
-		this.accountForm = element.find('.account-form');
-		this.accountForm.accountForm({
-			validation: {
-				rules: {
-					link: { required: true},
-					email: { email: true},
-					length: { range: [3, 50]},
-					password: { required: true},
-					notes: { maxlength: 100}
-				},
-				messages: {
-					link: { required: 'Enter the link or name for account.'},
-					length: { range: 'Passw length should be ≥ 3 and ≤ 50.'},
-					password: { required: 'Enter password for account.'}
-				}
-			},
-
-			submit: function(){
-				if(this.loginInput.val() || this.emailInput.val()){
-					store.accounts.create({
-						link: this.linkInput.val(),
-						login: this.loginInput.val(),
-						email: this.emailInput.val(),
-						password: this.passwordInput.val(),
-						passwordAlphabet: this.alphabetInput.val(),
-						passwordLength: this.lengthInput.val(),
-						notes: this.notesInput.val()
-					});
-				}else{
-					this.notify('Enter account login or email.');
-					var errorClass = this.options.validation.errorClass;
-					this.options.validation.highlight(this.loginInput, errorClass);
-					this.options.validation.highlight(this.emailInput, errorClass);
-					this.loginInput.focus();
-				}
-			}
-		});
-
-		store.setCredentials(credentials);
-
-		setTimeout(_.bind(this.onLogout, this), CONFIGURATION.LOGOUT_TIME * 1000);
-	};
-	
-	_.extend(Dashboard.prototype, {
+	var DashboardView = window.DashboardView = Backbone.View.extend({
 		onAccountAdd: function(model, options){
 			if(this.query){
 				if(this.searchFilter(model)){
@@ -170,7 +53,7 @@
 
 		showCheckedAccountsMenu: function(){
 			this.checkedAccountsMenu = $($('.checked-accounts-menu-template').html())
-				.appendTo(this.element)
+				.appendTo(this.$el)
 			;
 		},
 
@@ -210,17 +93,34 @@
 				this.hideCheckedAccountsMenu();
 			}
 		},
+		
+		delegateEvents: function(){
+			DashboardView.__super__.delegateEvents.apply(this, arguments);
+			this.$el.on('click.dashboardview', '.checked-accounts-menu-close', _.bind(this.onCheckedAccountsMenuCloseClick, this));
+			this.$el.on('click.dashboardview', '.checked-accounts-menu-select-all', _.bind(this.onCheckedAccountsMenuSelectAllClick, this));
+			this.$el.on('click.dashboardview', '.checked-accounts-menu-remove', _.bind(this.onCheckedAccountsMenuRemoveClick, this));
 
-		destroy: function(){
-			this.element.removeClass('body-wrap-daily');
+			setTimeout(_.bind(this.onLogout, this), CONFIGURATION.LOGOUT_TIME * 1000);
+		},
+
+		undelegateEvents: function(){
+			DashboardView.__super__.undelegateEvents.apply(this, arguments);
+			this.$el.off('click.dashboardview');
+		},
+
+		remove: function(){
+			this.undelegateEvents();
+			this.$el
+				.removeClass('body-wrap-daily')
+				.html('')
+			;
 		},
 
 		render: function(){
 			return _.template(
 				$('.dashboard-template').html(),
 				{
-					csrftoken: $.cookie('csrftoken'),
-					email: credentials.email
+					csrftoken: $.cookie('csrftoken')
 				}
 			);
 		},
@@ -274,10 +174,10 @@
 		},
 
 		onLogout: function(){
-			this.destroy();
-			var home = new Home(this.element, {
-				email: credentials.email
-			});
+			router
+				.set('routeName', 'home')
+				.get('route').view.setCredentials(credentials)
+			;
 		},
 
 		onStoreConstructionDone: function(){
@@ -362,6 +262,122 @@
 
 		searchFilter: function(account){
 			return account.contains(this.query);
+		},
+
+		setCredentials: function(_credentials){
+			credentials = _credentials;
+			this.$('.bar-email')
+				.text(credentials.email)
+			;
+			store.setCredentials(credentials);
+		},
+
+		setElement: function(element){
+			DashboardView.__super__.setElement.call(this, element);
+			this.$el
+				.addClass('body-wrap-daily')
+				.html(this.render())
+			;
+
+			this.$('.dashboard-title').qtip();
+
+			this.bar = this.$('.bar');
+
+			var that = this;
+			store = new Store().on({
+				constructionDecryption: function(){
+					that.setStoreStatus({
+						text: 'Decrypting…',
+						gauge: true
+					});
+				},
+				constructionDone: _.bind(this.onStoreConstructionDone, this),
+				savingEncryption: function(){
+					that.setStoreStatus({
+						text: 'Encrypting…',
+						gauge: true
+					});
+				},
+				savingFetching: function(){
+					that.setStoreStatus({
+						text: 'Fetching…',
+						gauge: true
+					})
+				},
+				savingDone: function(){
+					that.setStoreStatus({
+						text: 'Saved at ' + new Date().toLocaleTimeString()
+					})
+				},
+				savingFail: function(xhr){
+					var options = {
+						error: true
+					};
+					if(!xhr.status){
+						options.text = 'Saving failed. Check your internet connection.'
+					}else if(401 === xhr.status){
+						options.text = 'Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>';
+					}else if(500 === xhr.status){
+						options.text = 'Server error during saving.';
+					}else{
+						options.text = 'Unknown error during saving.';
+					}
+					that.setStoreStatus(options)
+				}
+			});
+
+			this.checkedAccounts = new Accounts();
+
+			var searchForm = this.$('.search-form');
+			searchForm.form({
+				focus: true,
+				submit: function(){
+					that.search(searchForm.find('[name=query]').val());
+				}
+			});
+			searchForm.on('formdelayedchange', function(){
+				that.search(searchForm.find('[name=query]').val());
+			});
+
+			this.searchResultsElement = this.$('.search-results');
+
+			this.accountForm = this.$('.account-form');
+			this.accountForm.accountForm({
+				validation: {
+					rules: {
+						link: { required: true},
+						email: { email: true},
+						length: { range: [3, 50]},
+						password: { required: true},
+						notes: { maxlength: 100}
+					},
+					messages: {
+						link: { required: 'Enter the link or name for account.'},
+						length: { range: 'Passw length should be ≥ 3 and ≤ 50.'},
+						password: { required: 'Enter password for account.'}
+					}
+				},
+
+				submit: function(){
+					if(this.loginInput.val() || this.emailInput.val()){
+						store.accounts.create({
+							link: this.linkInput.val(),
+							login: this.loginInput.val(),
+							email: this.emailInput.val(),
+							password: this.passwordInput.val(),
+							passwordAlphabet: this.alphabetInput.val(),
+							passwordLength: this.lengthInput.val(),
+							notes: this.notesInput.val()
+						});
+					}else{
+						this.notify('Enter account login or email.');
+						var errorClass = this.options.validation.errorClass;
+						this.options.validation.highlight(this.loginInput, errorClass);
+						this.options.validation.highlight(this.emailInput, errorClass);
+						this.loginInput.focus();
+					}
+				}
+			});
 		},
 
 		updateSearchResultsColors: function(){

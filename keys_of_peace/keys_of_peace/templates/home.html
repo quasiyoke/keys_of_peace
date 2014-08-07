@@ -18,8 +18,9 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/store.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/account-form.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/account-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/home.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/home-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/router.js"></script>
 
 <script class="home-template" type="text/html">
   <div class="main-title">
@@ -67,7 +68,7 @@
 	  <input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
 	</form>
 	<div class="bar">
-	  <%= email %>
+	  <span class="bar-email"></span>
 	  <form class="logout-form" action="{% url 'logout' %}" method="post">
 		<input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
 		<input class="logout-submit" type="submit" value="Logout">
