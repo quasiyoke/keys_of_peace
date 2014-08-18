@@ -121,7 +121,7 @@
 							credentials.passwordHash = hash;
 							Api.make({
 								method: 'hash',
-								arguments: [hash, credentials.oneTimeSalt],
+								args: [hash, credentials.oneTimeSalt],
 								callback: check
 							})
 						};
@@ -153,7 +153,7 @@
 						var that = this;
 						Api.make({
 							method: 'hash',
-							arguments: [credentials.password, credentials.salt],
+							args: [credentials.password, credentials.salt],
 							callback: hashByOneTimeSalt
 						});
 					},

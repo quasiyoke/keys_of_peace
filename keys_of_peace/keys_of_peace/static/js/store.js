@@ -302,7 +302,7 @@
 				this.trigger('constructionDecryption');
 				Api.make({
 					method: 'decrypt',
-					arguments: [data, credentials.password],
+					args: [data, credentials.password],
 					callback: parse
 				});
 			}else{
@@ -378,7 +378,7 @@
 			this.credentials.data = this.toJSON();
 			Api.make({
 				method: 'encrypt',
-				arguments: [this.credentials.data, this.credentials.password],
+				args: [this.credentials.data, this.credentials.password],
 				callback: _.bindKey(this, 'saveHashWithOneTimeSalt')
 			});
 		},
@@ -387,7 +387,7 @@
 			this.trigger('savingHashing');
 			Api.make({
 				method: 'hash',
-				arguments: [this.credentials.passwordHash, this.credentials.oneTimeSalt],
+				args: [this.credentials.passwordHash, this.credentials.oneTimeSalt],
 				callback: _.partial(_.bindKey(this, 'saveHashWithEncryptedData'), encryptedData)
 			});
 		},
@@ -395,7 +395,7 @@
 		saveHashWithEncryptedData: function(encryptedData, passwordHash){
 			Api.make({
 				method: 'hash',
-				arguments: [encryptedData, passwordHash],
+				args: [encryptedData, passwordHash],
 				callback: _.partial(_.bindKey(this, 'saveFetch'), encryptedData)
 			});
 		},

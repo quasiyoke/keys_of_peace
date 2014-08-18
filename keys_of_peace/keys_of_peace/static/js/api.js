@@ -44,7 +44,7 @@
 
 		makeMethods: {
 			decrypt: {
-				getArguments: function(args){
+				serializeArgs: function(args){
 					return {
 						data: args[0],
 						key: Crypto.toString(args[1])
@@ -53,7 +53,7 @@
 			},
 			
 			encrypt: {
-				getArguments: function(args){
+				serializeArgs: function(args){
 					return {
 						data: args[0],
 						key: Crypto.toString(args[1])
@@ -62,7 +62,7 @@
 			},
 			
 			hash: {
-				getArguments: function(args){
+				serializeArgs: function(args){
 					var retval = {
 						salt: Crypto.toString(args[1]) // Serialize salt to string.
 					};
@@ -73,7 +73,7 @@
 					}
 					return retval;
 				},
-				getResult: function(result){
+				deserializeResult: function(result){
 					return Crypto.fromString(result)
 				}
 			}
@@ -90,24 +90,24 @@
 			callbacks[m.id] = m.callback;
 			delete m.callback;
 			var method = Api.makeMethods[m.method];
-			if(method && method.getArguments){
-				m.arguments = method.getArguments(m.arguments);
+			if(method && method.serializeArgs){
+				m.args = method.serializeArgs(m.args);
 			}
 			cryptoWorker.postMessage(m);
-		}
+		};
 		
 		cryptoWorker.onmessage = function(e){
 			var m = e.data;
 			var method = Api.makeMethods[m.method];
-			if(method && method.getResult){
-				m.result = method.getResult(m.result);
+			if(method && method.deserializeResult){
+				m.result = method.deserializeResult(m.result);
 			}
 			callbacks[m.id](m.result);
 			delete callbacks[m.id];
 		};
 	}else{
 		Api.make = function(m){
-			m.callback(Crypto[m.method].apply(Crypto, m.arguments));
-		}
+			m.callback(Crypto[m.method].apply(Crypto, m.args));
+		};
 	}
 })(jQuery);

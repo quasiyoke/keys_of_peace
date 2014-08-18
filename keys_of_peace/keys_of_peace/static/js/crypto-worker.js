@@ -9,14 +9,14 @@ importScripts.apply(this, scripts);
 
 var methods = {
 	decrypt: {
-		getArguments: function(args){
+		deserializeArgs: function(args){
 			args.key = Crypto.fromString(args.key);
 			return [args.data, args.key];
 		}
 	},
 	
 	encrypt: {
-		getArguments: function(args){
+		deserializeArgs: function(args){
 			args.data = JSON.stringify(args.data);
 			args.key = Crypto.fromString(args.key);
 			return [args.data, args.key];
@@ -24,14 +24,14 @@ var methods = {
 	},
 	
 	hash: {
-		getArguments: function(args){
+		deserializeArgs: function(args){
 			if('stringArray' in args){
 				args.string = Crypto.fromString(args.stringArray);
 			}
 			args.salt = Crypto.fromString(args.salt);
 			return [args.string, args.salt];
 		},
-		getResult: function(result){
+		serializeResult: function(result){
 			return Crypto.toString(result);
 		}
 	}
@@ -40,12 +40,12 @@ var methods = {
 this.onmessage = function(e){
 	var m = e.data;
 	var method = methods[m.method];
-	if(method && method.getArguments){
-		m.arguments = method.getArguments(m.arguments);
+	if(method && method.deserializeArgs){
+		m.args = method.deserializeArgs(m.args);
 	}
-	var result = Crypto[m.method].apply(Crypto, m.arguments);
-	if(method && method.getResult){
-		result = method.getResult(result);
+	var result = Crypto[m.method].apply(Crypto, m.args);
+	if(method && method.serializeResult){
+		result = method.serializeResult(result);
 	}
 	postMessage({
 		id: m.id,
