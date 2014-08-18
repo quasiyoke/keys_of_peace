@@ -1,6 +1,7 @@
 import authorization
 import json
 from django import db
+from django import http
 from keys_of_peace import crypto
 from keys_of_peace import models
 from tastypie import exceptions
@@ -22,61 +23,43 @@ class User(resources.ModelResource):
             'email': ['exact', ]
         }
         authorization = authorization.Authorization()
-
-    def obj_get_list(self, request=None, **kwargs):
-        filters = {}
-        if request is None:
-            request = kwargs['bundle'].request
-        if hasattr(request, 'GET'):
-            filters = request.GET.copy()
-        filters.update(kwargs)
-        try:
-            email = filters['email']
-        except KeyError:
-            raise exceptions.BadRequest('Email is not specified.')
-        try:
-            queryset = self.get_object_list(request).filter(email=email)
-        except ValueError:
-            raise exceptions.BadRequest("Invalid resource lookup data provided (mismatched type).")
-        user = 1 == len(queryset) and queryset[0]
-        authentication_try = set(filters.keys()).issuperset(['email', 'one_time_salt', 'password_hash', 'salt', ])
-        if authentication_try and user:
-            try:
-                one_time_salt = crypto.from_string(filters['one_time_salt'])
-            except ValueError:
-                raise exceptions.BadRequest('Incorrect one_time_salt value.')
-            try:
-                password_hash = crypto.from_string(filters['password_hash'])
-            except ValueError:
-                raise exceptions.BadRequest('Incorrect password_hash value.')
-            try:
-                salt = crypto.from_string(filters['salt'])
-            except ValueError:
-                raise exceptions.BadRequest('Incorrect salt value.')
-            authenticated_user = auth.authenticate(request=request, one_time_salt=one_time_salt, salt=salt, password_hash=password_hash, email=email)
-            if authenticated_user:
-                auth.login(request, authenticated_user)
-                user.authenticated = True
-        one_time_salt = crypto.get_salt()
-        request.session['one_time_salt'] = crypto.to_string(one_time_salt)
-        if authentication_try and user and not getattr(user, 'authenticated', False):
-            raise exceptions.ImmediateHttpResponse(
-                http.HttpUnauthorized(
-                    json.dumps({
-                        'one_time_salt': crypto.to_string(one_time_salt),
-                    })
-                )
-            )
-        return queryset
+        always_return_data = True
 
     def dehydrate(self, bundle):
         password = crypto.parse_password(bundle.obj.password)
         bundle.data['salt'] = crypto.to_string(password['salt'])
         bundle.data['one_time_salt'] = bundle.request.session['one_time_salt']
-        if getattr(bundle.obj, 'authenticated', False):
+        if bundle.request.user == bundle.obj and bundle.request.user.is_authenticated():
             profile = bundle.obj.profile
             bundle.data['data'] = profile.data
         return bundle
+
+    def full_hydrate(self, bundle):
+        bundle = super(User, self).full_hydrate(bundle)
+        bundle.obj.profile.data = bundle.data['data']
+        return bundle
+
+    def is_authenticating(self, user, credentials, request):
+        '''
+        Checks authentication credentials for validity and prepares them for authentication.
+        
+        @returns `True` if somebody tries to authenticate, `False` otherwise.
+        '''
+        if not set(credentials.keys()).issuperset(['one_time_salt', 'password_hash', 'salt', ]):
+            return False
+        try:
+            credentials['one_time_salt'] = crypto.from_string(credentials['one_time_salt'])
+        except ValueError:
+            raise exceptions.BadRequest('Incorrect one_time_salt value.')
+        try:
+            credentials['password_hash'] = crypto.from_string(credentials['password_hash'])
+        except ValueError:
+            raise exceptions.BadRequest('Incorrect password_hash value.')
+        try:
+            credentials['salt'] = crypto.from_string(credentials['salt'])
+        except ValueError:
+            raise exceptions.BadRequest('Incorrect salt value.')
+        return True
 
     def obj_create(self, bundle, request=None, **kwargs):
         try:
@@ -102,16 +85,95 @@ class User(resources.ModelResource):
         except db.IntegrityError:
             raise exceptions.BadRequest('There\'s already user with this email.')
         except ValueError:
-            raise exceptions.BadRequest("Invalid data provided (mismatched type).")
+            raise exceptions.BadRequest('Invalid data provided (mismatched type).')
         models.UserProfile.objects.create(
             user=bundle.obj,
         )
         return bundle
 
-    def full_hydrate(self, bundle):
-        bundle = super(User, self).full_hydrate(bundle)
-        bundle.obj.profile.data = bundle.data['data']
-        return bundle
+    def obj_get_list(self, bundle, **kwargs):
+        filters = {}
+        if hasattr(bundle.request, 'GET'):
+            filters = bundle.request.GET.dict()
+        filters.update(kwargs)
+        try:
+            email = filters['email']
+        except KeyError:
+            raise exceptions.BadRequest('Email is not specified.')
+        try:
+            queryset = self.get_object_list(bundle.request).filter(email=email)
+        except ValueError:
+            raise exceptions.BadRequest('Invalid resource lookup data provided (mismatched type).')
+        try:
+            user = queryset[0]
+        except IndexError:
+            raise exceptions.NotFound('No such user found.')
+        if self.is_authenticating(user, filters, bundle.request):
+            authenticated_user = auth.authenticate(
+                request=bundle.request,
+                user=user,
+                salt=filters['salt'],
+                one_time_salt=filters['one_time_salt'],
+                password_hash=filters['password_hash'],
+            )
+            one_time_salt = self.rotate_one_time_salt(bundle.request)
+            if authenticated_user:
+                auth.login(bundle.request, authenticated_user)
+            else:
+                raise exceptions.ImmediateHttpResponse(
+                    http.HttpUnauthorized(
+                        json.dumps({
+                            'one_time_salt': crypto.to_string(one_time_salt),
+                        })
+                    )
+                )
+        elif 'one_time_salt' not in bundle.request.session:
+            self.rotate_one_time_salt(bundle.request)
+        return queryset
+        
+    def obj_update(self, bundle, skip_errors=False, **kwargs):
+        if not bundle.obj or not self.get_bundle_detail_data(bundle):
+            try:
+                lookup_kwargs = self.lookup_kwargs_with_identifiers(bundle, kwargs)
+            except:
+                # if there is trouble hydrating the data, fall back to just
+                # using kwargs by itself (usually it only contains a "pk" key
+                # and this will work fine.
+                lookup_kwargs = kwargs
+            try:
+                bundle.obj = self.obj_get(bundle=bundle, **lookup_kwargs)
+            except auth_models.User.DoesNotExist:
+                raise exceptions.NotFound('A user matching the provided arguments could not be found.')
+        if self.is_authenticating(bundle.obj, bundle.data, bundle.request):
+            authenticated_user = auth.authenticate(
+                request=bundle.request,
+                user=bundle.obj,
+                salt=bundle.data['salt'],
+                one_time_salt=bundle.data['one_time_salt'],
+                data=bundle.data['data'],
+                password_hash=bundle.data['password_hash'],
+            )
+            one_time_salt = self.rotate_one_time_salt(bundle.request)
+            if authenticated_user:
+                auth.login(bundle.request, authenticated_user)
+            else:
+                raise exceptions.ImmediateHttpResponse(
+                    http.HttpUnauthorized(
+                        json.dumps({
+                            'one_time_salt': crypto.to_string(one_time_salt),
+                        })
+                    )
+                )            
+        else:
+            raise exceptions.Unauthorized('Authentication data wasn\'t provided.')
+        bundle = self.full_hydrate(bundle)
+        bundle.data = {}
+        return self.save(bundle, skip_errors=skip_errors)
+
+    def rotate_one_time_salt(self, request):
+        one_time_salt = crypto.get_salt()
+        request.session['one_time_salt'] = crypto.to_string(one_time_salt)
+        return one_time_salt
 
     def save(self, bundle, skip_errors=False):
         bundle = super(User, self).save(bundle, skip_errors)

@@ -3,7 +3,7 @@
 (function($){
 	var credentials = {};
 	
-	var HomeView = window.HomeView = Backbone.View.extend({
+	window.HomeView = Backbone.View.extend({
 		delegateEvents: function(){
 			HomeView.__super__.delegateEvents.apply(this, arguments);
 			$(window).on('resize.homeview', _.bind(this.position, this));
@@ -165,6 +165,7 @@
 					done: function(response){
 						var user = response.objects[0];
 						credentials.data = user.data;
+						credentials.oneTimeSalt = user.one_time_salt;
 						router
 							.set('routeName', 'dashboard')
 							.get('route').view.setCredentials(credentials);

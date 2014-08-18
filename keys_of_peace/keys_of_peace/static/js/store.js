@@ -1,4 +1,4 @@
-(function(global){
+(function($){
 	var Model = Backbone.RelationalModel.extend({
 		initialize: function(attrs, options){
 			if(!this.validationError && !this.has('id')){
@@ -18,7 +18,7 @@
 	Backbone.sync = $.noop;
 
 
-	var Account = global.Account = Model.extend({
+	window.Account = Model.extend({
 		relations: [
 			{
 				type: Backbone.HasOne,
@@ -34,19 +34,18 @@
 		],
 
 		contains: function(s){
-			return this.get('login').contains(s) || (this.has('email') && this.get('email').contains(s)) || (this.has('notes') && this.get('notes').contains(s)) ||
-				this.get('accounter').contains(s);
+			return this.get('login').contains(s) || (this.has('email') && this.get('email').contains(s)) || (this.has('notes') && this.get('notes').contains(s)) ||	this.get('accounter').contains(s);
 		},
 
 		toJSON: function(){
-			var json = Model.__super__.toJSON.apply(this, arguments);
+			var json = Account.__super__.toJSON.apply(this, arguments);
 			delete json.even;
 			return json;
 		}
 	});
 
 
-	var Accounter = global.Accounter = Model.extend({
+	window.Accounter = Model.extend({
 		relations: [
 			{
 				type: Backbone.HasOne,
@@ -75,7 +74,7 @@
 	});
 	
 
-	var Email = global.Email = Model.extend();
+	window.Email = Model.extend();
 	Email.getFirstAttributes = function(options){
 		return {
 			email: options.email,
@@ -84,7 +83,7 @@
 	};
 
 
-	var Login = global.Login = Model.extend();
+	window.Login = Model.extend();
 	Login.getFirstAttributes = function(options){
 		return {
 			login: /^[^@]+/.exec(options.email)[0],
@@ -93,7 +92,7 @@
 	};
 
 
-	var Site = global.Site = Model.extend({
+	window.Site = Model.extend({
 		relations: [
 			{
 				type: Backbone.HasOne,
@@ -194,7 +193,7 @@
 	});
 	
 	
-	var Accounts = global.Accounts = Collection.extend({
+	window.Accounts = Collection.extend({
 		model: Account,
 		
 		create: function(attrs, options){
@@ -231,7 +230,7 @@
 	});
 
 	
-	var Accounters = global.Accounters = Collection.extend({
+	window.Accounters = Collection.extend({
 		model: Accounter,
 
 		suggestPasswordAlphabet: function(){
@@ -254,17 +253,17 @@
 	});
 	
 	
-	var Emails = global.Emails = Collection.extend({
+	window.Emails = Collection.extend({
 		model: Email
 	});
 
 
-	var Logins = global.Logins = Collection.extend({
+	window.Logins = Collection.extend({
 		model: Login
 	});
 
 
-	var Sites = global.Sites = Collection.extend({
+	window.Sites = Collection.extend({
 		model: Site,
 
 		containsQuery: function(s){
@@ -287,7 +286,7 @@
 	});
 	
 	
-	var Store = global.Store = function(){};
+	window.Store = function(){};
 
 	_.extend(Store.prototype, Backbone.Events, {
 		setCredentials: function(credentials){
@@ -371,28 +370,66 @@
 		},
 
 		save: function(){
-			var that = this;
-			
-			var fetch = function(string){
-				that.trigger('savingFetching');
-				Api.fetch({
-					uri: that.credentials.uri,
-					type: 'PUT',
-					data: {	data: string}
-				})
-					.always(function(xhr){that.trigger('savingAlways', xhr)})
-					.done(function(data){that.trigger('savingDone', data)})
-					.fail(function(xhr){that.trigger('savingFail', xhr)})
-				;
-			};
-			
+			this.saveEncrypt();
+		},
+
+		saveEncrypt: function(){
 			this.trigger('savingEncryption');
 			this.credentials.data = this.toJSON();
 			Api.make({
 				method: 'encrypt',
 				arguments: [this.credentials.data, this.credentials.password],
-				callback: fetch
+				callback: _.bindKey(this, 'saveHashWithOneTimeSalt')
 			});
+		},
+
+		saveHashWithOneTimeSalt: function(encryptedData){
+			this.trigger('savingHashing');
+			Api.make({
+				method: 'hash',
+				arguments: [this.credentials.passwordHash, this.credentials.oneTimeSalt],
+				callback: _.partial(_.bindKey(this, 'saveHashWithEncryptedData'), encryptedData)
+			});
+		},
+
+		saveHashWithEncryptedData: function(encryptedData, passwordHash){
+			Api.make({
+				method: 'hash',
+				arguments: [encryptedData, passwordHash],
+				callback: _.partial(_.bindKey(this, 'saveFetch'), encryptedData)
+			});
+		},
+
+		saveFetch: function(encryptedData, passwordHash){
+			this.trigger('savingFetching');
+			var that = this;
+			Api.fetch({
+				uri: this.credentials.uri,
+				type: 'PUT',
+				data: {
+					data: encryptedData,
+					one_time_salt: Crypto.toString(this.credentials.oneTimeSalt),
+					password_hash: Crypto.toString(passwordHash),
+					salt: Crypto.toString(this.credentials.salt)
+				}
+			})
+				.always(function(xhr){
+					that.trigger('savingAlways', xhr);
+				})
+				.done(function(data){
+					that.trigger('savingDone', data);
+					that.credentials.oneTimeSalt = Crypto.fromString(data.one_time_salt);
+				})
+				.fail(function(xhr){
+					that.trigger('savingFail', xhr);
+					if(401 === xhr.status){
+						/* one_time_salt was rotated, we should update it. */
+						var response = JSON.parse(xhr.responseText);
+						that.credentials.oneTimeSalt = Crypto.fromString(response.one_time_salt);
+						return true;
+					}
+				})
+			;
 		}
 	});
-})(this);
+})(jQuery);
