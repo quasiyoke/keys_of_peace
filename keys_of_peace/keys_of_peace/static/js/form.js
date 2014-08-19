@@ -42,7 +42,7 @@
 			})
 			.done(function(response){
 				that.settings.messages[el.name].remote = previous.originalMessage;
-				var valid = param.isValid.call(that, response, value, el, param);
+				var valid = !!(param.isValid && param.isValid.call(that, response, value, el, param));
 				if(valid){
 					var submitted = that.formSubmitted;
 					that.prepareElement(el);
@@ -66,16 +66,32 @@
 			})
 			.fail(function(response){
 				that.settings.messages[el.name].remote = previous.originalMessage;
-				var submitted = that.formSubmitted;
-				that.prepareElement(el);
-				that.formSubmitted = submitted;
-				that.successList.push(el);
-				delete that.invalid[el.name];
-				that.showErrors();
-				form.form('notify', 'Can\'t validate. ' + (response.status ? 'Server error.' : 'Connection error.'));
-				var valid = {
-					fail: true
-				};
+				var valid = param.isValidFail && param.isValidFail.call(that, response, value, el, param);
+				if(undefined === valid || valid){
+					var submitted = that.formSubmitted;
+					that.prepareElement(el);
+					that.formSubmitted = submitted;
+					that.successList.push(el);
+					delete that.invalid[el.name];
+					that.showErrors();
+					if(valid){
+						form.form('setStatus', {
+							name: el.name,
+							class: 'ok'
+						});
+					}else{
+						form.form('notify', 'Can\'t validate. ' + (response.status ? 'Server error.' : 'Connection error.'));
+						valid = {
+							fail: true
+						};
+					}
+				}else{
+					var errors = {};
+					var message = that.defaultMessage(el, 'api');
+					errors[el.name] = previous.message = $.isFunction(message) ? message(value) : message;
+					that.invalid[el.name] = true;
+					that.showErrors(errors);
+				}
 				previous.valid = valid;
 				that.stopRequest(el, valid);
 			})

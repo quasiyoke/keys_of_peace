@@ -12,8 +12,10 @@ jQuery(function($){
 								email: value
 							};
 						},
-						isValid: function(response){
-							return !response.objects[0];
+						isValidFail: function(xhr){
+							if(404 === xhr.status){
+								return true;
+							}
 						},
 						resource: 'user'
 					},
@@ -44,7 +46,7 @@ jQuery(function($){
 		
 		submit: function(_form, callback){
 			var that = this;
-			var _submit = function(hash){
+			var submit = function(hash){
 				that.setStatus({
 					text: 'Registration…',
 					class: 'gauge'
@@ -70,8 +72,8 @@ jQuery(function($){
 			var salt = Crypto.getSalt();
 			Api.make({
 				method: 'hash',
-				arguments: [password, salt],
-				callback: _submit
+				args: [password, salt],
+				callback: submit
 			});
 		},
 
