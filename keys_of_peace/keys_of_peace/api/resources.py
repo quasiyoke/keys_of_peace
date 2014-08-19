@@ -28,10 +28,12 @@ class User(resources.ModelResource):
     def dehydrate(self, bundle):
         password = crypto.parse_password(bundle.obj.password)
         bundle.data['salt'] = crypto.to_string(password['salt'])
-        bundle.data['one_time_salt'] = bundle.request.session['one_time_salt']
+        try:
+            bundle.data['one_time_salt'] = bundle.request.session['one_time_salt']
+        except KeyError:
+            bundle.data['one_time_salt'] = crypto.to_string(self.rotate_one_time_salt(bundle.request))
         if bundle.request.user == bundle.obj and bundle.request.user.is_authenticated():
-            profile = bundle.obj.profile
-            bundle.data['data'] = profile.data
+            bundle.data['data'] = bundle.obj.profile.data
         return bundle
 
     def full_hydrate(self, bundle):
@@ -48,17 +50,17 @@ class User(resources.ModelResource):
         if not set(credentials.keys()).issuperset(['one_time_salt', 'password_hash', 'salt', ]):
             return False
         try:
+            credentials['salt'] = crypto.from_string(credentials['salt'])
+        except (ValueError, TypeError, ):
+            raise exceptions.BadRequest('Incorrect salt value.')
+        try:
             credentials['one_time_salt'] = crypto.from_string(credentials['one_time_salt'])
-        except ValueError:
+        except (ValueError, TypeError, ):
             raise exceptions.BadRequest('Incorrect one_time_salt value.')
         try:
             credentials['password_hash'] = crypto.from_string(credentials['password_hash'])
-        except ValueError:
+        except (ValueError, TypeError, ):
             raise exceptions.BadRequest('Incorrect password_hash value.')
-        try:
-            credentials['salt'] = crypto.from_string(credentials['salt'])
-        except ValueError:
-            raise exceptions.BadRequest('Incorrect salt value.')
         return True
 
     def obj_create(self, bundle, request=None, **kwargs):
@@ -70,11 +72,11 @@ class User(resources.ModelResource):
             raise exceptions.BadRequest('Specify email, salt and password_hash.')
         try:
             salt = crypto.from_string(salt)
-        except ValueError:
+        except (ValueError, TypeError, ):
             raise exceptions.BadRequest('Incorrect salt value.')
         try:
             password_hash = crypto.from_string(password_hash)
-        except ValueError:
+        except (ValueError, TypeError, ):
             raise exceptions.BadRequest('Incorrect password_hash value.')
         try:
             bundle.obj = self._meta.object_class.objects.create(
@@ -84,11 +86,12 @@ class User(resources.ModelResource):
             )
         except db.IntegrityError:
             raise exceptions.BadRequest('There\'s already user with this email.')
-        except ValueError:
+        except (ValueError, TypeError, ):
             raise exceptions.BadRequest('Invalid data provided (mismatched type).')
         models.UserProfile.objects.create(
             user=bundle.obj,
         )
+        bundle.data = {} # To prevent creation data e.g. `password_hash` population.
         return bundle
 
     def obj_get_list(self, bundle, **kwargs):
@@ -102,12 +105,12 @@ class User(resources.ModelResource):
             raise exceptions.BadRequest('Email is not specified.')
         try:
             queryset = self.get_object_list(bundle.request).filter(email=email)
-        except ValueError:
+        except (ValueError, TypeError, ):
             raise exceptions.BadRequest('Invalid resource lookup data provided (mismatched type).')
         try:
             user = queryset[0]
         except IndexError:
-            raise exceptions.NotFound('No such user found.')
+            raise exceptions.ImmediateHttpResponse(http.HttpNotFound('A user matching the provided arguments could not be found.')) # Unfortunatelly `exceptions.NotFound` is problematic for testing.
         if self.is_authenticating(user, filters, bundle.request):
             authenticated_user = auth.authenticate(
                 request=bundle.request,
@@ -124,7 +127,8 @@ class User(resources.ModelResource):
                     http.HttpUnauthorized(
                         json.dumps({
                             'one_time_salt': crypto.to_string(one_time_salt),
-                        })
+                        }),
+                        'application/json',
                     )
                 )
         elif 'one_time_salt' not in bundle.request.session:
@@ -143,7 +147,7 @@ class User(resources.ModelResource):
             try:
                 bundle.obj = self.obj_get(bundle=bundle, **lookup_kwargs)
             except auth_models.User.DoesNotExist:
-                raise exceptions.NotFound('A user matching the provided arguments could not be found.')
+                raise exceptions.ImmediateHttpResponse(http.HttpNotFound('A user matching the provided arguments could not be found.'))
         if self.is_authenticating(bundle.obj, bundle.data, bundle.request):
             authenticated_user = auth.authenticate(
                 request=bundle.request,
@@ -161,13 +165,14 @@ class User(resources.ModelResource):
                     http.HttpUnauthorized(
                         json.dumps({
                             'one_time_salt': crypto.to_string(one_time_salt),
-                        })
+                        }),
+                        'application/json',
                     )
                 )            
         else:
-            raise exceptions.Unauthorized('Authentication data wasn\'t provided.')
+            raise exceptions.ImmediateHttpResponse(http.HttpUnauthorized('Authentication data wasn\'t provided.'))
         bundle = self.full_hydrate(bundle)
-        bundle.data = {}
+        bundle.data = {} # To prevent update data e.g. `password_hash` population.
         return self.save(bundle, skip_errors=skip_errors)
 
     def rotate_one_time_salt(self, request):
