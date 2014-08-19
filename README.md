@@ -63,6 +63,12 @@ If Setuptools and Compass are installed, this will download, compile CSS and ins
 This installs Keys of Peace in &ldquo;editable mode&rdquo; &mdash; at current directory.
 
 Installation may take a few minutes if you have no Django 1.6 installed.
+
+## Building CSS
+
+Execute this to compile SASS files:
+
+    $ python setup.py build_css
     
 ## Running The Site
 
@@ -73,11 +79,12 @@ To run Keys of Peace after described installation, execute:
 
 After that you may go to http://127.0.0.1:8000 and observe the site running on your machine.
 
-## Building CSS
+## Testing
 
-Execute this to compile SASS files:
+To launch Keys of Peace tests, execute:
 
-    $ python setup.py build_css
+    $ cd src/keys_of_peace
+	$ python manage.py test keys_of_peace.tests
 
 
   [1]: http://keysofpeace.com
