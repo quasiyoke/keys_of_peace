@@ -121,14 +121,7 @@ class User(resources.ModelResource):
             )
             one_time_salt = self.rotate_one_time_salt(bundle.request)
             if not bundle.request.user.is_authenticated():
-                raise exceptions.ImmediateHttpResponse(
-                    http.HttpUnauthorized(
-                        json.dumps({
-                            'one_time_salt': crypto.to_string(one_time_salt),
-                        }),
-                        'application/json',
-                    )
-                )
+                self.unauthorized_result(bundle=bundle)
         elif 'one_time_salt' not in bundle.request.session:
             self.rotate_one_time_salt(bundle.request)
         return queryset
@@ -157,14 +150,7 @@ class User(resources.ModelResource):
             )
             one_time_salt = self.rotate_one_time_salt(bundle.request)
             if not bundle.request.user.is_authenticated():
-                raise exceptions.ImmediateHttpResponse(
-                    http.HttpUnauthorized(
-                        json.dumps({
-                            'one_time_salt': crypto.to_string(one_time_salt),
-                        }),
-                        'application/json',
-                    )
-                )
+                self.unauthorized_result(bundle=bundle)
         else:
             raise exceptions.ImmediateHttpResponse(http.HttpUnauthorized('Authentication data wasn\'t provided.'))
         bundle = self.full_hydrate(bundle)
@@ -180,3 +166,12 @@ class User(resources.ModelResource):
         bundle = super(User, self).save(bundle, skip_errors)
         bundle.obj.profile.save()
         return bundle
+
+    def unauthorized_result(self, exception=None, bundle=None):
+        kwargs = {}
+        if bundle:
+            kwargs['content'] = json.dumps({
+                'one_time_salt': bundle.request.session['one_time_salt'],
+            })
+            kwargs['content_type'] = 'application/json'
+        raise exceptions.ImmediateHttpResponse(http.HttpUnauthorized(**kwargs))
