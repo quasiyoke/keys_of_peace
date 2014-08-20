@@ -9,8 +9,8 @@
 		if(!this.settings.messages[el.name]){
 			this.settings.messages[el.name] = {};
 		}
-		previous.originalMessage = this.settings.messages[el.name].remote;
-		this.settings.messages[el.name].remote = previous.message;
+		previous.originalMessage = this.settings.messages[el.name].api;
+		this.settings.messages[el.name].api = previous.message;
 
 		if(previous.old === value && !previous.valid.fail){
 			if(previous.valid){
@@ -41,7 +41,7 @@
 				form.form('clearStatus', el.name);
 			})
 			.done(function(response){
-				that.settings.messages[el.name].remote = previous.originalMessage;
+				that.settings.messages[el.name].api = previous.originalMessage;
 				var valid = !!(param.isValid && param.isValid.call(that, response, value, el, param));
 				if(valid){
 					var submitted = that.formSubmitted;
@@ -65,7 +65,7 @@
 				that.stopRequest(el, valid);
 			})
 			.fail(function(response){
-				that.settings.messages[el.name].remote = previous.originalMessage;
+				that.settings.messages[el.name].api = previous.originalMessage;
 				var valid = param.isValidFail && param.isValidFail.call(that, response, value, el, param);
 				if(undefined === valid || valid){
 					var submitted = that.formSubmitted;
