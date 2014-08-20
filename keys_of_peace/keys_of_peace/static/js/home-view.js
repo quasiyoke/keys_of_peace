@@ -90,13 +90,15 @@
 									},
 									isValid: function(response){
 										var user = response.objects[0];
-										if(!user){
-											return false;
-										}
 										credentials.uri = user.resource_uri;
 										credentials.salt = Crypto.fromString(user.salt);
 										credentials.oneTimeSalt = Crypto.fromString(user.one_time_salt);
 										return true;
+									},
+									isValidFail: function(xhr){
+										if(404 === xhr.status){
+											return false;
+										}
 									}
 								},
 								required: true
