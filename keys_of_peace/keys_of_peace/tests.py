@@ -164,6 +164,7 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpOK(response)
         user = self.deserialize(response)['objects'][0]
+        self.assertUser(user, self.credentials2)
         
     def test_get_list_foreign(self):
         response = self.api_client.get(USER_API_URL, data={
@@ -179,7 +180,7 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpNotFound(response)
 
-    def test_update_missing(self):
+    def test_update_detail_missing(self):
         response = self.api_client.put(USER_API_URL_PATTERN % '100', data={
             'salt': self.base64_string,
             'one_time_salt': self.base64_string,
@@ -188,7 +189,7 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpNotFound(response)
 
-    def test_update_no_credentials_specified(self):
+    def test_update_detail_no_credentials_specified(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
         })
@@ -196,7 +197,7 @@ class UserWithoutData(UserAccessTestCase):
         response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={})
         self.assertHttpUnauthorized(response)
 
-    def test_update_bad_salt(self):
+    def test_update_detail_bad_salt(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
         })
@@ -209,7 +210,7 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_update_bad_one_time_salt(self):
+    def test_update_detail_bad_one_time_salt(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
         })
@@ -222,7 +223,7 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_update_bad_password_hash(self):
+    def test_update_detail_bad_password_hash(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
         })
@@ -235,7 +236,7 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_update_not_hashed_password_hash(self):
+    def test_update_detail_not_hashed_password_hash(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
         })
@@ -250,7 +251,7 @@ class UserWithoutData(UserAccessTestCase):
         one_time_salt = self.deserialize(response)['one_time_salt']
         self.assertSalt(one_time_salt, user['one_time_salt'])
 
-    def test_update(self):
+    def test_update_detail(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
         })
@@ -289,13 +290,7 @@ class UserWithData(UserAccessTestCase):
         user = self.deserialize(response)
         self.one_time_salt = user['one_time_salt']
 
-    def test_get_list_authorization_no_email(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list_no_email(self):
         response = self.api_client.get(USER_API_URL, data={
             'salt': self.credentials1['salt'],
             'one_time_salt': self.one_time_salt,
@@ -303,13 +298,7 @@ class UserWithData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_authorization_bad_email(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list_bad_email(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.email,
             'salt': self.credentials1['salt'],
@@ -318,13 +307,7 @@ class UserWithData(UserAccessTestCase):
         })
         self.assertHttpNotFound(response)
 
-    def test_get_list_authorization_bad_salt(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list_bad_salt(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
             'salt': self.string,
@@ -333,13 +316,7 @@ class UserWithData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_authorization_bad_one_time_salt(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list_bad_one_time_salt(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
             'salt': self.credentials1['salt'],
@@ -348,13 +325,7 @@ class UserWithData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_authorization_bad_password_hash(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list_bad_password_hash(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
             'salt': self.credentials1['salt'],
@@ -363,13 +334,7 @@ class UserWithData(UserAccessTestCase):
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_authorization_not_hashed_password_hash(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list_not_hashed_password_hash(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
             'salt': self.credentials1['salt'],
@@ -380,13 +345,7 @@ class UserWithData(UserAccessTestCase):
         user = self.deserialize(response)
         self.assertSalt(user['one_time_salt'], self.one_time_salt)
 
-    def test_get_list_authorization(self):
-        self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        self.one_time_salt = user['one_time_salt']
+    def test_get_list(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.credentials1['email'],
             'salt': self.credentials1['salt'],
@@ -403,7 +362,7 @@ class UserWithData(UserAccessTestCase):
         })
         self.assertHttpOK(response)
         user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials2, data=True)
+        self.assertUser(user, self.credentials2)
     
     def test_get_list_foreign(self):
         response = self.api_client.get(USER_API_URL, data={

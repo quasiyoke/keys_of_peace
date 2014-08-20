@@ -15,4 +15,5 @@ class Backend(backends.ModelBackend):
             if data:
                 valid_password_hash = crypto.hash(data, valid_password_hash)
             if crypto.constant_time_compare(valid_password_hash, password_hash):
+                request.user = user
                 return user

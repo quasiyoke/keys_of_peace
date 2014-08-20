@@ -112,7 +112,7 @@ class User(resources.ModelResource):
         except IndexError:
             raise exceptions.ImmediateHttpResponse(http.HttpNotFound('A user matching the provided arguments could not be found.')) # Unfortunatelly `exceptions.NotFound` is problematic for testing.
         if self.is_authenticating(user, filters, bundle.request):
-            authenticated_user = auth.authenticate(
+            auth.authenticate(
                 request=bundle.request,
                 user=user,
                 salt=filters['salt'],
@@ -120,9 +120,7 @@ class User(resources.ModelResource):
                 password_hash=filters['password_hash'],
             )
             one_time_salt = self.rotate_one_time_salt(bundle.request)
-            if authenticated_user:
-                auth.login(bundle.request, authenticated_user)
-            else:
+            if not bundle.request.user.is_authenticated():
                 raise exceptions.ImmediateHttpResponse(
                     http.HttpUnauthorized(
                         json.dumps({
@@ -134,7 +132,7 @@ class User(resources.ModelResource):
         elif 'one_time_salt' not in bundle.request.session:
             self.rotate_one_time_salt(bundle.request)
         return queryset
-        
+
     def obj_update(self, bundle, skip_errors=False, **kwargs):
         if not bundle.obj or not self.get_bundle_detail_data(bundle):
             try:
@@ -149,7 +147,7 @@ class User(resources.ModelResource):
             except auth_models.User.DoesNotExist:
                 raise exceptions.ImmediateHttpResponse(http.HttpNotFound('A user matching the provided arguments could not be found.'))
         if self.is_authenticating(bundle.obj, bundle.data, bundle.request):
-            authenticated_user = auth.authenticate(
+            auth.authenticate(
                 request=bundle.request,
                 user=bundle.obj,
                 salt=bundle.data['salt'],
@@ -158,9 +156,7 @@ class User(resources.ModelResource):
                 password_hash=bundle.data['password_hash'],
             )
             one_time_salt = self.rotate_one_time_salt(bundle.request)
-            if authenticated_user:
-                auth.login(bundle.request, authenticated_user)
-            else:
+            if not bundle.request.user.is_authenticated():
                 raise exceptions.ImmediateHttpResponse(
                     http.HttpUnauthorized(
                         json.dumps({
@@ -168,7 +164,7 @@ class User(resources.ModelResource):
                         }),
                         'application/json',
                     )
-                )            
+                )
         else:
             raise exceptions.ImmediateHttpResponse(http.HttpUnauthorized('Authentication data wasn\'t provided.'))
         bundle = self.full_hydrate(bundle)
