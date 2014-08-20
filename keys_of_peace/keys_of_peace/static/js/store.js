@@ -405,7 +405,7 @@
 			var that = this;
 			Api.fetch({
 				uri: this.credentials.uri,
-				type: 'PUT',
+				type: 'PATCH',
 				data: {
 					data: encryptedData,
 					one_time_salt: Crypto.toString(this.credentials.oneTimeSalt),

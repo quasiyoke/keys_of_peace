@@ -12,10 +12,8 @@ jQuery(function($){
 								email: value
 							};
 						},
-						isValidFail: function(xhr){
-							if(404 === xhr.status){
-								return true;
-							}
+						isValid: function(response){
+							return !response.objects.length;
 						},
 						resource: 'user'
 					},

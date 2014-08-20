@@ -90,15 +90,13 @@
 									},
 									isValid: function(response){
 										var user = response.objects[0];
+										if(!user){
+											return false;
+										}
 										credentials.uri = user.resource_uri;
 										credentials.salt = Crypto.fromString(user.salt);
 										credentials.oneTimeSalt = Crypto.fromString(user.one_time_salt);
 										return true;
-									},
-									isValidFail: function(xhr){
-										if(404 === xhr.status){
-											return false;
-										}
 									}
 								},
 								required: true
@@ -135,9 +133,8 @@
 							});
 							callback(
 								Api.fetch({
-									resource: 'user',
+									uri: credentials.uri,
 									data: {
-										email: credentials.email,
 										salt: Crypto.toString(credentials.salt),
 										one_time_salt: Crypto.toString(credentials.oneTimeSalt),
 										password_hash: Crypto.toString(hash)
@@ -164,8 +161,7 @@
 						this.clearStatus();
 					},
 
-					done: function(response){
-						var user = response.objects[0];
+					done: function(user){
 						credentials.data = user.data;
 						credentials.oneTimeSalt = user.one_time_salt;
 						router
