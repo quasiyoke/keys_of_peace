@@ -13,6 +13,8 @@ from django.contrib.auth import models as auth_models
 
 
 class User(resources.ModelResource):
+    PASSWORD_CHANGING_FIELDS = ['new_password_hash', 'new_salt', ]
+    
     class Meta:
         resource_name = 'user'
         queryset = auth_models.User.objects.all()
@@ -47,6 +49,20 @@ class User(resources.ModelResource):
             self.unauthorized_result(bundle=bundle)
         bundle = super(User, self).full_hydrate(bundle)
         bundle.obj.profile.data = bundle.data['data']
+        fields = set(bundle.data.keys())
+        if fields.intersection(self.PASSWORD_CHANGING_FIELDS):
+            if fields.issuperset(self.PASSWORD_CHANGING_FIELDS):
+                try:
+                    password_hash = crypto.from_string(bundle.data['new_password_hash'])
+                except (ValueError, TypeError, ):
+                    raise exceptions.BadRequest('Incorrect new_password_hash value.')
+                try:
+                    salt = crypto.from_string(bundle.data['new_salt'])
+                except (ValueError, TypeError, ):
+                    raise exceptions.BadRequest('Incorrect new_salt value.')
+                bundle.obj.password = crypto.make_password(password_hash, salt)
+            else:
+                raise exceptions.BadRequest('Both new_password_hash and new_salt fields should be presented.')
         bundle.data = {} # To prevent update data e.g. `password_hash` population.
         return bundle
 
