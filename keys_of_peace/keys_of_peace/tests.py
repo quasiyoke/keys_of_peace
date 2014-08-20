@@ -7,6 +7,8 @@ USER_API_URL_PATTERN = '/api/v1/user/%s/'
 
 
 class UserTestCase(tastypie_test.ResourceTestCase):
+    pk = '100'
+    
     def assertSalt(self, salt, previous_salt=None):
         salt = crypto.from_string(salt)
         self.assertEqual(len(salt), crypto.SALT_BITS_COUNT / 8)
@@ -28,22 +30,12 @@ class UserTestCase(tastypie_test.ResourceTestCase):
 
 
 class UserDisallowedRequestsMethods(UserTestCase):
-    pk = '100'
-    
     def test_delete_detail(self):
         response = self.api_client.delete(USER_API_URL_PATTERN % self.pk)
         self.assertHttpMethodNotAllowed(response)
     
     def test_delete_list(self):
         response = self.api_client.delete(USER_API_URL)
-        self.assertHttpMethodNotAllowed(response)
-    
-    def test_get_detail(self):
-        response = self.api_client.get(USER_API_URL_PATTERN % self.pk)
-        self.assertHttpMethodNotAllowed(response)
-    
-    def test_patch_detail(self):
-        response = self.api_client.patch(USER_API_URL_PATTERN % self.pk, data={})
         self.assertHttpMethodNotAllowed(response)
         
     def test_patch_list(self):
@@ -52,6 +44,10 @@ class UserDisallowedRequestsMethods(UserTestCase):
     
     def test_post_detail(self):
         response = self.api_client.post(USER_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_put_detail(self):
+        response = self.api_client.put(USER_API_URL_PATTERN % self.pk, data={})
         self.assertHttpMethodNotAllowed(response)
         
     def test_put_list(self):
@@ -116,19 +112,12 @@ class UserRegistration(UserTestCase):
 
 
 class UserAccessTestCase(UserTestCase):
-    credentials1 = {
+    credentials = {
         'pk': '1',
         'email': 'john@example.com',
         'salt': crypto.to_string('alpha'),
         'password_hash': crypto.to_string('beta'),
         'data': 'gamma',
-    }
-    credentials2 = {
-        'pk': '2',
-        'email': 'sam@example.com',
-        'salt': crypto.to_string('epsilon'),
-        'password_hash': crypto.to_string('zeta'),
-        'data': 'eta',
     }
     email = 'paul@example.com'
     string = 'theta'
@@ -145,43 +134,47 @@ class UserAccessTestCase(UserTestCase):
     
     def setUp(self):
         super(UserAccessTestCase, self).setUp()
-        self.api_client.post(USER_API_URL, data={
-            'email': self.credentials1['email'],
-            'salt': self.credentials1['salt'],
-            'password_hash': self.credentials1['password_hash'],
+        response = self.api_client.post(USER_API_URL, data={
+            'email': self.credentials['email'],
+            'salt': self.credentials['salt'],
+            'password_hash': self.credentials['password_hash'],
         })
-        self.api_client.post(USER_API_URL, data={
-            'email': self.credentials2['email'],
-            'salt': self.credentials2['salt'],
-            'password_hash': self.credentials2['password_hash'],
-        })
+        user = self.deserialize(response)
+        self.one_time_salt = user['one_time_salt']
 
 
 class UserWithoutData(UserAccessTestCase):
-    def test_get_list_himself(self):
+    def test_get_list(self):
         response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials2['email'],
+            'email': self.credentials['email'],
         })
         self.assertHttpOK(response)
-        user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials2)
+        deserialized = self.deserialize(response)
+        self.assertEqual(deserialized['meta']['total_count'], 1)
+        user = deserialized['objects'][0]
+        self.assertUser(user, self.credentials)
         
-    def test_get_list_foreign(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        self.assertHttpOK(response)
-        user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials1)
-        
-    def test_guest_get_list_missing(self):
+    def test_get_list_missing(self):
         response = self.api_client.get(USER_API_URL, data={
             'email': self.email,
         })
-        self.assertHttpNotFound(response)
+        self.assertHttpOK(response)
+        deserialized = self.deserialize(response)
+        self.assertEqual(deserialized['meta']['total_count'], 0)
 
-    def test_update_detail_missing(self):
-        response = self.api_client.put(USER_API_URL_PATTERN % '100', data={
+    def test_patch_detail(self):
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
+            'one_time_salt': self.one_time_salt,
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt, self.credentials['data']),
+            'data': self.credentials['data'],
+        })
+        self.assertHttpAccepted(response)
+        user = self.deserialize(response)
+        self.assertUser(user, self.credentials, one_time_salt=self.one_time_salt, data=True)
+
+    def test_patch_detail_missing(self):
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.pk, data={
             'salt': self.base64_string,
             'one_time_salt': self.base64_string,
             'password_hash': self.base64_string,
@@ -189,194 +182,131 @@ class UserWithoutData(UserAccessTestCase):
         })
         self.assertHttpNotFound(response)
 
-    def test_update_detail_no_credentials_specified(self):
+    def test_patch_detail_no_credentials_specified(self):
         response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
+            'email': self.credentials['email'],
         })
         user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={})
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={})
         self.assertHttpUnauthorized(response)
 
-    def test_update_detail_bad_salt(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={
+    def test_patch_detail_bad_salt(self):
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={
             'salt': self.string,
-            'one_time_salt': user['one_time_salt'],
-            'password_hash': self.credentials1['password_hash'],
-            'data': self.credentials1['data'],
+            'one_time_salt': self.one_time_salt,
+            'password_hash': self.credentials['password_hash'],
+            'data': self.credentials['data'],
         })
         self.assertHttpBadRequest(response)
 
-    def test_update_detail_bad_one_time_salt(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={
-            'salt': self.credentials1['salt'],
+    def test_patch_detail_bad_one_time_salt(self):
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
             'one_time_salt': self.string,
-            'password_hash': self.credentials1['password_hash'],
-            'data': self.credentials1['data'],
+            'password_hash': self.credentials['password_hash'],
+            'data': self.credentials['data'],
         })
         self.assertHttpBadRequest(response)
 
-    def test_update_detail_bad_password_hash(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={
-            'salt': self.credentials1['salt'],
-            'one_time_salt': user['one_time_salt'],
+    def test_patch_detail_bad_password_hash(self):
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
+            'one_time_salt': self.one_time_salt,
             'password_hash': self.string,
-            'data': self.credentials1['data'],
+            'data': self.credentials['data'],
         })
         self.assertHttpBadRequest(response)
 
-    def test_update_detail_not_hashed_password_hash(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={
-            'salt': self.credentials1['salt'],
-            'one_time_salt': user['one_time_salt'],
-            'password_hash': self.credentials1['password_hash'],
-            'data': self.credentials1['data'],
+    def test_patch_detail_not_hashed_password_hash(self):
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
+            'one_time_salt': self.one_time_salt,
+            'password_hash': self.credentials['password_hash'],
+            'data': self.credentials['data'],
         })
         self.assertHttpUnauthorized(response)
-        one_time_salt = self.deserialize(response)['one_time_salt']
-        self.assertSalt(one_time_salt, user['one_time_salt'])
-
-    def test_update_detail(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={
-            'salt': self.credentials1['salt'],
-            'one_time_salt': user['one_time_salt'],
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], user['one_time_salt'], self.credentials1['data']),
-            'data': self.credentials1['data'],
-        })
-        self.assertHttpOK(response)
-        last_one_time_salt = user['one_time_salt']
-        user = self.deserialize(response)
-        self.assertUser(user, self.credentials1, one_time_salt=last_one_time_salt, data=True)
+        deserialized = self.deserialize(response)
+        self.assertSalt(deserialized['one_time_salt'], user['one_time_salt'])
 
 class UserWithData(UserAccessTestCase):
     def setUp(self):
         super(UserWithData, self).setUp()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        user = self.deserialize(response)['objects'][0]
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials1['pk'], data={
-            'salt': self.credentials1['salt'],
-            'one_time_salt': user['one_time_salt'],
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], user['one_time_salt'], self.credentials1['data']),
-            'data': self.credentials1['data'],
-        })
-        user = self.deserialize(response)
-        response = self.api_client.put(USER_API_URL_PATTERN % self.credentials2['pk'], data={
-            'salt': self.credentials2['salt'],
-            'one_time_salt': user['one_time_salt'],
-            'password_hash': self.get_password_hash(self.credentials2['password_hash'], user['one_time_salt'], self.credentials2['data']),
-            'data': self.credentials2['data'],
+        response = self.api_client.patch(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
+            'one_time_salt': self.one_time_salt,
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt, self.credentials['data']),
+            'data': self.credentials['data'],
         })
         user = self.deserialize(response)
         self.one_time_salt = user['one_time_salt']
 
     def test_get_list_no_email(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'salt': self.credentials1['salt'],
-            'one_time_salt': self.one_time_salt,
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], self.one_time_salt),
-        })
+        response = self.api_client.get(USER_API_URL, data={})
         self.assertHttpBadRequest(response)
 
-    def test_get_list_bad_email(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.email,
-            'salt': self.credentials1['salt'],
+    def test_get_detail(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
             'one_time_salt': self.one_time_salt,
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], self.one_time_salt),
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt),
+        })
+        self.assertHttpOK(response)
+        user = self.deserialize(response)
+        self.assertUser(user, self.credentials, one_time_salt=self.one_time_salt, data=True)
+
+    def test_get_detail_missing(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.pk, data={
+            'salt': self.string,
+            'one_time_salt': self.one_time_salt,
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt),
         })
         self.assertHttpNotFound(response)
 
-    def test_get_list_bad_salt(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
+    def test_get_detail_bad_pk(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.string, data={
             'salt': self.string,
             'one_time_salt': self.one_time_salt,
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], self.one_time_salt),
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt),
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_bad_one_time_salt(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-            'salt': self.credentials1['salt'],
+    def test_get_detail_bad_salt(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.string,
+            'one_time_salt': self.one_time_salt,
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt),
+        })
+        self.assertHttpBadRequest(response)
+
+    def test_get_detail_bad_one_time_salt(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
             'one_time_salt': self.string,
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], self.one_time_salt),
+            'password_hash': self.get_password_hash(self.credentials['password_hash'], self.one_time_salt),
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_bad_password_hash(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-            'salt': self.credentials1['salt'],
+    def test_get_detail_bad_password_hash(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
             'one_time_salt': self.one_time_salt,
             'password_hash': self.string,
         })
         self.assertHttpBadRequest(response)
 
-    def test_get_list_not_hashed_password_hash(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-            'salt': self.credentials1['salt'],
+    def test_get_detail_not_hashed_password_hash(self):
+        response = self.api_client.get(USER_API_URL_PATTERN % self.credentials['pk'], data={
+            'salt': self.credentials['salt'],
             'one_time_salt': self.one_time_salt,
-            'password_hash': self.credentials1['password_hash'],
+            'password_hash': self.credentials['password_hash'],
         })
         self.assertHttpUnauthorized(response)
-        user = self.deserialize(response)
-        self.assertSalt(user['one_time_salt'], self.one_time_salt)
+        deserialized = self.deserialize(response)
+        self.assertSalt(deserialized['one_time_salt'], self.one_time_salt)
 
-    def test_get_list(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-            'salt': self.credentials1['salt'],
-            'one_time_salt': self.one_time_salt,
-            'password_hash': self.get_password_hash(self.credentials1['password_hash'], self.one_time_salt),
-        })
-        self.assertHttpOK(response)
-        user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials1, one_time_salt=self.one_time_salt, data=True)
-    
-    def test_get_list_himself(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials2['email'],
-        })
-        self.assertHttpOK(response)
-        user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials2)
-    
-    def test_get_list_foreign(self):
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials1['email'],
-        })
-        self.assertHttpOK(response)
-        user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials1)
-
-    def test_get_list_guest(self):
+    def test_get_detail_guest(self):
         self.api_client.client.cookies.clear()
-        response = self.api_client.get(USER_API_URL, data={
-            'email': self.credentials2['email'],
-        })
+        response = self.api_client.get(USER_API_URL_PATTERN % self.credentials['pk'])
         self.assertHttpOK(response)
-        user = self.deserialize(response)['objects'][0]
-        self.assertUser(user, self.credentials2)
+        user = self.deserialize(response)
+        self.assertUser(user, self.credentials)

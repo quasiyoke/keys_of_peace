@@ -17,13 +17,19 @@ class User(resources.ModelResource):
         resource_name = 'user'
         queryset = auth_models.User.objects.all()
         list_allowed_methods = ['get', 'post', ]
-        detail_allowed_methods = ['put', ]
+        detail_allowed_methods = ['get', 'patch', ]
         fields = ['email', ]
         filtering = {
             'email': ['exact', ]
         }
         authorization = authorization.Authorization()
         always_return_data = True
+
+    def build_filters(self, *args, **kwargs):
+        filters = super(User, self).build_filters(*args, **kwargs)
+        if not filters:
+            raise exceptions.BadRequest('Specify user\'s email.')
+        return filters
 
     def dehydrate(self, bundle):
         password = crypto.parse_password(bundle.obj.password)
@@ -37,8 +43,11 @@ class User(resources.ModelResource):
         return bundle
 
     def full_hydrate(self, bundle):
+        if not bundle.request.user.is_authenticated():
+            self.unauthorized_result(bundle=bundle)
         bundle = super(User, self).full_hydrate(bundle)
         bundle.obj.profile.data = bundle.data['data']
+        bundle.data = {} # To prevent update data e.g. `password_hash` population.
         return bundle
 
     def is_authenticating(self, user, credentials, request):
@@ -93,69 +102,33 @@ class User(resources.ModelResource):
         )
         bundle.data = {} # To prevent creation data e.g. `password_hash` population.
         return bundle
-
-    def obj_get_list(self, bundle, **kwargs):
-        filters = {}
-        if hasattr(bundle.request, 'GET'):
-            filters = bundle.request.GET.dict()
-        filters.update(kwargs)
+        
+    def obj_get(self, bundle, **kwargs):
+        credentials = (bundle.request.GET and bundle.request.GET.dict()) or (bundle.request.body and self.deserialize(bundle.request, bundle.request.body, format=bundle.request.META.get('CONTENT_TYPE', 'application/json'))) or {}
         try:
-            email = filters['email']
-        except KeyError:
-            raise exceptions.BadRequest('Email is not specified.')
-        try:
-            queryset = self.get_object_list(bundle.request).filter(email=email)
-        except (ValueError, TypeError, ):
+            object_list = self.get_object_list(bundle.request).filter(**kwargs)
+            stringified_kwargs = ', '.join(["%s=%s" % (k, v) for k, v in kwargs.items()])
+            if len(object_list) <= 0:
+                raise self._meta.object_class.DoesNotExist("Couldn't find an instance of '%s' which matched '%s'." % (self._meta.object_class.__name__, stringified_kwargs))
+            elif len(object_list) > 1:
+                raise MultipleObjectsReturned("More than '%s' matched '%s'." % (self._meta.object_class.__name__, stringified_kwargs))
+            bundle.obj = object_list[0]
+            if self.is_authenticating(bundle.obj, credentials, bundle.request):
+                auth.authenticate(
+                    request=bundle.request,
+                    user=bundle.obj,
+                    salt=credentials['salt'],
+                    one_time_salt=credentials['one_time_salt'],
+                    data=credentials.get('data'),
+                    password_hash=credentials['password_hash'],
+                )
+                one_time_salt = self.rotate_one_time_salt(bundle.request)
+                if not bundle.request.user.is_authenticated():
+                    self.unauthorized_result(bundle=bundle)
+            self.authorized_read_detail(object_list, bundle)
+            return bundle.obj
+        except ValueError:
             raise exceptions.BadRequest('Invalid resource lookup data provided (mismatched type).')
-        try:
-            user = queryset[0]
-        except IndexError:
-            raise exceptions.ImmediateHttpResponse(http.HttpNotFound('A user matching the provided arguments could not be found.')) # Unfortunatelly `exceptions.NotFound` is problematic for testing.
-        if self.is_authenticating(user, filters, bundle.request):
-            auth.authenticate(
-                request=bundle.request,
-                user=user,
-                salt=filters['salt'],
-                one_time_salt=filters['one_time_salt'],
-                password_hash=filters['password_hash'],
-            )
-            one_time_salt = self.rotate_one_time_salt(bundle.request)
-            if not bundle.request.user.is_authenticated():
-                self.unauthorized_result(bundle=bundle)
-        elif 'one_time_salt' not in bundle.request.session:
-            self.rotate_one_time_salt(bundle.request)
-        return queryset
-
-    def obj_update(self, bundle, skip_errors=False, **kwargs):
-        if not bundle.obj or not self.get_bundle_detail_data(bundle):
-            try:
-                lookup_kwargs = self.lookup_kwargs_with_identifiers(bundle, kwargs)
-            except:
-                # if there is trouble hydrating the data, fall back to just
-                # using kwargs by itself (usually it only contains a "pk" key
-                # and this will work fine.
-                lookup_kwargs = kwargs
-            try:
-                bundle.obj = self.obj_get(bundle=bundle, **lookup_kwargs)
-            except auth_models.User.DoesNotExist:
-                raise exceptions.ImmediateHttpResponse(http.HttpNotFound('A user matching the provided arguments could not be found.'))
-        if self.is_authenticating(bundle.obj, bundle.data, bundle.request):
-            auth.authenticate(
-                request=bundle.request,
-                user=bundle.obj,
-                salt=bundle.data['salt'],
-                one_time_salt=bundle.data['one_time_salt'],
-                data=bundle.data['data'],
-                password_hash=bundle.data['password_hash'],
-            )
-            one_time_salt = self.rotate_one_time_salt(bundle.request)
-            if not bundle.request.user.is_authenticated():
-                self.unauthorized_result(bundle=bundle)
-        else:
-            raise exceptions.ImmediateHttpResponse(http.HttpUnauthorized('Authentication data wasn\'t provided.'))
-        bundle = self.full_hydrate(bundle)
-        bundle.data = {} # To prevent update data e.g. `password_hash` population.
-        return self.save(bundle, skip_errors=skip_errors)
 
     def rotate_one_time_salt(self, request):
         one_time_salt = crypto.get_salt()
