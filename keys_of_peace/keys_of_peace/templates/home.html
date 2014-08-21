@@ -63,16 +63,10 @@
 
 <script class="dashboard-template" type="text/html">
   <div class="dashboard-header">
-	<form class="logout-form" action="{% url 'logout' %}" method="post">
-	  <input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
-	  <input class="dashboard-title logout-submit" type="submit" value="Keys of Peace" title="Press the logo to logout" tabindex="-1">
-	</form>
+	<a class="dashboard-title logout" href="{% url 'home' %}" title="Press the logo to logout" tabindex="-1">Keys of Peace</a>
 	<div class="bar">
 	  <span class="bar-email"></span>
-	  <form class="logout-form" action="{% url 'logout' %}" method="post">
-		<input name="csrfmiddlewaretoken" type="hidden" value="<%= csrftoken %>">
-		<input class="logout-submit" type="submit" value="Logout">
-	  </form>
+	  <a class="logout" href="{% url 'home' %}">Logout</a>
 	</div>
   </div>
   <form class="search-form">

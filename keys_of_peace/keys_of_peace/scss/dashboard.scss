@@ -5,10 +5,13 @@
 	overflow: hidden;
 }
 
-.dashboard-title.logout-submit[type=submit] {
-	@include main-title;
-	float: left;
-	font-size: 4em;
+.dashboard-title.logout {
+	&:link, &:visited {
+		@include main-title;
+		float: left;
+		font-size: 4em;
+		text-decoration: none;
+	}
 
 	&:hover, &:active {
 		@include main-title-background;
@@ -28,25 +31,6 @@
 	float: right;
 	margin: 2.3em 0 0;
 	position: relative;
-}
-
-.logout-form {
-	display: inline;
-}
-
-.logout-submit[type=submit] {
-	@include title-link;
-
-	display: inline;
-	margin: 0;
-	padding: 0;
-	font-size: 1em;
-	text-shadow: none;
-	border-radius: 0;
-
-	&:hover {
-		background: none;
-	}
 }
 
 .search-form {

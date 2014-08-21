@@ -99,6 +99,7 @@
 			this.$el.on('click.dashboardview', '.checked-accounts-menu-close', _.bind(this.onCheckedAccountsMenuCloseClick, this));
 			this.$el.on('click.dashboardview', '.checked-accounts-menu-select-all', _.bind(this.onCheckedAccountsMenuSelectAllClick, this));
 			this.$el.on('click.dashboardview', '.checked-accounts-menu-remove', _.bind(this.onCheckedAccountsMenuRemoveClick, this));
+			this.$el.on('click.dashboardview', '.logout', _.bind(this.onLogoutClick, this));
 		},
 
 		undelegateEvents: function(){
@@ -115,12 +116,7 @@
 		},
 
 		render: function(){
-			return _.template(
-				$('.dashboard-template').html(),
-				{
-					csrftoken: $.cookie('csrftoken')
-				}
-			);
+			return _.template($('.dashboard-template').html());
 		},
 
 		onAccountChecked: function(account, checked){
@@ -171,20 +167,30 @@
 			}
 		},
 
-		postponeLogout: function(){
-			if(this.logoutInterval){
-				clearInterval(this.logoutInterval);
-			}
-			this.logoutInterval = setTimeout(_.bind(this.onLogout, this), CONFIGURATION.LOGOUT_TIME * 1000 + 1000);
-		},
-
-		onLogout: function(){
+		logout: function(){
 			if('dashboard' === router.getRoute().name){
 				router.setRoute('home', {
 					credentials: _.pick(credentials, 'uri', 'email', 'salt', 'oneTimeSalt')
 				});
 			}
-			this.logoutInterval = credentials = undefined;
+			credentials = undefined;
+		},
+
+		postponeLogout: function(){
+			if(this.logoutInterval){
+				clearInterval(this.logoutInterval);
+			}
+			this.logoutInterval = setTimeout(_.bind(this.onLogoutTimeout, this), CONFIGURATION.LOGOUT_TIME * 1000);
+		},
+
+		onLogoutTimeout: function(){
+			this.logout();
+			delete this.logoutInterval;
+		},
+
+		onLogoutClick: function(e){
+			e.preventDefault();
+			this.logout();
 		},
 
 		onStoreConstructionDone: function(){

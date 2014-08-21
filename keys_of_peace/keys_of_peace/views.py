@@ -38,7 +38,7 @@ def configuration(request):
 
         'API_URL': '/api/v1/',
         'LOGIN_URL': urlresolvers.reverse('home'),
-        'LOGOUT_TIME': settings.SESSION_COOKIE_AGE,
+        'LOGOUT_TIME': 15 * 60, # 15 minutes
         }
     response = 'CONFIGURATION = %s;' % json.dumps(configuration)
     return http.HttpResponse(response, mimetype='text/javascript')
