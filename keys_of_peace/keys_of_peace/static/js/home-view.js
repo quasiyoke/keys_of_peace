@@ -58,13 +58,6 @@
 			);
 		},
 
-		setCredentials: function(_credentials){
-			credentials = _credentials;
-			if(credentials.email){
-				this.$el.find('[name=email]').val(credentials.email);
-			}
-		},
-
 		setElement: function(element){
 			HomeView.__super__.setElement.call(this, element);
 			this.$el
@@ -164,10 +157,8 @@
 					done: function(user){
 						credentials.data = user.data;
 						credentials.oneTimeSalt = user.one_time_salt;
-						router
-							.set('routeName', 'dashboard')
-							.get('route').view.setCredentials(credentials);
-						;
+						router.setRoute('dashboard', {credentials: credentials});
+						credentials = _.pick(credentials, 'uri', 'email', 'salt');
 					},
 
 					fail: function(xhr){
@@ -181,6 +172,14 @@
 				});
 
 			this.position();
+		},
+
+		setOptions: function(options){
+			options.credentials && (credentials = options.credentials);
+			if(!_.isEmpty(credentials)){
+				this.$el.find('[name=email]').val(credentials.email);
+				this.loginForm.form('focus');
+			}
 		}
 	});
 })(jQuery);

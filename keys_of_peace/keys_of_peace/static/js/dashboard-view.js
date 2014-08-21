@@ -99,8 +99,6 @@
 			this.$el.on('click.dashboardview', '.checked-accounts-menu-close', _.bind(this.onCheckedAccountsMenuCloseClick, this));
 			this.$el.on('click.dashboardview', '.checked-accounts-menu-select-all', _.bind(this.onCheckedAccountsMenuSelectAllClick, this));
 			this.$el.on('click.dashboardview', '.checked-accounts-menu-remove', _.bind(this.onCheckedAccountsMenuRemoveClick, this));
-
-			setTimeout(_.bind(this.onLogout, this), CONFIGURATION.LOGOUT_TIME * 1000);
 		},
 
 		undelegateEvents: function(){
@@ -173,18 +171,32 @@
 			}
 		},
 
+		postponeLogout: function(){
+			if(this.logoutInterval){
+				clearInterval(this.logoutInterval);
+			}
+			this.logoutInterval = setTimeout(_.bind(this.onLogout, this), CONFIGURATION.LOGOUT_TIME * 1000 + 1000);
+		},
+
 		onLogout: function(){
-			router
-				.set('routeName', 'home')
-				.get('route').view.setCredentials(credentials)
-			;
+			if('dashboard' === router.getRoute().name){
+				router.setRoute('home', {
+					credentials: _.pick(credentials, 'uri', 'email', 'salt', 'oneTimeSalt')
+				});
+			}
+			this.logoutInterval = credentials = undefined;
 		},
 
 		onStoreConstructionDone: function(){
 			this.clearStoreStatus();
 
 			store.accounts.on('checked', this.onAccountChecked, this);
-			this.setSearchResults(store.accounts);
+			if(this.deferredQuery){
+				this.search(this.deferredQuery);
+				delete this.deferredQuery;
+			}else{
+				this.setSearchResults(store.accounts);
+			}
 			store.accounts.on('add', this.onAccountAdd, this);
 			store.accounts.on('removemodels', this.onAccountsRemove, this);
 			if(!store.accounts.length){
@@ -199,7 +211,6 @@
 
 		setSearchResults: function(searchResults){
 			this.searchResults = searchResults;
-
 			this.searchResultsElement.html('');
 			if(this.searchResults.length){
 				var that = this;
@@ -264,16 +275,9 @@
 			return account.contains(this.query);
 		},
 
-		setCredentials: function(_credentials){
-			credentials = _credentials;
-			this.$('.bar-email')
-				.text(credentials.email)
-			;
-			store.setCredentials(credentials);
-		},
-
 		setElement: function(element){
 			DashboardView.__super__.setElement.call(this, element);
+			
 			this.$el
 				.addClass('body-wrap-daily')
 				.html(this.render())
@@ -336,7 +340,12 @@
 				}
 			});
 			searchForm.on('formdelayedchange', function(){
-				that.search(searchForm.find('[name=query]').val());
+				var query = searchForm.find('[name=query]').val();
+				if(store.ready){
+					that.search(query);
+				}else{
+					that.deferredQuery = query;
+				}
 			});
 
 			this.searchResultsElement = this.$('.search-results');
@@ -369,6 +378,7 @@
 							passwordLength: this.lengthInput.val(),
 							notes: this.notesInput.val()
 						});
+						that.postponeLogout();
 					}else{
 						this.notify('Enter account login or email.');
 						var errorClass = this.options.validation.errorClass;
@@ -378,6 +388,21 @@
 					}
 				}
 			});
+		},
+
+		setOptions: function(options){
+			if(options.credentials){
+				this.postponeLogout();
+				credentials = options.credentials;
+			}
+			if(_.isEmpty(credentials)){
+				router.setRoute('home');
+			}else{
+				this.$('.bar-email')
+					.text(credentials.email)
+				;
+				store.setCredentials(credentials);
+			}
 		},
 
 		updateSearchResultsColors: function(){

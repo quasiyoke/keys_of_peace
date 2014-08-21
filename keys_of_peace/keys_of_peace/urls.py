@@ -13,6 +13,7 @@ urlpatterns = urls.patterns(
     '',
     urls.url(r'^configuration/$', views.configuration, name='configuration'),
     urls.url(r'^$', views.Home.as_view(), name='home'),
+    urls.url(r'^dashboard/$', views.Home.as_view(), name='home'),
     urls.url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
     urls.url(r'^register/$', views.Registration.as_view(), name='registration'),
     urls.url(

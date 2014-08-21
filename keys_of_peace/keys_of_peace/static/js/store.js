@@ -348,6 +348,7 @@
 			options = _.extend({store: this}, data.sites, this.credentials);
 			this.sites = new Sites(data.sites.objects, options);
 
+			this.ready = true;
 			this.trigger('constructionDone');
 		},
 		

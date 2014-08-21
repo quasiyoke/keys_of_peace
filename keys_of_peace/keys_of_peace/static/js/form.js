@@ -213,7 +213,7 @@
 		},
 
 		focus: function(){
-			this.element.find('input:visible:first')
+			this.element.find('input:visible[value=""]:first')
 				.focus()
 			;
 		},
