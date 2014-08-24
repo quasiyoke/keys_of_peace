@@ -27,7 +27,7 @@
 	}
 }
 
-.app-title-link {
+a.app-title-link {
 	&:link, &:visited {
 		@include main-title;
 		float: left;
