@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/app.css" media="screen" />
+{% endblock %}
+
+
+{% block scripts %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/core.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/enc-base64.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/sha256.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/hmac.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/pbkdf2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/cipher-core.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/aes.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.caret.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.validate.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.effect.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.position.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.qtip.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/lodash.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/json2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/ZeroClipboard.js"></script>
+<script type="text/javascript" src="{% url 'configuration' %}"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/clipboard.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/crypto.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/form.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/password.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/util.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/api.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/backbone.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/backbone-relational.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/store.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/account-form.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/account-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/app-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/home-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/registration-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/registration-success-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/router.js"></script>
+
+<script class="account-template" type="text/html">
+  <tr class="account">
+	<td class="account-check-wrap">
+	  <input class="account-check" type="checkbox" title="">
+	</td>
+	<td class="account-title"></td>
+	<td class="account-login-wrap">
+	  <span class="account-login"><%= login %></span>
+	</td>
+	<td class="account-password-wrap">
+	  <span class="account-password"><%= password %></span>
+	</td>
+	<td class="account-password-show-wrap">
+	  <button class="account-password-show"></button>
+	</td>
+  </tr>
+</script>
+
+<script class="checked-accounts-menu-template" type="text/html">
+  <div class="checked-accounts-menu">
+	<h2 class="checked-accounts-menu-title"><span class="checked-accounts-menu-count"></span> selected</h2>
+	<button class="checked-accounts-menu-select-all">Select All</button>
+	<button class="checked-accounts-menu-remove">Remove</button>
+	<button class="checked-accounts-menu-close"></button>
+  </div>
+</script>
+
+<script class="dashboard-template" type="text/html">
+  <form class="search-form">
+	<input class="search-query" name="query" type="text">
+	<input class="search-submit" type="submit" value="Search" tabindex="-1">
+  </form>
+  <table class="search-results"></table>
+  <form class="account-form">
+	<h2>New account</h2>
+	{{ account_form }}
+	<input class="account-submit" type="submit" value="Save">
+  </form>
+</script>
+
+<script class="home-template" type="text/html">
+  <div class="home-row">
+	<form class="login-form" method="post">
+	  {{ form }}
+	  <input type="submit" value="Login">
+	  <p class="registration-invitation">
+		Have no account? <a class="registration-link" href="{% url 'registration' %}">Sign up.</a>
+	  </p>
+	</form>
+	<div class="home-cell">
+	  <h2 class="home-title">Never lose your passwords</h2>
+	  <ol class="home-list">
+		<li>
+		  If your PC is far away, take passwords from Android app.
+		</li>
+		<li>
+		  Internet connection is lost? You won't miss your Wi-Fi password &mdash; Keys of Peace has offline copy of your passwords database.
+		</li>
+		<li>
+		  If you sit at your friend's laptop, remember <a href="https://keysofpeace.com">keysofpeace.com</a> and grab your secrets everywhere! But <em>be aware</em> of public computers.
+		</li>
+	  </ol>
+	</div>
+  </div>
+  <div class="prospectus">
+	<h2 class="home-title prospectus-title">It is Safe</h2>
+	<ol class="home-list prospectus-points">
+	  <li class="prospectus-point-client">
+		Passwords are encrypted right at your PC or phone. We won't ever see any of your passwords. We even <em>can not</em> help you to remember your main password.
+	  </li>
+	  <li class="prospectus-point-transmission">
+		We don't transmit any non-ciphered data. Even most curious raven won't know your secrets.
+	  </li>
+	  <li class="prospectus-point-server">
+		Our server just stores encrypted passwords &mdash; your device does the work.
+	  </li>
+	</ol>
+  </div>
+</script>
+
+<script class="no-search-results-template" type="text/html">
+  <tr class="no-search-results">
+	<td class="no-search-results-notification">No accounts found</td>
+  </tr>
+</script>
+
+<script class="no-accounts-template" type="text/html">
+  <tr class="no-search-results">
+	<td>
+	  <p class="no-accounts-notification">You have no accounts</p>
+	  <p class="no-accounts-invitation">
+		Worth to create one — fill the form below<br>
+		All your data will be encoded right in your<br>
+		browser and saved on our server.
+	  </p>
+	</td>
+  </tr>
+</script>
+
+<script class="registration-template" type="text/html">
+  <form class="registration-form">
+	{{ registration_form }}
+	<input type="submit" value="Register">
+  </form>
+</script>
+
+<script class="registration-success-template" type="text/html">
+  <div class="registration-success">
+	<h2>Congratulations</h2>
+	<p class="registration-success-notification">You was registered with email <span class="registration-success-email"></span></p>
+	<a class="registration-success-dashboard-link" href="{% url 'dashboard' %}">Let's manage your passwords!</a>
+  </div>
+</script>
+{% endblock %}
+
+
+{% block content %}
+<div class="app">
+  <div class="app-header">
+	<h1 class="app-title"><a class="app-title-link" href="{% url 'home' %}">Keys of Peace</a></h1>
+	<div class="bar bar_hidden"></div>
+  </div>
+  <div class="breadcrumbs"></div>
+  <div class="app-content"></div>
+  <noscript>
+	<div class="error">
+	  <h1 class="error-title">JS</h1>
+	  <div class="error-description-wrap">
+		<div class="error-notification">No JavaScript found</div>
+		<div class="error-description">
+		  <p>JavaScript need to be supported in order to use the site. To be able to use all of the site's functions, download and install one of the following browsers:</p>
+		  <p class="browser-links">
+			<a class="browser-link browser-link-firefox" href="https://www.mozilla.org/firefox/desktop/">Firefox</a>
+			<a class="browser-link browser-link-chrome" href="https://www.google.com/chrome/browser/">Chrome</a>
+			<a class="browser-link browser-link-opera" href="http://www.opera.com/">Opera</a>
+		  <p>
+		</div>
+	  </div>
+	</div>
+  </noscript>
+</div>
+{% endblock %}

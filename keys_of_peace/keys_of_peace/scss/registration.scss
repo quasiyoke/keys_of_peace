@@ -1,27 +1,9 @@
 @import "mixins";
 
-.success {
-	text-align: center;
-
-	h2 {
-		margin: 2em 0 .5em;
-	}
-}
-
-.success-email {
-		font-size: 1.3em;
-}
-
-.login-link {
-	display: inline-block;
-	margin: 1.2em;
-	font-size: 2.2em;
-}
-
-.password-row {
+.registration-password-row {
 	position: relative;
 }
 
-.password-show {
+.registration-password-show {
 	@include button-password-show();
 }

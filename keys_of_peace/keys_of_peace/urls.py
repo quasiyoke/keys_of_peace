@@ -11,9 +11,10 @@ admin.autodiscover()
 urlpatterns = urls.patterns(
     '',
     urls.url(r'^configuration/$', views.configuration, name='configuration'),
-    urls.url(r'^$', views.Home.as_view(), name='home'),
-    urls.url(r'^dashboard/$', views.Home.as_view(), name='home'),
-    urls.url(r'^register/$', views.Registration.as_view(), name='registration'),
+    urls.url(r'^$', views.App.as_view(), name='home'),
+    urls.url(r'^dashboard/$', views.App.as_view(), name='dashboard'),
+    urls.url(r'^registration/$', views.App.as_view(), name='registration'),
+    urls.url(r'^registration/success/$', views.App.as_view(), name='registration_success'),
     urls.url(
         settings.ADMIN_URL_REGEX,
         urls.include(admin.site.urls)

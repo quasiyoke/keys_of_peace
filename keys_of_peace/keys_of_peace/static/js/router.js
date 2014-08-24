@@ -1,38 +1,44 @@
 (function($){
 	var Route = function(options){
-		this._fragment = options.fragment;
 		this.name = options.name;
-		this._parent = options.parent;
 		this.router = options.router;
 		this.viewConstructor = options.viewConstructor;
+		this.getBreadcrumbs = _.once(function(){
+			var parent = this.getParent();
+			var breadcrumbs = parent ? _.clone(parent.getBreadcrumbs()) : [];
+			breadcrumbs.push({
+				title: options.breadcrumb || options.title || 'Keys of Peace',
+				link: '/' + this.getFragment()
+			});
+			return breadcrumbs;
+		});
 		this.getFragment = _.once(function(){
 			var parent = this.getParent();
 			if(parent){
-				return parent.getFragment() + this._fragment + '/';
+				return parent.getFragment() + options.fragment + '/';
 			}else{
-				return this._fragment;
+				return options.fragment;
 			}
 		});
 		this.getParent = _.once(function(){
-			return this._parent && this.router.getRoute(this._parent);
+			return options.parent && this.router.getRoute(options.parent);
+		});
+		this.getTitle = _.once(function(){
+			var title = 'Keys of Peace';
+			if(options.title){
+				title = options.title + ' — ' + title;
+			}
+			return title;
 		});
 	};
 
 	_.extend(Route.prototype, {
 		go: function(options){
 			options || (options = {});
-			if(this.view){
-				this.view.setElement(this.router.element);
-			}else{
-				this.view = new this.viewConstructor({
-					el: this.router.element
-				});
+			if(!this.view){
+				this.view = new this.viewConstructor();
 			}
-			this.view.setOptions && this.view.setOptions(options);
-		},
-		
-		leave: function(){
-			this.view.remove();
+			router.appView.setRoute(this, options);
 		}
 	});
 	
@@ -45,13 +51,26 @@
 			},
 			dashboard: {
 				parent: 'home',
+				breadcrumb: 'Dashboard',
 				fragment: 'dashboard',
 				viewConstructor: DashboardView
+			},
+			registration: {
+				parent: 'home',
+				title: 'Registration',
+				fragment: 'registration',
+				viewConstructor: RegistrationView
+			},
+			registrationSuccess: {
+				parent: 'registration',
+				title: 'Successful Registration',
+				breadcrumb: 'Success',
+				fragment: 'success',
+				viewConstructor: RegistrationSuccessView
 			}
 		},
 
 		initialize: function(){
-			this.element = $('.body-wrap');
 			for(name in this._routes){
 				var options = this._routes[name];
 				options.name = name;
@@ -61,6 +80,9 @@
 			var that = this;
 			_.each(this._routes, function(route, name){
 				that.route(route.getFragment(), name);
+			});
+			this.appView = new AppView({
+				el: $('.app')
 			});
 			this.delegateEvents();
 		},
@@ -80,9 +102,6 @@
 		setRoute: function(route, options){
 			options || (options = {});
 			route = this.getRoute(route);
-			if(this._route){
-				this._route.leave();
-			}
 			route.go(options);
 			if(false !== options.navigate){
 				this.navigate(route.getFragment());

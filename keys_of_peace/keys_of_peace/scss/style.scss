@@ -195,34 +195,6 @@ x:-o-prefocus, .qtip .qtip-tip{
 
 .qtip .qtip-tip canvas{ top: 0; left: 0; }
 
-
-.body-wrap {
-	margin: 0 auto 1em;
-	position: relative;
-}
-
-.body-wrap-daily {
-	width: 800px;
-}
-
-.breadcrumbs {
-	margin: 2em 0;
-}
-
-.breadcrumb {
-	&:link {
-		&:after {
-			content: "›";
-			margin: 0 .4em;
-			display: inline-block;
-		}
-	}
-}
-
-.last-breadcrumb {
-	font-weight: bolder;
-}
-
 $error-color: #ff0054;
 $error-background: mix($error-color, $back-color, 5%);
 $error-border-color: mix($error-color, $back-color, 30%);

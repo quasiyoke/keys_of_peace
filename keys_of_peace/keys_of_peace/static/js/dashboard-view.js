@@ -107,14 +107,6 @@
 			this.$el.off('click.dashboardview');
 		},
 
-		remove: function(){
-			this.undelegateEvents();
-			this.$el
-				.removeClass('body-wrap-daily')
-				.html('')
-			;
-		},
-
 		render: function(){
 			return _.template($('.dashboard-template').html());
 		},
@@ -135,38 +127,6 @@
 			}
 		},
 
-		setStoreStatus: function(options){
-			if(!this.storeStatus){
-				this.storeStatus = $('<div class="status">');
-				this.bar.append(this.storeStatus);
-			}
-			if(options.error){
-				this.storeStatus.addClass('status-error');
-			}else{
-				this.storeStatus.removeClass('status-error');
-			}
-			if(options.gauge){
-				this.storeStatus.addClass('status-gauge');
-			}else{
-				this.storeStatus.removeClass('status-gauge');
-			}
-			this.storeStatus.html(options.text);
-			this.storeStatus
-				.position({
-					my: 'center top',
-					at: 'center bottom+5',
-					of: this.bar
-				})
-			;
-		},
-
-		clearStoreStatus: function(){
-			if(this.storeStatus){
-				this.storeStatus.remove();
-				delete this.storeStatus;
-			}
-		},
-
 		logout: function(){
 			if('dashboard' === router.getRoute().name){
 				router.setRoute('home', {
@@ -174,6 +134,8 @@
 				});
 			}
 			credentials = undefined;
+			this.isLoggedIn = false;
+			this.trigger('logout');
 		},
 
 		postponeLogout: function(){
@@ -194,7 +156,7 @@
 		},
 
 		onStoreConstructionDone: function(){
-			this.clearStoreStatus();
+			this.trigger('appStatus', null);
 
 			store.accounts.on('checked', this.onAccountChecked, this);
 			if(this.deferredQuery){
@@ -285,37 +247,34 @@
 			DashboardView.__super__.setElement.call(this, element);
 			
 			this.$el
-				.addClass('body-wrap-daily')
 				.html(this.render())
 			;
 
 			this.$('.dashboard-title').qtip();
 
-			this.bar = this.$('.bar');
-
 			var that = this;
 			store = new Store().on({
 				constructionDecryption: function(){
-					that.setStoreStatus({
+					that.trigger('appStatus', {
 						text: 'Decrypting…',
 						gauge: true
 					});
 				},
 				constructionDone: _.bind(this.onStoreConstructionDone, this),
 				savingEncryption: function(){
-					that.setStoreStatus({
+					that.trigger('appStatus', {
 						text: 'Encrypting…',
 						gauge: true
 					});
 				},
 				savingFetching: function(){
-					that.setStoreStatus({
+					that.trigger('appStatus', {
 						text: 'Fetching…',
 						gauge: true
 					})
 				},
 				savingDone: function(){
-					that.setStoreStatus({
+					that.trigger('appStatus', {
 						text: 'Saved at ' + new Date().toLocaleTimeString()
 					})
 				},
@@ -394,6 +353,11 @@
 					}
 				}
 			});
+			return this;
+		},
+
+		getEmail: function(){
+			return credentials.email;
 		},
 
 		setOptions: function(options){
@@ -404,10 +368,8 @@
 			if(_.isEmpty(credentials)){
 				router.setRoute('home');
 			}else{
-				this.$('.bar-email')
-					.text(credentials.email)
-				;
 				store.setCredentials(credentials);
+				this.isLoggedIn = true;
 			}
 		},
 

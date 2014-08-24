@@ -1,0 +1,95 @@
+@import "mixins";
+
+.app {
+	position: relative;
+	margin: 0 auto 1em;
+	width: auto;
+	max-width: $app-width;
+}
+
+.app-header {
+	position: relative;
+	margin-top: 2.4em;
+	
+	&.app-header_narrow {
+
+	}
+}
+
+.app-title {
+	display: inline-block;
+	font-size: 6em;
+	margin: 0 0 0 .17em;
+
+	&.app-title_narrow {
+		overflow: hidden;
+		font-size: 4em;
+	}
+}
+
+.app-title-link {
+	&:link, &:visited {
+		@include main-title;
+		float: left;
+		text-decoration: none;
+	}
+
+	&:hover, &:active {
+		@include main-title-background;
+		color: mix($title-color, $back-color, 100%);
+		opacity: .8;
+		text-decoration: none;
+	}
+
+	&:focus {
+		border: none;
+		text-decoration: underline;
+		text-shadow: none;
+	}
+}
+
+.bar {
+	position: absolute;
+	top: -1.5em;
+	right: 2.45em;
+
+	&.bar_hidden, &.bar_narrow.bar_hidden {
+		top: -4em;
+	}
+
+	&.bar_narrow {
+		top: 2.3em;
+		right: 0;
+	}
+}
+
+.breadcrumbs {
+	display: none;
+	margin: 2em 0;
+}
+
+.breadcrumb {
+	&:link {
+		&:after {
+			content: "›";
+			margin: 0 .4em;
+			display: inline-block;
+		}
+	}
+}
+
+.last-breadcrumb {
+	font-weight: bolder;
+}
+
+.app-content {
+
+	&.app-content_narrow {
+
+	}
+}
+
+@import "dashboard";
+@import "home";
+@import "registration";
+@import "registration-success";

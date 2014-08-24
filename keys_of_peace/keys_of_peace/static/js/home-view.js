@@ -4,64 +4,15 @@
 	var credentials = {};
 	
 	window.HomeView = Backbone.View.extend({
-		delegateEvents: function(){
-			HomeView.__super__.delegateEvents.apply(this, arguments);
-			$(window).on('resize.homeview', _.bind(this.position, this));
-		},
-
-		undelegateEvents: function(){
-			HomeView.__super__.undelegateEvents.apply(this, arguments);
-			$(window).off('resize.homeview');
-		},
-
-		position: function(){
-			/**
-				 At small screens prospectus and form should be positioned vertically and centered.
-			*/
-			var win = $(window);
-			var prospectus = $('.prospectus');
-			if(win.width() < prospectus.width() + parseInt(prospectus.css('marginRight')) + this.loginForm.width()){
-				this.loginForm.css({
-					position: 'absolute',
-					left: win.width() / 2 - this.loginForm.width() / 2
-				});
-				var prospectusMargin = 45;
-				prospectus.position({
-					my: 'center top',
-					at: 'center bottom+' + prospectusMargin,
-					of: this.loginForm
-				});
-			}else{
-				this.loginForm.css({
-					position: 'relative',
-					left: 'auto',
-					top: 'auto'
-				});
-				prospectus.css({
-					position: 'static'
-				});
-			}			
-		},
-
-		remove: function(){
-			this.undelegateEvents();
-			this.$el
-				.removeClass('body-wrap-home')
-				.html('')
-			;
-			$(window).off('resize.homeview');
+		events: {
+			'click .registration-link': 'onRegistrationLinkClick'
 		},
 		
-		render: function(){
-			return _.template(
-				$('.home-template').html()
-			);
-		},
+		size: 'wide',
 
 		setElement: function(element){
 			HomeView.__super__.setElement.call(this, element);
 			this.$el
-				.addClass('body-wrap-home')
 				.html(this.render())
 			;
 
@@ -171,7 +122,7 @@
 					}
 				});
 
-			this.position();
+			return this;
 		},
 
 		setOptions: function(options){
@@ -180,6 +131,17 @@
 				this.$el.find('[name=email]').val(credentials.email);
 				this.loginForm.form('focus');
 			}
+		},
+
+		onRegistrationLinkClick: function(e){
+			e.preventDefault();
+			router.setRoute('registration', {credentials: credentials});
+		},
+		
+		render: function(){
+			return _.template(
+				$('.home-template').html()
+			);
 		}
 	});
 })(jQuery);

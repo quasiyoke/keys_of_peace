@@ -1,0 +1,23 @@
+@import 'mixins';
+
+.registration-success {
+	text-align: center;
+
+	h2 {
+		margin: 2em 0 .5em;
+	}
+}
+
+.registration-success-notification {
+	font-size: 1.3em;
+}
+
+.registration-success-email {
+	font-weight: bolder;
+}
+
+.registration-success-dashboard-link {
+	display: inline-block;
+	margin: 1.2em;
+	font-size: 2.2em;
+}
