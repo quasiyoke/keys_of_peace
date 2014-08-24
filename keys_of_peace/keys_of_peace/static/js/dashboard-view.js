@@ -356,10 +356,6 @@
 			return this;
 		},
 
-		getEmail: function(){
-			return credentials.email;
-		},
-
 		setOptions: function(options){
 			if(options.credentials){
 				this.postponeLogout();
@@ -368,6 +364,9 @@
 			if(_.isEmpty(credentials)){
 				router.setRoute('home');
 			}else{
+				this.trigger('appStatus', {
+					email: credentials.email
+				});
 				store.setCredentials(credentials);
 				this.isLoggedIn = true;
 			}

@@ -163,7 +163,10 @@
 <div class="app">
   <div class="app-header">
 	<h1 class="app-title"><a class="app-title-link" href="{% url 'home' %}">Keys of Peace</a></h1>
-	<div class="bar bar_hidden"></div>
+	<div class="bar bar_hidden">
+	  <span class="bar-email"></span>
+	  <a class="bar-logout-link" href="{% url 'home' %}">Logout</a>
+	</div>
   </div>
   <div class="breadcrumbs"></div>
   <div class="app-content"></div>

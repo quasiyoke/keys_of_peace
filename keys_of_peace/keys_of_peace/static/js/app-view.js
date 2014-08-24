@@ -1,7 +1,7 @@
 (function($){
 	window.AppView = Backbone.View.extend({
 		events: {
-			'click .app-logout-link': 'onLogoutLinkClick',
+			'click .bar-logout-link': 'onLogoutLinkClick',
 			'click .app-title-link': 'onTitleLinkClick',
 			'click .breadcrumb': 'onBreadcrumbClick'
 		},
@@ -44,15 +44,10 @@
 			}
 			this.loggedInView = this.subView;
 			this.subView.on('logout', this.onLogout, this);
-			this.bar
-				.html(this.subView.getEmail() + ' <a class="app-logout-link" href="/' + router.getRoute('home').getFragment() + '">Logout</a>')
-			;
-			this.bar
-				.removeClass('bar_hidden', {
-					duration: 300,
-					easing: 'easeOutQuint'
-				})
-			;
+			this.bar.removeClass('bar_hidden', {
+				duration: 300,
+				easing: 'easeOutQuint'
+			});
 		},
 
 		onLogout: function(){
@@ -134,6 +129,10 @@
 					this.status.remove();
 					delete this.status;
 				}
+				return;
+			}
+			if(options.email){
+				this.bar.find('.bar-email').text(options.email);
 				return;
 			}
 			if(!this.status){
