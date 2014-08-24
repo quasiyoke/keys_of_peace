@@ -242,8 +242,8 @@
 			if('ok' === options.class){
 				var width = parseInt(status.width());
 				status.position({
-					my: 'right bottom',
-					at: 'right+' + width * .3 + ' bottom-' + width * .05,
+					my: 'left bottom',
+					at: 'right-' + input.css('paddingRight') + ' bottom-' + width * .05,
 					of: input,
 					collision: 'fit'
 				});
