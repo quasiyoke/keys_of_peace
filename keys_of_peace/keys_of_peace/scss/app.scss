@@ -100,11 +100,12 @@ a.app-title-link {
 }
 
 .breadcrumb {
-	&:link {
+	&:link, &:visited, &:hover, &:active, &:focus {
 		&:after {
-			content: "›";
-			margin: 0 .4em;
 			display: inline-block;
+			margin: 0 .4em;
+			color: $light-gray-color;
+			content: "›";
 		}
 	}
 }

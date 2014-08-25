@@ -26,19 +26,24 @@
 		},
 
 		setBreadcrumbs: function(breadcrumbs){
-			if('narrow' === this.size){
-				breadcrumbs = _.map(breadcrumbs, function(breadcrumb){
-					return $('<a>')
-						.attr('href', breadcrumb.link)
-						.addClass('breadcrumb')
-						.text(breadcrumb.title)[0]
-					;
-				});
-				this.breadcrumbs
-					.html('')
-					.append(breadcrumbs)
-				;
+			if('wide' === this.size){
+				return;
 			}
+			var lastBreadcrumb = _.last(breadcrumbs);
+			breadcrumbs = _.map(breadcrumbs.slice(0, breadcrumbs.length - 1), function(breadcrumb){
+				return $('<a class="breadcrumb">')
+					.attr('href', breadcrumb.link)
+					.text(breadcrumb.title)[0]
+				;
+			});
+			breadcrumbs.push(
+				$('<span class="last-breadcrumb">')
+					.text(lastBreadcrumb.title)[0]
+			);
+			this.breadcrumbs
+				.html('')
+				.append(breadcrumbs)
+			;
 		},
 
 		updateLoggedInView: function(){
