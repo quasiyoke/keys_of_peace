@@ -110,16 +110,8 @@ $form-width: 340px;
 	color: $title-color;
 }
 
-$main-title-background-size: 1.4em;
-@mixin main-title-background {
-	background: url("/static/images/logo.svg") 0 .05em no-repeat;
-	background-size: $main-title-background-size $main-title-background-size;
-}
-
 @mixin main-title {
 	@include title;
-	@include main-title-background;
-	text-indent: $main-title-background-size + .3em;
 	padding-bottom: .15em;
 	white-space: nowrap;
 }

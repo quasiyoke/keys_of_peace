@@ -9,13 +9,15 @@
 
 .app-header {
 	position: relative;
+	z-index: 1;
 	margin-top: 2.4em;
 }
 
 .app-title {
 	display: inline-block;
-	font-size: 6em;
+	z-index: 3;
 	margin: 0 0 0 .17em;
+	font-size: 6em;
 
 	&.app-title_narrow {
 		overflow: hidden;
@@ -31,7 +33,6 @@ a.app-title-link {
 	}
 
 	&:hover, &:active {
-		@include main-title-background;
 		color: mix($title-color, $back-color, 100%);
 		opacity: .8;
 		text-decoration: none;
@@ -44,10 +45,17 @@ a.app-title-link {
 	}
 }
 
+.app-title-link-image {
+	width: 1.4em;
+	vertical-align: middle;
+	margin-right: .3em;
+}
+
 .bar-wrap {
 	position: absolute;
 	top: -1.5em;
 	right: 2.45em;
+	z-index: 2;
 	width: 600px;
 
 	&.bar-wrap_hidden, &.bar-wrap_narrow.bar-wrap_hidden {
