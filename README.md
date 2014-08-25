@@ -50,19 +50,17 @@ We are using PBKDF2 (1000 times SHA-256) for hashing and AES-256 for ciphering.
 
 Keys of Peace was written on [Python 2.7][3] and [Django 1.6][4], uses [Tastypie][5] to provide API and [Compass][6] for stylesheets compilation.
 
-If you have [Setuptools][7] installed, all requirements except Compass will be installed automatically.
+All requirements except Compass and Django will be installed automatically.
 
 To install Compass follow instructions [here.][8]
 
 ## Installation
 
-If Setuptools and Compass are installed, this will download, compile CSS and install all requirements in your environment:
+If Django and Compass are installed, his will download, compile CSS and install the rest of requirements in your environment:
 
     $ pip install -e git+git://github.com/quasiyoke/keys_of_peace.git#egg=keys_of_peace
     
 This installs Keys of Peace in &ldquo;editable mode&rdquo; &mdash; at current directory.
-
-Installation may take a few minutes if you have no Django 1.6 installed.
 
 ## Building CSS
 
