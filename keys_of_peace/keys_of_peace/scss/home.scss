@@ -78,7 +78,7 @@ $status-ok-padding: $status-ok-size * (1 - .3);
 	font-size: 1.2em;
 
 	label {
-		color: mix($fore-color, $back-color, 18%);
+		color: $light-gray-color;
 	}
 
 	input[type=text], input[type=password], input[type=email] {

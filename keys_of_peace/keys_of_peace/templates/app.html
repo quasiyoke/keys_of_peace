@@ -163,9 +163,13 @@
 <div class="app">
   <div class="app-header">
 	<h1 class="app-title"><a class="app-title-link" href="{% url 'home' %}">Keys of Peace</a></h1>
-	<div class="bar bar_hidden">
-	  <span class="bar-email"></span>
-	  <a class="bar-logout-link" href="{% url 'home' %}">Logout</a>
+	<div class="bar-wrap bar-wrap_hidden">
+	  <div class="bar">
+		<span class="bar-item bar-notification bar-additional">You're still logged in as</span>
+		<span class="bar-item bar-email"></span>
+		<a class="bar-item bar-dashboard-link bar-additional" href="{% url 'dashboard' %}">Dashboard</a>
+		<a class="bar-item bar-logout-link" href="{% url 'home' %}">Logout</a>
+	  </div>
 	</div>
   </div>
   <div class="breadcrumbs"></div>

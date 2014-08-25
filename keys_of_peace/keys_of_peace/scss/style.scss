@@ -85,7 +85,7 @@ textarea {
 label {
 	display: block;
 	font-size: 1em;
-	color: mix($fore-color, $back-color, 50%);
+	color: $gray-color;
 }
 
 input[type=submit], button {
@@ -266,7 +266,7 @@ label.error-field {
 
 
 .clipboard-active {
-	color: mix($fore-color, $back-color, 50%);
+	color: $gray-color;
 }
 
 .error {

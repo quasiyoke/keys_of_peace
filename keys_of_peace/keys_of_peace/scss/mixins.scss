@@ -11,7 +11,8 @@ $link-visited-color: #a263c5;
 $link-hover-color: #f00;
 $link-active-color: #f88;
 $white-color: #fff;
-$gray-color: #888;
+$gray-color: mix($fore-color, $back-color, 50%);
+$light-gray-color: mix($fore-color, $back-color, 18%);
 $input-border-color: #2badff;
 
 $app-width: 800px;

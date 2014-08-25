@@ -1,6 +1,7 @@
 (function($){
 	window.AppView = Backbone.View.extend({
 		events: {
+			'click .bar-dashboard-link': 'onDashboardLinkClick',
 			'click .bar-logout-link': 'onLogoutLinkClick',
 			'click .app-title-link': 'onTitleLinkClick',
 			'click .breadcrumb': 'onBreadcrumbClick'
@@ -10,10 +11,12 @@
 		
 		initialize: function(){
 			this.title = $('title');
-			this.breadcrumbs = this.$('.breadcrumbs');
 			this.header = this.$('.app-header');
-			this.bar = this.header.find('.bar');
 			this.headerTitle = this.header.find('.app-title');
+			this.barWrap = this.header.find('.bar-wrap');
+			this.bar = this.barWrap.find('.bar');
+			this.barAdditionals = this.bar.find('.bar-additional');
+			this.breadcrumbs = this.$('.breadcrumbs');
 			this.content = this.$('.app-content');
 		},
 
@@ -44,19 +47,24 @@
 			}
 			this.loggedInView = this.subView;
 			this.subView.on('logout', this.onLogout, this);
-			this.bar.removeClass('bar_hidden', {
+			this.barWrap.removeClass('bar-wrap_hidden', {
 				duration: 300,
 				easing: 'easeOutQuint'
 			});
 		},
 
 		onLogout: function(){
-			this.bar.addClass('bar_hidden', {
+			this.barWrap.addClass('bar-wrap_hidden', {
 				duration: 300,
 				easing: 'easeInQuint'
 			});
 			this.loggedInView.off('logout', this.onLogout);
 			delete this.loggedInView;
+		},
+
+		onDashboardLinkClick: function(e){
+			e.preventDefault();
+			router.setRoute('dashboard');
 		},
 
 		onLogoutLinkClick: function(e){
@@ -111,15 +119,9 @@
 			this.$el.toggleClass('app_narrow');
 			this.header.toggleClass('app-header_narrow', 600);
 			this.headerTitle.toggleClass('app-title_narrow', 600);
-			this.content.toggleClass('app-content_narrow', 600);
-			this.bar.toggleClass('bar_narrow', {
-				duration: 300
-			});
-			if('narrow' === size){
-				this.breadcrumbs.slideDown(600);
-			}else{
-				this.breadcrumbs.slideUp(600);
-			}
+			this.barAdditionals.toggleClass('bar-additional_narrow', 300);
+			this.barWrap.toggleClass('bar-wrap_narrow', 300);
+			this.breadcrumbs.slideToggle(600);
 			this.size = size;
 		},
 
@@ -137,7 +139,7 @@
 			}
 			if(!this.status){
 				this.status = $('<div class="status">');
-				this.bar.append(this.status);
+				this.barWrap.append(this.status);
 			}
 			if(options.error){
 				this.status.addClass('status-error');

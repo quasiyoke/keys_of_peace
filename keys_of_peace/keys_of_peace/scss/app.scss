@@ -10,10 +10,6 @@
 .app-header {
 	position: relative;
 	margin-top: 2.4em;
-	
-	&.app-header_narrow {
-
-	}
 }
 
 .app-title {
@@ -48,19 +44,46 @@ a.app-title-link {
 	}
 }
 
-.bar {
+.bar-wrap {
 	position: absolute;
 	top: -1.5em;
 	right: 2.45em;
+	width: 600px;
 
-	&.bar_hidden, &.bar_narrow.bar_hidden {
-		top: -4em;
+	&.bar-wrap_hidden, &.bar-wrap_narrow.bar-wrap_hidden {
+		top: -6em;
 	}
 
-	&.bar_narrow {
+	&.bar-wrap_narrow {
 		top: 2.3em;
 		right: 0;
 	}
+}
+
+.bar {
+	position: absolute;
+	top: 0;
+	right: 0;
+	overflow: hidden;
+}
+
+.bar-item {
+	float: left;
+	margin-left: .6em;
+}
+
+.bar-additional {
+	overflow: hidden;
+	white-space: nowrap;
+
+	&.bar-additional_narrow {
+		width: 0;
+		margin: 0;
+	}
+}
+
+.bar-notification {
+	color: $light-gray-color;
 }
 
 .breadcrumbs {
@@ -80,13 +103,6 @@ a.app-title-link {
 
 .last-breadcrumb {
 	font-weight: bolder;
-}
-
-.app-content {
-
-	&.app-content_narrow {
-
-	}
 }
 
 @import "dashboard";
