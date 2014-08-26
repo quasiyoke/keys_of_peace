@@ -16,6 +16,7 @@ class App(edit_views.FormView):
     def get_context_data(self, **kwargs):
         context = super(App, self).get_context_data(**kwargs)
         context['account_form'] = forms.Account()
+        context['password_change_form'] = forms.PasswordChange()
         context['registration_form'] = forms.Registration()
         return context
 

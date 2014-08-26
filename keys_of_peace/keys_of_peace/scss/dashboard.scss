@@ -1,8 +1,23 @@
 @import "mixins";
 
+.dashboard-bar {
+	overflow: hidden;
+	margin: 0 0 0 -$input-focus-shadow-width;
+}
+
 .search-form {
-	margin: 0;
+	float: left;
+	margin: $input-focus-shadow-width;
 	width: 500px;
+}
+
+input.search-submit {
+	margin: 0;
+}
+
+.dashboard-bar-right {
+	float: right;
+	margin: 15px 0 0;
 }
 
 .no-accounts-notification {
@@ -26,9 +41,8 @@
 	margin: 3em 0;
 }
 
-
 .search-results {
-	margin-top: 2.5em;
+	margin-top: 1.9em;
 	width: 100%;
 }
 

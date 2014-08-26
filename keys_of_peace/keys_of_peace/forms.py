@@ -23,7 +23,13 @@ class Login(Form):
     password = forms.CharField(widget=forms.PasswordInput())
 
 
+class PasswordChange(Form):
+    current_password = forms.CharField(widget=forms.PasswordInput())
+    new_password = forms.CharField(widget=forms.PasswordInput())
+    new_password_confirmation = forms.CharField(label='Confirm new password', widget=forms.PasswordInput())
+
+
 class Registration(Form):
     email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput(), required=False)
-    password_confirmation = forms.CharField(label='Confirm password', required=False, widget=forms.PasswordInput())
+    password = forms.CharField(widget=forms.PasswordInput())
+    password_confirmation = forms.CharField(label='Confirm password', widget=forms.PasswordInput())

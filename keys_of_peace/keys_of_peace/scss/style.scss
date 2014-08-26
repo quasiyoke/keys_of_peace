@@ -47,6 +47,8 @@ form {
 	}
 	
 	p {
+		position: relative;
+		
 		& + p {
 			margin-top: 1em;
 		}
@@ -134,6 +136,10 @@ input, button {
 	}
 }
 
+.password-show {
+	@include button-password-show();
+}
+
 a {
 	@include link;
 }
@@ -203,6 +209,7 @@ $status-ok-size: 45px;
 .status {
 	position: absolute;
 	font-size: .7em;
+	white-space: nowrap;
 
 	&.status-ok {
 		width: $status-ok-size;
@@ -247,21 +254,27 @@ label.error-field {
 	font-weight: bolder;
 }
 
-.form-notifications {
-	background: $error-background;
-	border: {
-		top: 1px solid $error-color;
-		bottom: 1px solid $error-color;
-	}
-	color: $error-color;
-	font-size: 1.2em;
-	font-weight: bolder;
-	padding: 0 1em;
-}
 
 .form-notification {
-	margin: .7em 0;
+	background: $back-hover-color;
+	border: {
+		top: 1px solid $title-color;
+		bottom: 1px solid $title-color;
+	}
+	color: $title-color;
+	font-size: 1.2em;
+	font-weight: bolder;
+	padding: .7em 1em;
 	line-height: .9;
+
+	&.form-notification_error {
+		border: {
+			top-color: $error-color;
+			bottom-color: $error-color;
+		}
+		background: $error-background;
+		color: $error-color;
+	}
 }
 
 

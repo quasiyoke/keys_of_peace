@@ -1,3 +1,4 @@
+'use strict';
 (function($){
 	var Model = Backbone.RelationalModel.extend({
 		initialize: function(attrs, options){
@@ -325,6 +326,7 @@
 				};
 				this.initialize(data);
 			}
+			return this;
 		},
 		
 		initialize: function(data, callback){
@@ -348,8 +350,10 @@
 			options = _.extend({store: this}, data.sites, this.credentials);
 			this.sites = new Sites(data.sites.objects, options);
 
+			this.postponeLogout();
+
 			this.ready = true;
-			this.trigger('constructionDone');
+			this.trigger('ready');
 		},
 		
 		_onAccountsAdd: function(){
@@ -370,67 +374,159 @@
 			};
 		},
 
-		save: function(){
-			this.saveEncrypt();
+		logout: function(){
+			this.trigger('logout');
+			this.off();
 		},
 
-		saveEncrypt: function(){
-			this.trigger('savingEncryption');
-			this.credentials.data = this.toJSON();
-			Api.make({
-				method: 'encrypt',
-				args: [this.credentials.data, this.credentials.password],
-				callback: _.bindKey(this, 'saveHashWithOneTimeSalt')
-			});
+		onLogoutTimeout: function(){
+			this.logout();
+			delete this.logoutInterval;
 		},
 
-		saveHashWithOneTimeSalt: function(encryptedData){
-			this.trigger('savingHashing');
-			Api.make({
-				method: 'hash',
-				args: [this.credentials.passwordHash, this.credentials.oneTimeSalt],
-				callback: _.partial(_.bindKey(this, 'saveHashWithEncryptedData'), encryptedData)
-			});
+		postponeLogout: function(){
+			if(this.logoutInterval){
+				clearInterval(this.logoutInterval);
+			}
+			this.logoutInterval = setTimeout(_.bind(this.onLogoutTimeout, this), CONFIGURATION.LOGOUT_TIME * 1000);
 		},
 
-		saveHashWithEncryptedData: function(encryptedData, passwordHash){
-			Api.make({
-				method: 'hash',
-				args: [encryptedData, passwordHash],
-				callback: _.partial(_.bindKey(this, 'saveFetch'), encryptedData)
-			});
-		},
-
-		saveFetch: function(encryptedData, passwordHash){
-			this.trigger('savingFetching');
+		setPassword: function(newPassword){
+			this.postponeLogout();
 			var that = this;
-			Api.fetch({
-				uri: this.credentials.uri,
-				type: 'PATCH',
-				data: {
-					data: encryptedData,
-					one_time_salt: Crypto.toString(this.credentials.oneTimeSalt),
-					password_hash: Crypto.toString(passwordHash),
-					salt: Crypto.toString(this.credentials.salt)
-				}
-			})
-				.always(function(xhr){
-					that.trigger('savingAlways', xhr);
-				})
-				.done(function(data){
-					that.trigger('savingDone', data);
-					that.credentials.oneTimeSalt = Crypto.fromString(data.one_time_salt);
-				})
-				.fail(function(xhr){
-					that.trigger('savingFail', xhr);
-					if(401 === xhr.status){
-						/* one_time_salt was rotated, we should update it. */
-						var response = JSON.parse(xhr.responseText);
-						that.credentials.oneTimeSalt = Crypto.fromString(response.one_time_salt);
-						return true;
+			var encryptedData, passwordHash, newSalt;
+
+			encrypt();
+			function encrypt(){
+				that.trigger('passwordChangeEncryption');
+				that.credentials.data = that.toJSON();
+				Api.make({
+					method: 'encrypt',
+					args: [that.credentials.data, newPassword],
+					callback: hashWithOneTimeSalt
+				});
+			}
+			function hashWithOneTimeSalt(_encryptedData){
+				that.trigger('passwordChangeHashing');
+				encryptedData = _encryptedData;
+				Api.make({
+					method: 'hash',
+					args: [that.credentials.passwordHash, that.credentials.oneTimeSalt],
+					callback: hashWithEncryptedData
+				});
+			}
+			function hashWithEncryptedData(_passwordHash){
+				Api.make({
+					method: 'hash',
+					args: [encryptedData, _passwordHash],
+					callback: hashNewPassword
+				});
+			}
+			function hashNewPassword(_passwordHash){
+				passwordHash = _passwordHash;
+				newSalt = Crypto.getSalt();
+				Api.make({
+					method: 'hash',
+					args: [newPassword, newSalt],
+					callback: fetch
+				});
+			}
+			function fetch(newPasswordHash){
+				that.trigger('passwordChangeFetching');
+				Api.fetch({
+					uri: that.credentials.uri,
+					type: 'PATCH',
+					data: {
+						data: encryptedData,
+						one_time_salt: Crypto.toString(that.credentials.oneTimeSalt),
+						password_hash: Crypto.toString(passwordHash),
+						salt: Crypto.toString(that.credentials.salt),
+						new_password_hash: Crypto.toString(newPasswordHash),
+						new_salt: Crypto.toString(newSalt)
 					}
 				})
-			;
-		}
+					.always(function(xhr){
+						that.trigger('passwordChangeAlways', xhr);
+					})
+					.done(function(data){
+						that.credentials.oneTimeSalt = Crypto.fromString(data.one_time_salt);
+						that.credentials.password = newPassword;
+						that.credentials.passwordHash = newPasswordHash;
+						that.credentials.salt = newSalt;
+						that.trigger('passwordChangeDone', data);
+					})
+					.fail(function(xhr){
+						that.trigger('passwordChangeFail', xhr);
+						if(401 === xhr.status){
+							/* one_time_salt was rotated, we should update it. */
+							var response = JSON.parse(xhr.responseText);
+							that.credentials.oneTimeSalt = Crypto.fromString(response.one_time_salt);
+							return true;
+						}
+					})
+				;
+			}
+		},
+
+		save: function(){
+			this.postponeLogout();
+			var that = this;
+			encrypt();
+
+			function encrypt(){
+				that.trigger('savingEncryption');
+				that.credentials.data = that.toJSON();
+				Api.make({
+					method: 'encrypt',
+					args: [that.credentials.data, that.credentials.password],
+					callback: hashWithOneTimeSalt
+				});
+			}
+			function hashWithOneTimeSalt(encryptedData){
+				that.trigger('savingHashing');
+				Api.make({
+					method: 'hash',
+					args: [that.credentials.passwordHash, that.credentials.oneTimeSalt],
+					callback: _.partial(hashWithEncryptedData, encryptedData)
+				});
+			}
+			function hashWithEncryptedData(encryptedData, passwordHash){
+				Api.make({
+					method: 'hash',
+					args: [encryptedData, passwordHash],
+					callback: _.partial(fetch, encryptedData)
+				});
+			}
+			function fetch(encryptedData, passwordHash){
+				that.trigger('savingFetching');
+				Api.fetch({
+					uri: that.credentials.uri,
+					type: 'PATCH',
+					data: {
+						data: encryptedData,
+						one_time_salt: Crypto.toString(that.credentials.oneTimeSalt),
+						password_hash: Crypto.toString(passwordHash),
+						salt: Crypto.toString(that.credentials.salt)
+					}
+				})
+					.always(function(xhr){
+						that.trigger('savingAlways', xhr);
+					})
+					.done(function(data){
+						that.trigger('savingDone', data);
+						that.credentials.oneTimeSalt = Crypto.fromString(data.one_time_salt);
+					})
+					.fail(function(xhr){
+						that.trigger('savingFail', xhr);
+						if(401 === xhr.status){
+							/* one_time_salt was rotated, we should update it. */
+							var response = JSON.parse(xhr.responseText);
+							that.credentials.oneTimeSalt = Crypto.fromString(response.one_time_salt);
+							return true;
+						}
+					})
+				;
+			}
+		}		
 	});
 })(jQuery);

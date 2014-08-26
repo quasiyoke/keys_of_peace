@@ -4,6 +4,7 @@
 		options: {
 			'class': null,
 			mode: 'password',
+			show: true,
 			target: null
 		},
 		
@@ -48,6 +49,24 @@
 			}
 			
 			this._setMode();
+
+			if(this.options.show){
+				var that = this;
+				$('<button class="password-show" tabindex="-1">')
+					.appendTo(this.element.closest('form > p'))
+					.click(function(e){
+						e.preventDefault();
+					})
+					.mouseup(function(e){
+						e.preventDefault();
+						that._setOption('mode', 'password');
+					})
+					.mousedown(function(e){
+						e.preventDefault();
+						that._setOption('mode', 'text');
+					})
+				;
+			}
 		},
 
 		_mouseenter: function(){

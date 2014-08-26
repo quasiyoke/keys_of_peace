@@ -1,3 +1,4 @@
+'use strict';
 (function($){
 	window.AppView = Backbone.View.extend({
 		events: {

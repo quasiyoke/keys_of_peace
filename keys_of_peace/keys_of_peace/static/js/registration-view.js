@@ -1,3 +1,4 @@
+'use strict';
 (function($){
 	var credentials = {};
 	
@@ -65,7 +66,7 @@
 						credentials.email = view.emailInput.val();
 						that.setStatus({
 							text: 'Registration…',
-							class: 'gauge'
+							'class': 'gauge'
 						});
 						callback(
 							Api.fetch({
@@ -82,7 +83,7 @@
 					
 					this.setStatus({
 						text: 'Hashing password…',
-						class: 'gauge'
+						'class': 'gauge'
 					});
 					credentials.password = view.passwordInput.val();
 					credentials.salt = Crypto.getSalt();
@@ -101,23 +102,6 @@
 			_.each(['password', 'password_confirmation'], function(name){
 				var input = view.form.find('[name=' + name + ']')
 					.password()
-				;
-				var row = input.closest('form > p')
-					.addClass('registration-password-row')
-				;
-				$('<button class="registration-password-show" tabindex="-1"></button>')
-					.appendTo(row)
-					.click(function(e){
-						e.preventDefault();
-					})
-					.mouseup(function(e){
-						e.preventDefault();
-						input.password('option', 'mode', 'password');
-					})
-					.mousedown(function(e){
-						e.preventDefault();
-						input.password('option', 'mode', 'text');
-					})
 				;
 			});
 			return this;

@@ -1,7 +1,8 @@
+'use strict';
 (function($){
 	var credentials;
 	
-	RegistrationSuccessView = Backbone.View.extend({
+	window.RegistrationSuccessView = Backbone.View.extend({
 		events: {
 			'click .registration-success-dashboard-link': 'onClickDashboard'
 		},

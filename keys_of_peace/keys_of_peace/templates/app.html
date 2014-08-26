@@ -41,6 +41,7 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/home-view.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/registration-view.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/registration-success-view.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/settings-view.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/router.js"></script>
 
 <script class="account-template" type="text/html">
@@ -71,10 +72,15 @@
 </script>
 
 <script class="dashboard-template" type="text/html">
-  <form class="search-form">
-	<input class="search-query" name="query" type="text">
-	<input class="search-submit" type="submit" value="Search" tabindex="-1">
-  </form>
+  <div class="dashboard-bar">
+	<form class="search-form">
+	  <input class="search-query" name="query" type="text">
+	  <input class="search-submit" type="submit" value="Search" tabindex="-1">
+	</form>
+	<div class="dashboard-bar-right">
+	  <a class="dashboard-settings-link" href="{% url 'settings' %}">Settings</a>
+	</div>
+  </div>
   <table class="search-results"></table>
   <form class="account-form">
 	<h2>New account</h2>
@@ -154,6 +160,16 @@
 	<h2>Congratulations</h2>
 	<p class="registration-success-notification">You was registered with email <span class="registration-success-email"></span></p>
 	<a class="registration-success-dashboard-link" href="{% url 'dashboard' %}">Let's manage your passwords!</a>
+  </div>
+</script>
+
+<script class="settings-template" type="text/html">
+  <div>
+	<form class="password-change-form">
+	  <h2>Change main password</h2>
+	  {{ password_change_form }}
+	  <input class="password-change-submit" type="submit" value="Change password">
+	</form>
   </div>
 </script>
 {% endblock %}

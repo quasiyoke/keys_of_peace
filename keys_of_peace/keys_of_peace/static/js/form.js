@@ -1,5 +1,4 @@
 'use strict';
-
 (function($){
 	$.validator.addMethod('api', function(value, el, param){
 		var element = $(el);
@@ -99,6 +98,9 @@
 		return 'pending';
 	});
 
+	$.validator.addMethod('equalToValue', function(value, element, param){
+		return this.optional(element) || (_.isFunction(param) ? value === param() : value === param);
+	});
 	
 	$.widget('keysOfPeace.form', {
 		options: {
@@ -203,7 +205,7 @@
 				if(!xhr.status){
 					this.notify('Submit was failed. Check your internet connection.');
 				}else if(401 === xhr.status){
-					this.notify('Unauthorized. <a href="' + CONFIGURATION.LOGIN_URL + '">Login</a>');
+					this.notify('Unauthorized. <a href="/' + router.getRoute('home').getFragment() + '">Login</a>');
 				}else if(500 === xhr.status){
 					this.notify('Server error.');
 				}else{
@@ -285,20 +287,23 @@
 			}
 		},
 
-		notify: function(message){
+		notify: function(options){
+			_.isObject(options) || (options = {message: options});
+			var notification = $('<div class="form-notification">')
+				.html(options.message)
+			;
+			if('ok' !== options['class']){
+				notification.addClass('form-notification_error');
+			}
 			if(this.notifications){
-				var notification = $('<div class="form-notification">');
 				this.notifications.append(notification);
 				notification
-					.html(message)
 					.hide()
 					.slideDown('fast')
 				;
 			}else{
-				this.notifications = $('<div class="form-notification">')
-					.html(message)
-					.wrap('<p class="form-notifications">')
-					.parent()
+				this.notifications = $('<p class="form-notifications">')
+					.append(notification)
 				;
 				this.element.find('[type=submit]').before(this.notifications);
 				this.notifications

@@ -17,6 +17,7 @@ $input-border-color: #2badff;
 
 $app-width: 800px;
 $form-width: 340px;
+$input-focus-shadow-width: 10px;
 
 @mixin link {
 	&, &:link {

@@ -1,3 +1,4 @@
+'use strict';
 (function($){
 	var Route = function(options){
 		this.name = options.name;
@@ -67,6 +68,12 @@
 				breadcrumb: 'Success',
 				fragment: 'success',
 				viewConstructor: RegistrationSuccessView
+			},
+			settings: {
+				parent: 'dashboard',
+				title: 'Settings',
+				fragment: 'settings',
+				viewConstructor: SettingsView
 			}
 		},
 
