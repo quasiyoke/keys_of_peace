@@ -115,7 +115,18 @@ $input-focus-shadow-width: 10px;
 	white-space: nowrap;
 }
 
-@mixin button($image, $scale: 1, $hover-color: $back-hover-color) {
+@mixin button-hover($color:null) {
+	@if null == $color {
+		$color: $back-hover-color;
+	}
+	background: $color;
+}
+
+@mixin button-active() {
+	opacity: .3;
+}
+
+@mixin button($image, $scale:1, $hover-color:null) {
 	$size: 40px * $scale;
 	position: relative;
 	margin: 0;
@@ -147,7 +158,11 @@ $input-focus-shadow-width: 10px;
 	}
 
 	&:hover {
-		background: $hover-color;
+		@include button-hover($hover-color);
+	}
+
+	&:active {
+		@include button-active();
 	}
 }
 
@@ -157,9 +172,13 @@ $input-focus-shadow-width: 10px;
 	}
 }
 
-@mixin button-password-show() {
-	@include button("/static/images/eye.svg");
+@mixin field-button($image, $order:1){
+	@include button($image);
 	position: absolute;
-	right: -44px;
+	right: -44px * $order;
 	top: 17px;
+}
+
+@mixin button-password-show() {
+	@include field-button($image:"/static/images/eye.svg");
 }

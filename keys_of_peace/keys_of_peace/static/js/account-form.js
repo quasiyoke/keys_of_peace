@@ -20,8 +20,13 @@
 				.addClass('account-password-row')
 			;
 			this.passwordInput.password();
-			this.passwordShow = $('<button class="account-form-password-show"></button>')
+			var that = this;
+			this.passwordCopy = $('<button class="account-form-password-copy" tabindex="-1">')
 				.appendTo(passwordRow)
+				.clipboard({
+					data: _.bind(that.passwordInput.val, that.passwordInput),
+					tip: 'Click to copy password'
+				})
 			;
 			
 			this.alphabetInput = this.element.find('[name=alphabet]');
@@ -87,19 +92,6 @@
 				mousedown: function(e){
 					e.preventDefault();
 					this.generatePassword();
-					this.passwordInput.password('option', 'mode', 'text');
-				},
-				mouseup: function(e){
-					e.preventDefault();
-					this.passwordInput.password('option', 'mode', 'password');
-				}
-			});
-			this._on(this.passwordShow, {
-				click: function(e){
-					e.preventDefault();
-				},
-				mousedown: function(e){
-					e.preventDefault();
 					this.passwordInput.password('option', 'mode', 'text');
 				},
 				mouseup: function(e){

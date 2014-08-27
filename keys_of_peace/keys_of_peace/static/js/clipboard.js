@@ -21,7 +21,8 @@
 	});
 
 	clip.on('dataRequested', function(client, e){
-		clip.setText($(this).clipboard('option', 'data'));
+		var data = $(this).clipboard('option', 'data');
+		clip.setText(_.isFunction(data) ? data() : data);
 	});
 	
 
@@ -56,11 +57,16 @@
 
 		_delegateEvents: function(){
 			this._on({
+				click: '_click',
 				mouseover: '_mouseover',
 				mouseout: '_mouseout',
 				mousedown: '_mousedown',
 				mouseup: '_mouseup'
 			});
+		},
+
+		_click: function(e){
+			e.preventDefault();
 		},
 
 		_mouseover: function(){

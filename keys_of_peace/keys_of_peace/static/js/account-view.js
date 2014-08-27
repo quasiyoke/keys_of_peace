@@ -38,7 +38,7 @@
 			;
 			var title = this.$('.account-title');
 			if(site){
-				var siteLink = $('<a class="account-accounter-link account-title">')
+				var siteLink = $('<a class="account-accounter-link account-title" target="_blank">')
 					.attr('href', site.get('host'))
 					.html(site.get('name').shorten())
 				;

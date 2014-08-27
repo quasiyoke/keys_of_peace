@@ -128,8 +128,16 @@ input.search-submit {
 	white-space: nowrap;
 }
 
-.account-form-password-show {
-	@include button-password-show();
+.account-form-password-copy {
+	@include field-button($order:2, $image:"/static/images/copy.svg");
+
+	&.clipboard-hover {
+		@include button-hover();
+	}
+
+	&.clipboard-active {
+		@include button-active();
+	}
 }
 
 .account-alphabet-row, .account-length-row {
