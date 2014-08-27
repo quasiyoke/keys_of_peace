@@ -13,6 +13,15 @@
 			return this.set(key, this.attributes[key] + 1, options);
 		},
 
+		toJSON: function(){
+			if(this.isObsolete()){
+				return;
+			}
+			return Model.__super__.toJSON.apply(this, arguments);
+		},
+
+		isObsolete: $.noop,
+
 		save: $.noop
 	});
 
@@ -40,6 +49,9 @@
 
 		toJSON: function(){
 			var json = Account.__super__.toJSON.apply(this, arguments);
+			if(!json){
+				return;
+			}
 			delete json.even;
 			return json;
 		}
@@ -56,26 +68,21 @@
 			}
 		],
 
-		initialize: function(attrs, options){
-			Accounter.__super__.initialize.apply(this, arguments);
-			this.get('accounts')
-				.on('destroy', this.onAccountDestroy, this)
-			;
-		},
-
-		onAccountDestroy: function(account){
-			if(!this.get('accounts').length){
-				this.destroy();
-			}
-		},
-
 		contains: function(s){
 			return (this.has('name') && this.get('name').contains(s)) || this.get('sites').containsQuery(s);
+		},
+
+		isObsolete: function(){
+			return !this.get('accounts').length;
 		}
 	});
 	
 
-	window.Email = Model.extend();
+	window.Email = Model.extend({
+		isObsolete: function(){
+			return !this.collection.store.accounts.where({email: this.get('email')}).length;
+		}
+	});
 	Email.getFirstAttributes = function(options){
 		return {
 			email: options.email,
@@ -84,7 +91,11 @@
 	};
 
 
-	window.Login = Model.extend();
+	window.Login = Model.extend({
+		isObsolete: function(){
+			return !this.collection.store.accounts.where({login: this.get('login')}).length;
+		}
+	});
 	Login.getFirstAttributes = function(options){
 		return {
 			login: /^[^@]+/.exec(options.email)[0],
@@ -127,15 +138,19 @@
 		onAccounterDestroy: function(accounter){
 			this.destroy();
 		},
+
+		contains: function(s){
+			return this.get('host').contains(s) || this.get('name').contains(s);
+		},
+
+		isObsolete: function(){
+			return this.get('accounter').isObsolete();
+		},
 		
 		validate: function(attrs, options){
 			if(!$.validator.methods.url.call({optional: $.noop}, attrs.host)){
 				return 'Host isn\'t a correct URL.';
 			}
-		},
-
-		contains: function(s){
-			return this.get('host').contains(s) || this.get('name').contains(s);
 		}
 	});
 
@@ -188,7 +203,7 @@
 			var json = {
 				order: this.order
 			};
-			json.objects = Collection.__super__.toJSON.call(this);
+			json.objects = _.compact(Collection.__super__.toJSON.call(this));
 			return json;
 		}
 	});
@@ -211,7 +226,7 @@
 			*/
 			if(!accounter){
 				accounter = this.store.accounters.create({
-					name: attrs.link,
+					name: site ? site.get('name') : attrs.link,
 					passwordAlphabet: attrs.passwordAlphabet,
 					passwordLength: attrs.passwordLength
 				});
