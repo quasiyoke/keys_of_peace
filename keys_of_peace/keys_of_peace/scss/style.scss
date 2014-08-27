@@ -1,6 +1,6 @@
 @charset "utf-8";
-@import "compass/reset";
 @import "mixins";
+@import "compass/reset";
 
 $font-size: 16px;
 body {
@@ -19,7 +19,8 @@ h1 {
 }
 
 h2 {
-	font-size: 3em;
+	font-size: 1.9em;
+	margin-bottom: .3em;
 }
 
 em {
@@ -41,11 +42,6 @@ form {
 	margin: 3em auto;
 	position: relative;
 
-	h2 {
-		font-size: 1.9em;
-		margin-bottom: .3em;
-	}
-	
 	p {
 		position: relative;
 		
@@ -61,7 +57,7 @@ input, select, textarea {
 	background-color: $white-color;
 	
 	&:focus {
-		@include shadow(.3em, $bright-color);
+		@include single-box-shadow($color:$bright-color);
 		outline: none;
 	}
 }
@@ -102,7 +98,7 @@ input[type=submit], button {
 		radius: .3em;
 	}
 	font-size: 1.2em;
-	text-shadow: .05em .05em 0 #59bfff;
+	@include text-shadow(.05em .05em 0 #59bfff);
 
 	background: #ddf2ff; /* Old browsers */
 	background: -moz-linear-gradient(top,  #ddf2ff 0%, #90d4ff 80%, #59bfff 100%); /* FF3.6+ */
@@ -165,7 +161,7 @@ ol {
 	border: 1px solid mix($title-color, $back-color, 70%);
 	color: mix($fore-color, $back-color, 70%);
 	background: mix($title-color, $back-color, 10%);
-	@include shadow;
+	@include box-shadow();
 }
 
 .qtip-content{
@@ -245,7 +241,7 @@ p.error-field {
 		border-color: $error-border-color;
 
 		&:focus {
-			@include shadow(.3em, #f00);
+			@include single-box-shadow($color:#f00);
 		}
 	}
 }
@@ -356,5 +352,5 @@ label.error-field {
 }
 
 .keys-of-peace-password {
-	font-family: "Lucida Console", Monaco, monospace;
+	font-family: "lucida console", monaco, monospace;
 }

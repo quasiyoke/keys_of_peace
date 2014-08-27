@@ -1,1 +1,14 @@
 @import "mixins";
+
+.export {
+	margin: 0 auto;
+	width: $app-width * .8;
+}
+
+.export-data {
+	height: $app-width * .6;
+	overflow: scroll;
+	background: $white-color;
+	@include single-box-shadow($hoff:.3em, $voff:.3em, $inset:true);
+	font: .65em "lucida console", monaco, monospace;
+}

@@ -1,3 +1,5 @@
+@import "compass/css3/box-shadow";
+@import "compass/css3/text-shadow";
 @import "compass/css3/transform";
 @import "compass/css3/transition";
 
@@ -14,6 +16,9 @@ $white-color: #fff;
 $gray-color: mix($fore-color, $back-color, 50%);
 $light-gray-color: mix($fore-color, $back-color, 18%);
 $input-border-color: #2badff;
+
+$default-box-shadow-color: #ccc;
+$default-box-shadow-blur: .3em;
 
 $app-width: 800px;
 $form-width: 340px;
@@ -34,8 +39,8 @@ $input-focus-shadow-width: 10px;
 	&:focus {
 		&, &:link {
 			outline: none;
-			box-shadow: none;
-			text-shadow: 0 0 .4em $bright-color;
+			@include box-shadow(none);
+			@include text-shadow(0 0 .4em $bright-color);
 			text-decoration: none;
 			border-bottom: .2em solid $link-link-color;
 		}
@@ -97,13 +102,6 @@ $input-focus-shadow-width: 10px;
 		color: mix($color, $back-color, 30%);
 		border-bottom-color: mix($color, $back-color, 30%);
 	}	
-}
-
-@mixin shadow($size: .3em, $color: #ccc){
-	$webkit-box-shadow-size-koefficient: 5 / 3;
-	box-shadow: 0 0 $size 0 $color;
-	-webkit-box-shadow: 0 0 $size * $webkit-box-shadow-size-koefficient 0 $color;
-	-moz-box-shadow: 0 0 $size 0 $color;
 }
 
 @mixin title {

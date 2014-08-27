@@ -164,13 +164,15 @@
 </script>
 
 <script class="settings-template" type="text/html">
-  <div>
-	<form class="password-change-form">
-	  <h2>Change main password</h2>
-	  {{ password_change_form }}
-	  <input class="password-change-submit" type="submit" value="Change password">
-	</form>
+  <div class="export">
+	<h2>Export accounts</h2>
+	<pre class="export-data"></pre>
   </div>
+  <form class="password-change-form">
+	<h2>Change main password</h2>
+	{{ password_change_form }}
+	<input class="password-change-submit" type="submit" value="Change password">
+  </form>
 </script>
 {% endblock %}
 
