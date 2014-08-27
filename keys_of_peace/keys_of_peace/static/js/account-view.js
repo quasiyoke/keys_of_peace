@@ -28,7 +28,7 @@
 			);
 
 			this.check = this.$('.account-check');
-			var accounter = this.model.get('accounter');
+			var accounter = this.model.get('accounter') || new Backbone.Model();
 			var site = accounter.get('mainSite');
 			var loginWrap = this.$('.account-login-wrap');
 			loginWrap.find('.account-login')

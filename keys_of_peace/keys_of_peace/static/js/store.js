@@ -10,7 +10,7 @@
 		},
 		
 		increment: function(key, options){
-			return this.set(key, this.attributes[key] + 1, options);
+			return this.set(key, (this.attributes[key] || 0) + 1, options);
 		},
 
 		toJSON: function(){
@@ -73,35 +73,23 @@
 		},
 
 		isObsolete: function(){
-			return !this.get('accounts').length;
+			return !this.collection.store.accounts.findWhere({accounter: this});
 		}
 	});
 	
 
 	window.Email = Model.extend({
 		isObsolete: function(){
-			return !this.collection.store.accounts.where({email: this.get('email')}).length;
+			return !this.collection.store.accounts.findWhere({email: this.get('email')});
 		}
 	});
-	Email.getFirstAttributes = function(options){
-		return {
-			email: options.email,
-			count: 1
-		};
-	};
 
 
 	window.Login = Model.extend({
 		isObsolete: function(){
-			return !this.collection.store.accounts.where({login: this.get('login')}).length;
+			return !this.collection.store.accounts.findWhere({login: this.get('login')});
 		}
 	});
-	Login.getFirstAttributes = function(options){
-		return {
-			login: /^[^@]+/.exec(options.email)[0],
-			used: 1
-		};
-	};
 
 
 	window.Site = Model.extend({
@@ -159,14 +147,7 @@
 		initialize: function(models, options){
 			options || (options = {});
 			this.store = options.store;
-			if('order' in options){
-				this.order = options.order;
-			}else{
-				this.order = 'frequency';
-				if(this.model.getFirstAttributes){
-					models.push(this.model.getFirstAttributes(options));
-				}
-			}
+			this.order = options.order || 'frequency';
 		},
 
 		getUniqueId: function(){
@@ -188,10 +169,15 @@
 			 Tries to find instance and increment its `used` field. If instance not found, tries to create it.
 		*/
 		used: function(attrs){
-			var instance = this.findWhere(attrs);
+			var findAttrs = attrs;
+			if(this.usedFindAttrs){
+				findAttrs = _.pick(findAttrs, this.usedFindAttrs);
+			}
+			var instance = this.findWhere(findAttrs);
 			if(instance){
 				instance.increment('used');
 			}else{
+				attrs.used || (attrs.used = 1);
 				instance = this.create(attrs, {
 					validate: true
 				});
@@ -221,11 +207,11 @@
 				accounter = site.get('accounter');
 			}
 			/*
-				If no site was found or site was created just now and has no `accounter`.
+				If no site was created or site was created just now and has no `accounter`.
 				@see Collection.used
 			*/
 			if(!accounter){
-				accounter = this.store.accounters.create({
+				accounter = this.store.accounters.used({
 					name: site ? site.get('name') : attrs.link,
 					passwordAlphabet: attrs.passwordAlphabet,
 					passwordLength: attrs.passwordLength
@@ -235,6 +221,8 @@
 					accounter.set('mainSite', site);
 				}
 			}
+			attrs.login && this.store.logins.used({login: attrs.login});
+			attrs.email && this.store.emails.used({email: attrs.email});
 			return Accounts.__super__.create.call(this, {
 				accounter: accounter,
 				login: attrs.login,
@@ -248,6 +236,8 @@
 	
 	window.Accounters = Collection.extend({
 		model: Accounter,
+
+		usedFindAttrs: ['name'],
 
 		suggestPasswordAlphabet: function(){
 			var last = this.last();
@@ -270,12 +260,32 @@
 	
 	
 	window.Emails = Collection.extend({
-		model: Email
+		model: Email,
+
+		suggest: function(){
+			var email = this.last();
+			if(!email){
+				email = this.create({
+					email: this.store.credentials.email
+				});
+			}
+			return email;
+		}
 	});
 
 
 	window.Logins = Collection.extend({
-		model: Login
+		model: Login,
+
+		suggest: function(){
+			var login = this.last();
+			if(!login){
+				login = this.create({
+					login: /^[^@]+/.exec(this.store.credentials.email)[0]
+				});
+			}
+			return login;
+		}
 	});
 
 
@@ -298,6 +308,18 @@
 				model.set('name', match ? match[4] : model.get('host'));
 			}
 			return model;
+		},
+
+		used: function(attrs, options){
+			var site = Sites.__super__.used.call(this, attrs, options);
+			if(!site){
+				return;
+			}
+			var accounter = site.get('accounter');
+			if(accounter){
+				accounter.increment('used');
+			}
+			return site;
 		}
 	});
 	

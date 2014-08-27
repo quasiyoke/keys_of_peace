@@ -372,8 +372,8 @@
 			if(!store.accounts.length){
 				this.accountForm.accountForm('focus');
 			}
-			this.accountForm.accountForm('value', 'login', store.logins.last().get('login'));
-			this.accountForm.accountForm('value', 'email', store.emails.last().get('email'));
+			this.accountForm.accountForm('value', 'login', store.logins.suggest().get('login'));
+			this.accountForm.accountForm('value', 'email', store.emails.suggest().get('email'));
 			this.accountForm.accountForm('value', 'alphabet', store.accounters.suggestPasswordAlphabet());
 			this.accountForm.accountForm('value', 'length', store.accounters.suggestPasswordLength());
 			this.accountForm.accountForm('generatePassword');
