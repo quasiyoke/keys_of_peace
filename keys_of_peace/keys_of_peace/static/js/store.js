@@ -151,9 +151,8 @@
 		},
 
 		getUniqueId: function(){
-			var id;
 			do {
-				id = Math.round(Math.random() * 1e9)
+				var id = Math.round(Math.random() * 1e9)
 			} while (this.get(id));
 			return id;
 		},
@@ -176,6 +175,7 @@
 			var instance = this.findWhere(findAttrs);
 			if(instance){
 				instance.increment('used');
+				instance.set(attrs);
 			}else{
 				attrs.used || (attrs.used = 1);
 				instance = this.create(attrs, {
@@ -206,11 +206,13 @@
 			if(site){
 				accounter = site.get('accounter');
 			}
-			/*
-				If no site was created or site was created just now and has no `accounter`.
-				@see Collection.used
-			*/
-			if(!accounter){
+			if(accounter){
+				accounter.set(_.pick(attrs, ['passwordAlphabet', 'passwordLength']));
+			}else{
+				/*
+					If no site was created or site was created just now and has no `accounter`.
+					@see Collection.used
+				*/
 				accounter = this.store.accounters.used({
 					name: site ? site.get('name') : attrs.link,
 					passwordAlphabet: attrs.passwordAlphabet,

@@ -140,25 +140,28 @@
 					}
 				},
 
-				create: function(){
-					var form = that.accountForm.data('keysOfPeaceAccountForm');
-					form.linkInput.autocomplete({
-						source: function(request, response){
-							response(_.map(
-								store.accounters.filter(function(accounter){
-									return accounter.contains(request.term);
-								}),
-								function(accounter){
-									var name = accounter.get('name');
-									var site = accounter.get('mainSite');
-									return {
-										label: name,
-										value: site ? site.get('host') : name
-									};
-								}
-							));
+				linkInputSource: function(request, response){
+					response(_.map(
+						store.accounters.filter(function(accounter){
+							return accounter.contains(request.term);
+						}),
+						function(accounter){
+							return {
+								label: accounter.get('name'),
+								value: accounter
+							};
 						}
-					});
+					));
+				},
+
+				linkInputSelect: function(e, ui){
+					e.preventDefault();
+					var accounter = ui.item.value;
+					var site = accounter.get('mainSite');
+					this.linkInput.val(site ? site.get('host') : accounter.get('name'));
+					this.lengthInput.val(accounter.get('passwordLength'));
+					this.alphabetInput.val(accounter.get('passwordAlphabet'));
+					this.generatePassword();
 				},
 
 				submit: function(){

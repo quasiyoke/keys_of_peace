@@ -1,12 +1,22 @@
 (function($){
 	$.widget('keysOfPeace.accountForm', $.keysOfPeace.form, {
 		_create: function(){
+			var linkInputSelect = _.bind(this.options.linkInputSelect, this);
 			this.linkInput = this.element.find('[name=link]')
 				.qtip({
 					content: 'Link to website or name of service. E.g.: <strong>Wi-fi</strong>, <strong>Google</strong>.',
 				})
+				.autocomplete({
+					focus: function(e, ui){
+						if(e.originalEvent && e.originalEvent.originalEvent && /^key/.test(e.originalEvent.originalEvent.type)){
+							linkInputSelect(e, ui);
+						}
+					},
+					select: linkInputSelect,
+					source: _.bind(this.options.linkInputSource, this)
+				})
 			;
-			
+
 			this.loginInput = this.element.find('[name=login]')
 				.qtip({
 					content: 'Account login or email<br>if it is used as login.'
@@ -34,7 +44,7 @@
 			var alphabetRow = this.alphabetInput.closest('form > p')
 				.addClass('account-alphabet-row')
 			;
-			alphabetRow.find('label').html('Alphabet');
+			alphabetRow.find('label').text('Alphabet');
 			
 			this.lengthInput = this.element.find('[name=length]');
 			this.lengthInput.attr('tabindex', -1);
