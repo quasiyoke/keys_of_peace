@@ -32,10 +32,10 @@
 				this._on(this.element, commonHandlers);
 				this._on(this.textElement, commonHandlers);
 			}else{
-				this._value = this.element.html();
-				this.element.html(this._value.replace(/./g, '•'));
+				this._value = this.element.text();
+				this.element.text(this._value.replace(/./g, '•'));
 				this.textElement = $('<span>')
-					.html(this._value)
+					.text(this._value)
 				;
 			}
 			this.element

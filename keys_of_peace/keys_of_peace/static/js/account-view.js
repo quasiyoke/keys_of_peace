@@ -40,11 +40,11 @@
 			if(site){
 				var siteLink = $('<a class="account-accounter-link account-title" target="_blank">')
 					.attr('href', site.get('host'))
-					.html(site.get('name').shorten())
+					.text(site.get('name').shorten())
 				;
 				title.append(siteLink);
 			}else{
-				title.html(accounter.get('name'));
+				title.text(accounter.get('name'));
 			}
 			
 			this.password = this.$('.account-password')
