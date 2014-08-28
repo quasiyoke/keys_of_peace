@@ -140,6 +140,27 @@
 					}
 				},
 
+				create: function(){
+					var form = that.accountForm.data('keysOfPeaceAccountForm');
+					form.linkInput.autocomplete({
+						source: function(request, response){
+							response(_.map(
+								store.accounters.filter(function(accounter){
+									return accounter.contains(request.term);
+								}),
+								function(accounter){
+									var name = accounter.get('name');
+									var site = accounter.get('mainSite');
+									return {
+										label: name,
+										value: site ? site.get('host') : name
+									};
+								}
+							));
+						}
+					});
+				},
+
 				submit: function(){
 					if(this.loginInput.val() || this.emailInput.val()){
 						store.accounts.create({

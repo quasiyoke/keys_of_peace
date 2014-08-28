@@ -126,8 +126,10 @@ $input-focus-shadow-width: 10px;
 	opacity: .3;
 }
 
+$button-size: 40px;
+$button-border-radius: 2px;
 @mixin button($image, $scale:1, $hover-color:null) {
-	$size: 40px * $scale;
+	$size: $button-size * $scale;
 	position: relative;
 	margin: 0;
 	cursor: pointer;
@@ -136,7 +138,7 @@ $input-focus-shadow-width: 10px;
 	padding: 0;
 	border: none;
 	vertical-align: middle;
-	border-radius: 2px;
+	border-radius: $button-border-radius;
 	background: transparent;
 
 	&:before {
@@ -175,7 +177,7 @@ $input-focus-shadow-width: 10px;
 @mixin field-button($image, $order:1){
 	@include button($image);
 	position: absolute;
-	right: -44px * $order;
+	right: -(9px + $button-size * $order);
 	top: 17px;
 }
 

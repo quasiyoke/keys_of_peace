@@ -2,7 +2,7 @@
 
 
 {% block stylesheets %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/app.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/app.css" media="screen">
 {% endblock %}
 
 
@@ -16,9 +16,12 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/crypto/aes.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.caret.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.validate.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.core.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.effect.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.position.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.menu.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.autocomplete.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.qtip.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/lodash.js"></script>
@@ -82,7 +85,7 @@
 	</div>
   </div>
   <table class="search-results"></table>
-  <form class="account-form">
+  <form class="account-form" autocomplete="off">
 	<h2>New account</h2>
 	{{ account_form }}
 	<input class="account-submit" type="submit" value="Save">

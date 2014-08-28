@@ -1,0 +1,58 @@
+@import "mixins";
+
+.ui-helper-hidden-accessible {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+}
+.ui-front {
+	z-index: 100;
+	@include single-box-shadow($blur:$default-box-shadow-blur*2);
+}
+.ui-widget-content {
+	background: $white-color;
+
+	.ui-state-focus {
+		background: $back-hover-color;
+		border-radius: $button-border-radius;
+	}
+}
+
+.ui-menu {
+	list-style: none;
+	padding: 2px;
+	margin: 0;
+	display: block;
+	outline: none;
+
+	.ui-menu-item {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+
+		a {
+			text-decoration: none;
+			display: block;
+			padding: 2px .4em;
+			line-height: 1.5;
+			min-height: 0; /* support: IE7 */
+			color: $fore-color;
+
+			&.ui-state-focus {
+				color: $fore-color;
+			}
+		}
+	}
+}
+
+.ui-autocomplete {
+	position: absolute;
+	top: 0;
+	left: 0;
+	cursor: default;
+}
