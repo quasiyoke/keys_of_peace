@@ -79,6 +79,10 @@
 	
 
 	window.Email = Model.extend({
+		contains: function(s){
+			return this.get('email').contains(s);
+		},
+		
 		isObsolete: function(){
 			return !this.collection.store.accounts.findWhere({email: this.get('email')});
 		}
@@ -86,6 +90,10 @@
 
 
 	window.Login = Model.extend({
+		contains: function(s){
+			return this.get('login').contains(s);
+		},
+		
 		isObsolete: function(){
 			return !this.collection.store.accounts.findWhere({login: this.get('login')});
 		}

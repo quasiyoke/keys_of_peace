@@ -140,7 +140,28 @@
 					}
 				},
 
-				linkInputSource: function(request, response){
+				emailSource: function(request, response){
+					response(_.map(
+						store.emails.filter(function(email){
+							return email.contains(request.term);
+						}),
+						function(email){
+							return email.get('email');
+						}
+					));
+				},
+
+				linkSelect: function(e, ui){
+					e.preventDefault();
+					var accounter = ui.item.value;
+					var site = accounter.get('mainSite');
+					this.linkInput.val(site ? site.get('host') : accounter.get('name'));
+					this.lengthInput.val(accounter.get('passwordLength'));
+					this.alphabetInput.val(accounter.get('passwordAlphabet'));
+					this.generatePassword();
+				},
+
+				linkSource: function(request, response){
 					response(_.map(
 						store.accounters.filter(function(accounter){
 							return accounter.contains(request.term);
@@ -154,14 +175,15 @@
 					));
 				},
 
-				linkInputSelect: function(e, ui){
-					e.preventDefault();
-					var accounter = ui.item.value;
-					var site = accounter.get('mainSite');
-					this.linkInput.val(site ? site.get('host') : accounter.get('name'));
-					this.lengthInput.val(accounter.get('passwordLength'));
-					this.alphabetInput.val(accounter.get('passwordAlphabet'));
-					this.generatePassword();
+				loginSource: function(request, response){
+					response(_.map(
+						store.logins.filter(function(login){
+							return login.contains(request.term);
+						}),
+						function(login){
+							return login.get('login');
+						}
+					));
 				},
 
 				submit: function(){

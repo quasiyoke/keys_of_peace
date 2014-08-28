@@ -1,19 +1,23 @@
 (function($){
 	$.widget('keysOfPeace.accountForm', $.keysOfPeace.form, {
 		_create: function(){
-			var linkInputSelect = _.bind(this.options.linkInputSelect, this);
+			function getFocusHandler(onSelect){
+				return function(e, ui){
+					if(e.originalEvent && e.originalEvent.originalEvent && /^key/.test(e.originalEvent.originalEvent.type)){
+						onSelect(e, ui);
+					}
+				};
+			}
+			
+			var onLinkSelect = _.bind(this.options.linkSelect, this);
 			this.linkInput = this.element.find('[name=link]')
 				.qtip({
 					content: 'Link to website or name of service. E.g.: <strong>Wi-fi</strong>, <strong>Google</strong>.',
 				})
 				.autocomplete({
-					focus: function(e, ui){
-						if(e.originalEvent && e.originalEvent.originalEvent && /^key/.test(e.originalEvent.originalEvent.type)){
-							linkInputSelect(e, ui);
-						}
-					},
-					select: linkInputSelect,
-					source: _.bind(this.options.linkInputSource, this)
+					focus: getFocusHandler(onLinkSelect),
+					select: onLinkSelect,
+					source: _.bind(this.options.linkSource, this)
 				})
 			;
 
@@ -21,9 +25,16 @@
 				.qtip({
 					content: 'Account login or email<br>if it is used as login.'
 				})
+				.autocomplete({
+					source: _.bind(this.options.loginSource, this)
+				})
 			;
-			
-			this.emailInput = this.element.find('[name=email]');
+
+			this.emailInput = this.element.find('[name=email]')
+				.autocomplete({
+					source: _.bind(this.options.emailSource, this)
+				})
+			;
 			
 			this.passwordInput = this.element.find('[name=password]');
 			var passwordRow = this.passwordInput.closest('form > p')
