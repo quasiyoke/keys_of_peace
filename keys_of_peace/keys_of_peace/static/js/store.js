@@ -257,18 +257,18 @@
 		usedFindAttrs: ['name'],
 
 		suggestPasswordAlphabet: function(){
-			var last = this.last();
-			if(last){
-				return last.get('passwordAlphabet');
+			var first = this.first();
+			if(first){
+				return first.get('passwordAlphabet');
 			}else{
 				return 700;
 			}
 		},
 
 		suggestPasswordLength: function(){
-			var last = this.last();
-			if(last){
-				return last.get('passwordLength');
+			var first = this.first();
+			if(first){
+				return first.get('passwordLength');
 			}else{
 				return 20;
 			}
@@ -280,7 +280,7 @@
 		model: Email,
 
 		suggest: function(){
-			var email = this.last();
+			var email = this.first();
 			if(!email){
 				email = this.create({
 					email: this.store.credentials.email
@@ -295,7 +295,7 @@
 		model: Login,
 
 		suggest: function(){
-			var login = this.last();
+			var login = this.first();
 			if(!login){
 				login = this.create({
 					login: /^[^@]+/.exec(this.store.credentials.email)[0]
