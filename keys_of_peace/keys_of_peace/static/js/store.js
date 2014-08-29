@@ -155,7 +155,14 @@
 		initialize: function(models, options){
 			options || (options = {});
 			this.store = options.store;
-			this.order = options.order || 'frequency';
+			this.comparatorType = options.comparator || 'used';
+			switch(this.comparatorType){
+			case 'used':
+				this.comparator = function(model){
+					return -model.get('used');
+				};
+				break;
+			}
 		},
 
 		getUniqueId: function(){
@@ -195,7 +202,7 @@
 
 		toJSON: function(){
 			var json = {
-				order: this.order
+				comparator: this.comparatorType
 			};
 			json.objects = _.compact(Collection.__super__.toJSON.call(this));
 			return json;
