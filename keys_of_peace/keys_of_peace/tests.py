@@ -1,14 +1,178 @@
+# -*- coding: utf-8 -*-
+
 import crypto
+import itertools
 from tastypie import test as tastypie_test
 
 
+ACCOUNTER_API_URL = '/api/v1/accounter/'
+ACCOUNTER_API_URL_PATTERN = '/api/v1/accounter/%s/'
 USER_API_URL = '/api/v1/user/'
 USER_API_URL_PATTERN = '/api/v1/user/%s/'
 
 
-class UserTestCase(tastypie_test.ResourceTestCase):
+class TestCase(tastypie_test.ResourceTestCase):
     pk = '100'
+
+
+class AccounterDisallowedRequestsMethods(TestCase):
+    def test_delete_detail(self):
+        response = self.api_client.delete(ACCOUNTER_API_URL_PATTERN % self.pk)
+        self.assertHttpMethodNotAllowed(response)
     
+    def test_delete_list(self):
+        response = self.api_client.delete(ACCOUNTER_API_URL)
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_get_detail(self):
+        response = self.api_client.get(ACCOUNTER_API_URL_PATTERN % self.pk)
+        self.assertHttpMethodNotAllowed(response)
+        
+    def test_patch_list(self):
+        response = self.api_client.patch(ACCOUNTER_API_URL, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_patch_detail(self):
+        response = self.api_client.patch(ACCOUNTER_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+        
+    def test_post_list(self):
+        response = self.api_client.post(ACCOUNTER_API_URL, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_post_detail(self):
+        response = self.api_client.post(ACCOUNTER_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_put_detail(self):
+        response = self.api_client.put(ACCOUNTER_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+        
+    def test_put_list(self):
+        response = self.api_client.put(ACCOUNTER_API_URL, data={})
+        self.assertHttpMethodNotAllowed(response)
+
+
+class Accounter(TestCase):
+    def setUp(self):
+        super(Accounter, self).setUp()
+        import models
+        self.accounter1 = models.Accounter.objects.create(
+            alternative_names='alpha beta gamma',
+            icon='delta',
+            name='epsilon',
+            password_alphabet=800,
+            password_length=40,
+        )
+        site = models.Site.objects.create(
+            host='zeta',
+            accounter=self.accounter1,
+        )
+        self.accounter1.main_site = site
+        self.accounter1.save()
+        site = models.Site.objects.create(
+            host='eta',
+            accounter=self.accounter1,
+        )
+        site = models.Site.objects.create(
+            host='theta',
+            accounter=self.accounter1,
+        )
+        self.accounter2 = models.Accounter.objects.create(
+            alternative_names=u'alpha iota kappa lambda азъ',
+            icon='mu',
+            name='nu',
+            password_alphabet=800,
+            password_length=40,
+        )
+
+    def assertAccounter(self, accounter_dict, accounter):
+        self.assertKeys(accounter_dict, ['alternative_names', 'icon', 'main_site', 'name', 'password_alphabet', 'password_length', 'resource_uri', ])
+        self.assertEqual(accounter_dict['alternative_names'], accounter.alternative_names)
+        self.assertEqual(accounter_dict['icon'], accounter.icon)
+        self.assertEqual(bool(accounter_dict['main_site']), bool(accounter.main_site))
+        self.assertEqual(accounter_dict['name'], accounter.name)
+        self.assertEqual(accounter_dict['password_alphabet'], accounter.password_alphabet)
+        self.assertEqual(accounter_dict['password_length'], accounter.password_length)
+        self.assertEqual(accounter_dict['resource_uri'], ACCOUNTER_API_URL_PATTERN % accounter.pk)
+        if accounter.main_site:
+            main_site_dict = accounter_dict['main_site']
+            self.assertKeys(main_site_dict, ['host', 'resource_uri', ])
+            self.assertEqual(main_site_dict['host'], accounter.main_site.host)
+
+    def assertAccounters(self, response, *accounters):
+        deserialized = self.deserialize(response)
+        self.assertEqual(len(deserialized['objects']), len(accounters))
+        for accounter_dict, accounter in itertools.izip(deserialized['objects'], accounters):
+            self.assertAccounter(accounter_dict, accounter)
+    
+    def test_get_list_by_main_site(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': 'zeta',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response, self.accounter1)
+    
+    def test_get_list_by_not_main_site(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': 'theta',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response, self.accounter1)
+    
+    def test_get_list_by_name(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': 'nu',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response, self.accounter2)
+    
+    def test_get_list_by_cyrillic_alternative_name(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': u'азъ',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response, self.accounter2)
+    
+    def test_get_list_by_common_alternative_name(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': 'alpha',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response, self.accounter1, self.accounter2)
+    
+    def test_get_list_by_password_alphabet(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': '800',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response)
+    
+    def test_get_list_by_password_length(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': '40',
+        })
+        self.assertHttpOK(response)
+        self.assertAccounters(response)
+    
+    def test_get_list_no_data(self):
+        response = self.api_client.get(ACCOUNTER_API_URL)
+        self.assertHttpBadRequest(response)
+    
+    def test_get_list_empty_contains(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': '',
+        })
+        self.assertHttpBadRequest(response)
+    
+    def test_get_list_contains_space(self):
+        response = self.api_client.get(ACCOUNTER_API_URL, data={
+            'contains': ' ',
+        })
+        self.assertHttpBadRequest(response)
+
+
+class UserTestCase(TestCase):
     def assertSalt(self, salt, previous_salt=None):
         salt = crypto.from_string(salt)
         self.assertEqual(len(salt), crypto.SALT_BITS_COUNT / 8)

@@ -12,6 +12,33 @@ from django.contrib import auth
 from django.contrib.auth import models as auth_models
 
 
+class Site(resources.ModelResource):
+    class Meta:
+        queryset = models.Site.objects.all()
+        fields = ['host', ]
+
+
+class Accounter(resources.ModelResource):
+    main_site = fields.ForeignKey(Site, 'main_site', full=True, null=True)
+    
+    class Meta:
+        resource_name = 'accounter'
+        queryset = models.Accounter.objects.all()
+        list_allowed_methods = ['get', ]
+        detail_allowed_methods = []
+        fields = ['alternative_names', 'icon', 'name', 'password_alphabet', 'password_length', ]
+        authorization = authorization.Authorization()
+
+    def apply_filters(self, request, filters):
+        s = filters['contains']
+        return self.get_object_list(request).contains(filters['contains'])
+
+    def build_filters(self, filters=None):
+        if not filters or 'contains' not in filters or filters['contains'] in ' ': # Checks for empty "contains" filter and space-only filter simultaneously.
+            raise exceptions.BadRequest('Specify some string for "contains" filter.')
+        return filters
+
+
 class User(resources.ModelResource):
     PASSWORD_CHANGING_FIELDS = ['new_password_hash', 'new_salt', ]
     
