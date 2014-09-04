@@ -162,7 +162,8 @@
 				.position({
 					my: 'center top',
 					at: 'center bottom+5',
-					of: this.bar
+					of: this.bar,
+					collision: 'none'
 				})
 			;			
 		},

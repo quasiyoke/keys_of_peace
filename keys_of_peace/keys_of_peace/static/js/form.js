@@ -247,14 +247,14 @@
 					my: 'left bottom',
 					at: 'right-' + input.css('paddingRight') + ' bottom-' + width * .05,
 					of: input,
-					collision: 'fit'
+					collision: 'none'
 				});
 			}else{
 				status.position({
 					my: 'left center',
 					at: 'right+10 center',
 					of: input,
-					collision: 'fit'
+					collision: 'none'
 				});
 			}
 			return this;
