@@ -4,11 +4,21 @@
 	var store;
 	
 	window.SettingsView = Backbone.View.extend({
+		events: {
+			'change .accounter-remote-autocomplete': 'onAccounterRemoteAutocompleteChange'
+		},
+
+		onAccounterRemoteAutocompleteChange: function(e){
+			store.accounters.remoteAutocomplete = this.accounterRemoteAutocompleteInput.prop('checked');
+			store.save();
+		},
+		
 		setElement: function(el){
 			SettingsView.__super__.setElement.call(this, el);
 			this.$el.html(this.render());
 			var view = this;
 			this.exportData = $('.export-data');
+			this.accounterRemoteAutocompleteInput = this.$('.accounter-remote-autocomplete');
 			this.passwordChangeForm = this.$('.password-change-form')
 				.form({
 					validation: {
@@ -120,6 +130,7 @@
 			}
 			store.on('logout', this.onLogout, this);
 			this.exportData.text(JSON.stringify(store.toJSON(), null, 2));
+			this.accounterRemoteAutocompleteInput.prop('checked', store.accounters.remoteAutocomplete);
 		},
 
 		remove: function(){

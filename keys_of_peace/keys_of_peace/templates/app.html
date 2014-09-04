@@ -166,11 +166,18 @@
 </script>
 
 <script class="settings-template" type="text/html">
-  <div class="export">
+  <div class="chapter">
 	<h2>Export accounts</h2>
 	<pre class="export-data"></pre>
   </div>
-  <form class="password-change-form">
+  <div class="chapter">
+	<h2>Privacy</h2>
+	<p>
+	  <input class="accounter-remote-autocomplete" id="accounter-remote-autocomplete" type="checkbox">
+	  <label for="accounter-remote-autocomplete">Autocomplete new accounter's link/name using Keys of Peace remote DB</label>
+	</p>
+  </div>
+  <form class="chapter password-change-form">
 	<h2>Change main password</h2>
 	{{ password_change_form }}
 	<input class="password-change-submit" type="submit" value="Change password">

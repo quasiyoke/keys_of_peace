@@ -279,6 +279,17 @@
 
 		usedFindAttrs: ['name'],
 
+		initialize: function(models, options){
+			Accounters.__super__.initialize.apply(this, arguments);
+			this.remoteAutocomplete = false !== options.remoteAutocomplete;
+		},
+
+		toJSON: function(options){
+			var json = Accounters.__super__.toJSON.call(this, options);
+			json.remoteAutocomplete = this.remoteAutocomplete;
+			return json;
+		},
+
 		suggestPasswordAlphabet: function(){
 			var first = this.first();
 			if(first){

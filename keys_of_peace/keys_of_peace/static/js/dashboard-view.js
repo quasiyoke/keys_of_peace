@@ -163,35 +163,45 @@
 				},
 
 				linkSource: function(request, response){
-					var requestNumber = ++accounterRequestsCounter;
-					Api.fetch({
-						resource: 'accounter',
-						data: {
-							contains: request.term
-						}
-					})
-						.always(function(xhr){
-							if(requestNumber === accounterRequestsCounter){
-								var accounters = store.accounters.filter(function(accounter){
-									return accounter.contains(request.term);
-								});
-								_.each(xhr.objects, function(attrs){ // Won't throw error if `xhr` doesn't contain any `objects`.
-									if(!store.accounters.get(attrs.resource_uri)){
-										accounters.push(new Accounter(attrs, {
-											parse: true
-										}));
-									}
-								});
-								accounters = _.map(accounters, function(accounter){
-									return {
-										label: accounter.get('name'),
-										value: accounter
-									};
-								});
-								response(accounters);
+					function getStoreAccounters(){
+						return store.accounters.filter(function(accounter){
+							return accounter.contains(request.term);
+						});
+					}
+					function respond(accounters){
+						accounters = _.map(accounters, function(accounter){
+							return {
+								label: accounter.get('name'),
+								value: accounter
+							};
+						});
+						response(accounters);
+					}
+					if(store.accounters.remoteAutocomplete){
+						var requestNumber = ++accounterRequestsCounter;
+						Api.fetch({
+							resource: 'accounter',
+							data: {
+								contains: request.term
 							}
 						})
-					;
+							.always(function(xhr){
+								if(requestNumber === accounterRequestsCounter){
+									var accounters = getStoreAccounters();
+									_.each(xhr.objects, function(attrs){ // Won't throw error if `xhr` doesn't contain any `objects`.
+										if(!store.accounters.get(attrs.resource_uri)){
+											accounters.push(new Accounter(attrs, {
+												parse: true
+											}));
+										}
+									});
+									respond(accounters);
+								}
+							})
+						;
+					}else{
+						respond(getStoreAccounters());
+					}
 				},
 
 				loginSource: function(request, response){

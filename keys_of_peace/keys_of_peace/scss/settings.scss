@@ -1,8 +1,10 @@
 @import "mixins";
 
-.export {
-	margin: 0 auto;
-	width: $app-width * .8;
+.chapter {
+	margin: {
+		top: 3em;
+		bottom: 3em;
+	}
 }
 
 .export-data {

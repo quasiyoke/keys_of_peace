@@ -84,6 +84,10 @@ label {
 	display: block;
 	font-size: 1em;
 	color: $gray-color;
+
+	input[type=checkbox] + & {
+		display: inline;
+	}
 }
 
 input[type=submit], button {
