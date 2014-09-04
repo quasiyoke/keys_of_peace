@@ -12,6 +12,12 @@
 			this.model.on('check', this.onModelCheck, this);
 			this.model.on('changeorder', this.onModelChangeOrder, this);
 			this.model.on('remove', this.onModelRemove, this);
+			var accounter = this.model.getAccounter();
+			accounter.on('change:name', this.onAccounterChangeName, this);
+			var site = accounter.getMainSite();
+			if(site){
+				site.on('change:host', this.onSiteChangeHost, this);
+			}
 		},
 		
 		render: function(){
@@ -28,23 +34,30 @@
 			);
 
 			this.check = this.$('.account-check');
-			var accounter = this.model.get('accounter') || new Backbone.Model();
-			var site = accounter.get('mainSite');
+			var accounter = this.model.getAccounter();
+			var site = accounter && accounter.getMainSite();
 			var loginWrap = this.$('.account-login-wrap');
 			loginWrap.find('.account-login')
 				.clipboard({
 					data: login
 				})
 			;
-			var title = this.$('.account-title');
+			this.title = this.$('.account-title');
 			if(site){
-				var siteLink = $('<a class="account-accounter-link account-title" target="_blank">')
+				this.titleLink = $('<a class="account-accounter-link account-title" target="_blank">')
 					.attr('href', site.get('host'))
-					.text(site.get('name').shorten())
+					.text(accounter.get('name').shorten())
+					.appendTo(this.title)
 				;
-				title.append(siteLink);
 			}else{
-				title.text(accounter.get('name'));
+				this.title.text(accounter && accounter.get('name'));
+			}
+			var icon = accounter.get('icon');
+			if(icon){
+				(this.titleLink || this.title)
+					.addClass('account-title_icon')
+					.css('backgroundImage', 'url("' + icon + '")')
+				;
 			}
 			
 			this.password = this.$('.account-password')
@@ -91,6 +104,10 @@
 					.appendTo(additional)
 				;
 			}			
+		},
+
+		onAccounterChangeName: function(model, name){
+			(this.titleLink || this.title).text(name);
 		},
 
 		onAdditionalShowClick: function(e){
@@ -170,6 +187,10 @@
 					complete: _.bind(AccountView.__super__.remove, this)
 				})
 			;
+		},
+
+		onSiteChangeHost: function(site, host){
+			this.titleLink.attr('href', host);
 		}
 	});
 

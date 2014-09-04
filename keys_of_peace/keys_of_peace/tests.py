@@ -7,6 +7,8 @@ from tastypie import test as tastypie_test
 
 ACCOUNTER_API_URL = '/api/v1/accounter/'
 ACCOUNTER_API_URL_PATTERN = '/api/v1/accounter/%s/'
+SITE_API_URL = '/api/v1/site/'
+SITE_API_URL_PATTERN = '/api/v1/site/%s/'
 USER_API_URL = '/api/v1/user/'
 USER_API_URL_PATTERN = '/api/v1/user/%s/'
 
@@ -87,7 +89,7 @@ class Accounter(TestCase):
         )
 
     def assertAccounter(self, accounter_dict, accounter):
-        self.assertKeys(accounter_dict, ['alternative_names', 'icon', 'main_site', 'name', 'password_alphabet', 'password_length', 'resource_uri', ])
+        self.assertKeys(accounter_dict, ['alternative_names', 'icon', 'main_site', 'name', 'password_alphabet', 'password_length', 'resource_uri', 'sites', ])
         self.assertEqual(accounter_dict['alternative_names'], accounter.alternative_names)
         self.assertEqual(accounter_dict['icon'], accounter.icon)
         self.assertEqual(bool(accounter_dict['main_site']), bool(accounter.main_site))
@@ -96,15 +98,20 @@ class Accounter(TestCase):
         self.assertEqual(accounter_dict['password_length'], accounter.password_length)
         self.assertEqual(accounter_dict['resource_uri'], ACCOUNTER_API_URL_PATTERN % accounter.pk)
         if accounter.main_site:
-            main_site_dict = accounter_dict['main_site']
-            self.assertKeys(main_site_dict, ['host', 'resource_uri', ])
-            self.assertEqual(main_site_dict['host'], accounter.main_site.host)
+            self.assertSite(accounter_dict['main_site'], accounter.main_site)
+            for site_dict, site in itertools.izip(accounter_dict['sites'], accounter.sites.all()):
+                self.assertSite(site_dict, site)
 
     def assertAccounters(self, response, *accounters):
         deserialized = self.deserialize(response)
         self.assertEqual(len(deserialized['objects']), len(accounters))
         for accounter_dict, accounter in itertools.izip(deserialized['objects'], accounters):
             self.assertAccounter(accounter_dict, accounter)
+
+    def assertSite(self, site_dict, site):
+        self.assertKeys(site_dict, ['host', 'resource_uri', ])
+        self.assertEqual(site_dict['host'], site.host)
+        self.assertEqual(site_dict['resource_uri'], SITE_API_URL_PATTERN % site.pk)
     
     def test_get_list_by_main_site(self):
         response = self.api_client.get(ACCOUNTER_API_URL, data={
@@ -170,6 +177,48 @@ class Accounter(TestCase):
             'contains': ' ',
         })
         self.assertHttpBadRequest(response)
+
+
+class SiteDisallowedRequestsMethods(TestCase):
+    def test_delete_detail(self):
+        response = self.api_client.delete(SITE_API_URL_PATTERN % self.pk)
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_delete_list(self):
+        response = self.api_client.delete(SITE_API_URL)
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_get_detail(self):
+        response = self.api_client.get(SITE_API_URL_PATTERN % self.pk)
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_get_list(self):
+        response = self.api_client.get(SITE_API_URL)
+        self.assertHttpMethodNotAllowed(response)
+        
+    def test_patch_list(self):
+        response = self.api_client.patch(SITE_API_URL, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_patch_detail(self):
+        response = self.api_client.patch(SITE_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+        
+    def test_post_list(self):
+        response = self.api_client.post(SITE_API_URL, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_post_detail(self):
+        response = self.api_client.post(SITE_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+    
+    def test_put_detail(self):
+        response = self.api_client.put(SITE_API_URL_PATTERN % self.pk, data={})
+        self.assertHttpMethodNotAllowed(response)
+        
+    def test_put_list(self):
+        response = self.api_client.put(SITE_API_URL, data={})
+        self.assertHttpMethodNotAllowed(response)
 
 
 class UserTestCase(TestCase):

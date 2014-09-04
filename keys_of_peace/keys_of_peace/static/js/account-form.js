@@ -1,3 +1,4 @@
+'use strict';
 (function($){
 	$.widget('keysOfPeace.accountForm', $.keysOfPeace.form, {
 		_create: function(){
@@ -88,6 +89,10 @@
 
 		_delegateEvents: function(){
 			this._super();
+			this._on(this.linkInput, {
+				change: this._onChangeLink,
+				keyup: this._onChangeLink
+			});
 			this._on(this.passwordInput, {
 				'passwordchange': function(e, data){
 					if(data.value.length){
@@ -126,6 +131,32 @@
 			if(Number(this.lengthInput.val())){
 				this.generatePassword()
 			}
+		},
+
+		_onChangeLink: function(){
+			var link;
+			if(this.options.accounter && (' '.contains(link = this.linkInput.val()) || !this.options.accounter.contains(link))){
+				this._setOption('accounter');
+			}
+		},
+
+		_setOption: function(key, value){
+			this._super(key, value);
+			if('accounter' === key){
+				var icon;
+				if(value && (icon = value.get('icon'))){
+					this.linkInput
+						.addClass('account-form-link_icon')
+						.css('backgroundImage', 'url("' + icon + '")')
+					;
+				}else{
+					this.linkInput
+						.removeClass('account-form-link_icon')
+						.css('backgroundImage', '')
+					;
+				}
+			}
+			return this;
 		},
 
 		_submit: function(){

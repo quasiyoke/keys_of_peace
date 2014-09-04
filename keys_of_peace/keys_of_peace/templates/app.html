@@ -35,7 +35,6 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/util.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/api.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/backbone.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/backbone-relational.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/store.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/account-form.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/account-view.js"></script>
@@ -76,7 +75,7 @@
 
 <script class="dashboard-template" type="text/html">
   <div class="dashboard-bar">
-	<form class="search-form">
+	<form class="search-form" autocomplete="off">
 	  <input class="search-query" name="query" type="text">
 	  <input class="search-submit" type="submit" value="Search" tabindex="-1">
 	</form>

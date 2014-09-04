@@ -1,6 +1,6 @@
 'use strict';
 (function($){
-	var Model = Backbone.RelationalModel.extend({
+	var Model = Backbone.Model.extend({
 		initialize: function(attrs, options){
 			if(!this.validationError && !this.has('id')){
 				this.set('id', this.collection.getUniqueId());
@@ -29,26 +29,16 @@
 
 
 	window.Account = Model.extend({
-		relations: [
-			{
-				type: Backbone.HasOne,
-				key: 'accounter',
-				relatedModel: 'Accounter',
-				collectionType: 'Accounters',
-				includeInJSON: 'id',
-				reverseRelation: {
-					key: 'accounts',
-					includeInJSON: false
-				}
-			}
-		],
-
+		getAccounter: function(){
+			return this.collection.store.accounters.get(this.get('accounter'));
+		},
+		
 		contains: function(s){
-			return this.get('login').contains(s) || (this.has('email') && this.get('email').contains(s)) || (this.has('notes') && this.get('notes').contains(s)) ||	this.get('accounter').contains(s);
+			return this.get('login').contains(s) || (this.has('email') && this.get('email').contains(s)) || (this.has('notes') && this.get('notes').contains(s)) ||	this.getAccounter().contains(s);
 		},
 
-		toJSON: function(){
-			var json = Account.__super__.toJSON.apply(this, arguments);
+		toJSON: function(options){
+			var json = Account.__super__.toJSON.call(this, options);
 			if(!json){
 				return;
 			}
@@ -59,21 +49,59 @@
 
 
 	window.Accounter = Model.extend({
-		relations: [
-			{
-				type: Backbone.HasOne,
-				key: 'mainSite',
-				relatedModel: 'Site',
-				includeInJSON: 'id'
-			}
-		],
-
 		contains: function(s){
-			return (this.has('name') && this.get('name').contains(s)) || this.get('sites').containsQuery(s);
+			var name, sites;
+			return ((name = this.get('name')) && name.contains(s)) ||
+				((sites = this.getSites()) && _.any(sites, function(site){
+					return site.contains(s);
+				}));
+		},
+
+		toJSON: function(options){
+			var json = Accounter.__super__.toJSON.call(this, options);
+			if(!json){
+				return;
+			}
+			json.mainSite && json.mainSite.id && (json.mainSite = json.mainSite.id);
+			delete json.sites;
+			return json;
+		},
+
+		getMainSite: function(){
+			var mainSite = this.get('mainSite');
+			return mainSite && (_.isObject(mainSite) ? mainSite : this.collection.store.sites.get(mainSite));
 		},
 
 		isObsolete: function(){
-			return !this.collection.store.accounts.findWhere({accounter: this});
+			return !this.collection.store.accounts.findWhere({accounter: this.id});
+		},
+
+		parse: function(attrs, options){
+			attrs = Accounter.__super__.parse.call(this, attrs, options);
+			attrs.alternativeNames = attrs.alternative_names;
+			delete attrs.alternative_names;
+			attrs.id = attrs.resource_uri;
+			delete attrs.resource_uri;
+			if(attrs.mainSite = attrs.main_site){
+				var sites = {};
+				attrs.sites = _.map(attrs.sites, function(siteAttrs){
+					siteAttrs.accounter = attrs.id;
+					var site = new Site(siteAttrs, options);
+					sites[site.id] = site;
+					return site;
+				});
+				attrs.mainSite = sites[attrs.mainSite.resource_uri];
+			}
+			delete attrs.main_site;
+			attrs.passwordAlphabet = attrs.password_alphabet;
+			delete attrs.password_alphabet;
+			attrs.passwordLength = attrs.password_length;
+			delete attrs.password_length;
+			return attrs;
+		},
+
+		getSites: function(){
+			return this.get('sites') || this.collection.store.sites.where({accounter: this.id});
 		}
 	});
 	
@@ -101,46 +129,24 @@
 
 
 	window.Site = Model.extend({
-		relations: [
-			{
-				type: Backbone.HasOne,
-				key: 'accounter',
-				relatedModel: 'Accounter',
-				collectionType: 'Accounters',
-				includeInJSON: 'id',
-				reverseRelation: {
-					key: 'sites',
-					collectionType: 'Sites',
-					includeInJSON: false
-				}
-			}
-		],
-
-		initialize: function(){
-			Site.__super__.initialize.apply(this, arguments);
-			var accounter = this.get('accounter');
-			accounter && this.onAccounter(accounter);
-			this.on('change:accounter', this.onAccounterChange, this);
-		},
-
-		onAccounter: function(accounter){
-			accounter.on('destroy', this.onAccounterDestroy, this);
-		},
-
-		onAccounterChange: function(accounter){
-			this.onAccounter(accounter);
-		},
-
-		onAccounterDestroy: function(accounter){
-			this.destroy();
+		getAccounter: function(){
+			return this.collection.store.accounters.get(this.get('accounter'));
 		},
 
 		contains: function(s){
-			return this.get('host').contains(s) || this.get('name').contains(s);
+			return this.get('host').contains(s);
 		},
 
 		isObsolete: function(){
-			return this.get('accounter').isObsolete();
+			var accounter = this.getAccounter();
+			return !accounter || accounter.isObsolete();
+		},
+
+		parse: function(attrs, options){
+			attrs = Site.__super__.parse.call(this, attrs, options);
+			attrs.id = attrs.resource_uri;
+			delete attrs.resource_uri;
+			return attrs;
 		},
 		
 		validate: function(attrs, options){
@@ -200,11 +206,11 @@
 			return instance;
 		},
 
-		toJSON: function(){
+		toJSON: function(options){
 			var json = {
 				comparator: this.comparatorType
 			};
-			json.objects = _.compact(Collection.__super__.toJSON.call(this));
+			json.objects = _.compact(Collection.__super__.toJSON.call(this, options));
 			return json;
 		}
 	});
@@ -214,34 +220,51 @@
 		model: Account,
 		
 		create: function(attrs, options){
-			var accounter;			
-			var site = this.store.sites.used({
-				host: attrs.link
-			});
-			if(site){
-				accounter = site.get('accounter');
+			var site;
+			if(attrs.accounter){
+				if(!attrs.accounter.collection){
+					this.store.accounters.add(attrs.accounter);
+					site = attrs.accounter.getMainSite();
+					if(site){
+						this.store.sites.add(site);
+						this.store.sites.add(attrs.accounter.getSites());
+					}
+				}
+			}else{
+				site = this.store.sites.used({
+					host: attrs.link
+				});
+				if(site){
+					attrs.accounter = site.get('accounter');
+				}
 			}
-			if(accounter){
-				accounter.set(_.pick(attrs, ['passwordAlphabet', 'passwordLength']));
+			if(attrs.accounter){
+				attrs.accounter.set(_.pick(attrs, ['passwordAlphabet', 'passwordLength']));
+				site = attrs.accounter.getMainSite();
+				if(site){
+					site.set('host', attrs.link);
+				}else{
+					attrs.accounter.set('name', attrs.link);
+				}
 			}else{
 				/*
 					If no site was created or site was created just now and has no `accounter`.
 					@see Collection.used
 				*/
-				accounter = this.store.accounters.used({
+				attrs.accounter = this.store.accounters.used({
 					name: site ? site.get('name') : attrs.link,
 					passwordAlphabet: attrs.passwordAlphabet,
 					passwordLength: attrs.passwordLength
 				});
 				if(site){
-					site.set('accounter', accounter);
-					accounter.set('mainSite', site);
+					site.set('accounter', attrs.accounter.id);
+					attrs.accounter.set('mainSite', site.id);
 				}
 			}
 			attrs.login && this.store.logins.used({login: attrs.login});
 			attrs.email && this.store.emails.used({email: attrs.email});
 			return Accounts.__super__.create.call(this, {
-				accounter: accounter,
+				accounter: attrs.accounter.id,
 				login: attrs.login,
 				email: attrs.email,
 				password: attrs.password,
@@ -308,15 +331,6 @@
 
 	window.Sites = Collection.extend({
 		model: Site,
-
-		containsQuery: function(s){
-			for(var i=this.length; i--;){
-				if(this.models[i].contains(s)){
-					return true;
-				}
-			}
-			return false;
-		},
 		
 		create: function(attrs, options){
 			var model = Sites.__super__.create.call(this, attrs, options);

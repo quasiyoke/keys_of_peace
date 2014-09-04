@@ -123,6 +123,7 @@
 
 			this.searchResultsElement = this.$('.search-results');
 
+			var accounterRequestsCounter = 0;
 			this.accountForm = this.$('.account-form');
 			this.accountForm.accountForm({
 				validation: {
@@ -153,26 +154,44 @@
 
 				linkSelect: function(e, ui){
 					e.preventDefault();
-					var accounter = ui.item.value;
-					var site = accounter.get('mainSite');
-					this.linkInput.val(site ? site.get('host') : accounter.get('name'));
-					this.lengthInput.val(accounter.get('passwordLength'));
-					this.alphabetInput.val(accounter.get('passwordAlphabet'));
+					this._setOption('accounter', ui.item.value);
+					var site = this.options.accounter.getMainSite();
+					this.linkInput.val(site ? site.get('host') : this.options.accounter.get('name'));
+					this.lengthInput.val(this.options.accounter.get('passwordLength'));
+					this.alphabetInput.val(this.options.accounter.get('passwordAlphabet'));
 					this.generatePassword();
 				},
 
 				linkSource: function(request, response){
-					response(_.map(
-						store.accounters.filter(function(accounter){
-							return accounter.contains(request.term);
-						}),
-						function(accounter){
-							return {
-								label: accounter.get('name'),
-								value: accounter
-							};
+					var requestNumber = ++accounterRequestsCounter;
+					Api.fetch({
+						resource: 'accounter',
+						data: {
+							contains: request.term
 						}
-					));
+					})
+						.always(function(xhr){
+							if(requestNumber === accounterRequestsCounter){
+								var accounters = store.accounters.filter(function(accounter){
+									return accounter.contains(request.term);
+								});
+								_.each(xhr.objects, function(attrs){ // Won't throw error if `xhr` doesn't contain any `objects`.
+									if(!store.accounters.get(attrs.resource_uri)){
+										accounters.push(new Accounter(attrs, {
+											parse: true
+										}));
+									}
+								});
+								accounters = _.map(accounters, function(accounter){
+									return {
+										label: accounter.get('name'),
+										value: accounter
+									};
+								});
+								response(accounters);
+							}
+						})
+					;
 				},
 
 				loginSource: function(request, response){
@@ -189,6 +208,7 @@
 				submit: function(){
 					if(this.loginInput.val() || this.emailInput.val()){
 						store.accounts.create({
+							accounter: this.options.accounter,
 							link: this.linkInput.val(),
 							login: this.loginInput.val(),
 							email: this.emailInput.val(),

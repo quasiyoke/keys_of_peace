@@ -46,6 +46,7 @@ input.search-submit {
 	width: 100%;
 }
 
+$account-padding-x: .21em;
 .account {
 	font-size: 1.6em;
 	border-bottom: {
@@ -54,7 +55,7 @@ input.search-submit {
 	}
 
 	& > td {
-		padding: 0 5px;
+		padding: 0 $account-padding-x;
 	}
 }
 
@@ -64,6 +65,26 @@ input.search-submit {
 
 .account-accounter-link {
 	@include title-link;
+}
+
+.account-title_icon {
+	$icon-padding: 1em;
+	
+	&, &:link, &:visited {
+		padding-left: $icon-padding;
+		background: {
+			repeat: no-repeat;
+			size: .7em;
+			position: 0 center;
+		}
+	}
+
+	.account > & {
+		padding-left: $account-padding-x + $icon-padding;
+		background: {
+			position: $account-padding-x center;
+		}
+	}
 }
 
 .account-password-show {
@@ -91,30 +112,12 @@ input.search-submit {
 	padding: 2px 7px;
 }
 
-.account-options-link {
-	@include modal-link(mix($fore-color, $back-color, 35%));
-	
-	&:link, &:visited {
-		font-size: .7em;
-	}
-}
-
-.account-options {
-	display: none;
-}
-
-.account-option-link {
-	&:link, &:visited {
-		@include modal-link;
-	}
-}
-
-
-.account-password-row {
-	position: relative;
-
-	& > div {
-		display: inline;
+.account-form-link_icon {
+	text-indent: 1.4em;
+	background: {
+		repeat: no-repeat;
+		size: 1em;
+		position: .24em .17em;
 	}
 }
 

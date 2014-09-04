@@ -14,12 +14,16 @@ from django.contrib.auth import models as auth_models
 
 class Site(resources.ModelResource):
     class Meta:
+        resource_name = 'site'
         queryset = models.Site.objects.all()
+        list_allowed_methods = []
+        detail_allowed_methods = []
         fields = ['host', ]
 
 
 class Accounter(resources.ModelResource):
     main_site = fields.ForeignKey(Site, 'main_site', full=True, null=True)
+    sites = fields.ToManyField(Site, 'sites', full=True, null=True)
     
     class Meta:
         resource_name = 'accounter'
