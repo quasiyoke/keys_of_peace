@@ -56,7 +56,7 @@ To install Compass follow instructions [here.][8]
 
 ## Installation
 
-If Django and Compass are installed, his will download, compile CSS and install the rest of requirements in your environment:
+If Django and Compass are installed, this will download, compile CSS and install the rest of requirements in your environment:
 
     $ pip install -e git+git://github.com/quasiyoke/keys_of_peace.git#egg=keys_of_peace
     
