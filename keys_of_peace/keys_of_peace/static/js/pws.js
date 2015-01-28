@@ -10,6 +10,10 @@
 	
 	var IncorrectPasswordError = PWS.IncorrectPasswordError = function(){};
 	IncorrectPasswordError.prototype = new Error('Incorrect password.');
+
+	
+	var TooFewIterationsError = PWS.TooFewIterationsError = function(){};
+	TooFewIterationsError.prototype = new Error('Storage has too small hashing iterations count for key stretching specified.');
 	
 	
 	var Store = PWS.Store = function(s, password){
@@ -28,6 +32,7 @@
 		TAG_LENGTH: 4,
 		SALT_LENGTH: 256 / 8,
 		ITER_LENGTH: 32 / 8,
+		ITER_MIN: 2048,
 
 		shiftCiphertext: function(s){
 			var ciphertext = [];
@@ -76,9 +81,13 @@
 		},
 		
 		parse: function(s){
+			/**
+			 * @return warnings
+			 */
 			if(!s){
 				throw new Error('PWS store wasn\'t defined.');
 			}
+			var warnings = [];
 			s = Crypto.fromString(s);
 			_.extend(s, CryptoJS.lib.WordStack);
 			try{
@@ -89,6 +98,9 @@
 				}
 				this.salt = s.shiftWordArray(Store.SALT_LENGTH / 4);
 				this.iter = s.shiftNumber(Store.ITER_LENGTH / 4);
+				if(this.iter < Store.ITER_MIN){
+					throw new TooFewIterationsError();
+				}
 				this.stretchedKeyHash = s.shiftWordArray(Store.SALT_LENGTH / 4);
 				this.b1 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
 				this.b2 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);

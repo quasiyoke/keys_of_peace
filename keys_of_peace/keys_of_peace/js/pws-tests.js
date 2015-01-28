@@ -1,8 +1,9 @@
 'use strict';
 
-var PWS_STORE_STRING_NO_TAG = 'aGVsbG8='
+var PWS_STORE_STRING_NO_TAG = 'aGVsbG8=';
 var PWS_STORE_STRING = 'UFdTM2NSi7EkqAv5MLStsmg0rWHZKHtU4TT7jnnSKK3KhCkDAAgAAPhH3PZH5MPRO4mP8m8Nji0wqr39DbE7dJ2pREJkyEH/fZTLERwvBrZk7YqaoFbLvPieXUWG2DeHndka2jO+rvDtccLn246+RK04oD7PRReLd5syBOogLeE0vjfVdWglCDJ2G/vHOHF7al4P6w1xWLEyGFc+oBKq12FD+8Y/PDNDH5to4KXwbf5OfIr7TzAmDL3kXmiZy/bIT547mk3Cz6Hz14eteALqb+Rz3xkC18zPHiRbPmKMyqpOveOmN726WqPHqRo8SkkXo9Xkpsns+MofjdmrQUUVsh6ZWnew8am/+bLsaBSQADgQb7sxb5MDE+qlJqyz8nl3uJqfAbsxpK0tQ1CYhS26ykzeebAPdL3nA2lC82ISrBR9EPEFZXDnSoG55/ppimp3LkILVPlC23zjoijdJxojnVuVzYCQqLT1HaZ2v8TgPu1TLX/f5IUwk7oc+p9L1aQ9uFrKYQHrHRqsqyHlKb8EVtfJcuyjoPyfzoiiTMpfV0arzV/ngO9mMlSxK/ttLolpjtQf6EcEQmbJFfwNVY0s8HguAt3ShvraaMq1wK4bq+lsa6fZ1tBwKtm652iqq7aas4kk49mMyMFCRd+TWorzSM1VPUhncg1wo8fn+qpDB3Ruv0uebBJReoEWQu4pPnCeV3cny1hh1pTG3rY6vhnt/dYBqvMWmjn2vw9eR0e6/OhnvuhLAoI/je7vv4Sz71RqlvIp5z/7YdKkE+/pA4g7NxNqyIB48/WWAcOSOooh4w742dHdWFz+glLfVNc4J2kWy6bnKf1ubwZ5eHmM/c47/yaomWCAgSeaTc1eZ+8BG3VlNKxRBNfLLA0LaLPX4XvsYehRop4UhXzKWUpwSCnJVF4GBjSkexubvWVVG1rB1+MCFGx8vD0O/ZxpUpzK2aTz6pc0BJ57o/zIS+sj1OVWNqp188CxnKRDIg2FoQrx8tr+xnLQSr2u8CT0tuQOb718ppiNKNJ9mG8w3cJmY8+XQFDodxpTHkei7kJyyYrQBc0w2FPTj9VPU7W2JJiMKTtoYDEzJejhMZcExZEO1Vv1wSHwubGqeC8UZjShNUE0trXVS69ZlrOsdMkAxDGPo2gIE48yahq/Ic4u23sDBPc8vUNdDz6xwSjwqYInT9Rf4l1ior1Sn/vHbL+rgL9q3ykDu31Q8cKDiM0FVTePXcOF+kFbDhRn7u2FolKM1JQEjoIIjvW0a6cWJrEoZUiSbp3tDLIBfz1jOZUj+B3Hooy4edKI9ui9loyQPe0FviFyO4cPEbEamvZvUFbUdTtwtmub77NnvaMb6n0Gj9h9MB6KBNMs047qTCauwKs7/cRC5dOX/d7eNJkmCostrPk36joics5WR1VG0UAdII1OI4agzT3JAaCyKvYu0HEpuGNnfV27d4nsjrGwGmPJZVpz3f5UyG2kxnJiGK6DBczv5ZAR2DizW5fGYUbfT7bDjonC0LXWBLktZ4WPWDbA+WelpWAwPr79SiNYjYVBp7K6yemobxge2XT5VcqoFjfYbg1ZwB5DFjC3Vq3zmQPSg/MWwRjOaS6cdxJeHIga2OeRJW8QBW7QjnZkqg9KSZwFM0HtvDUeLybVxPlVjFBXUzMtRU9GUFdTMy1FT0bCepE2z8eIsr9z66YnQ2a4kTVbAXsv/40EUo2z5/lcBg==';
-var PASSWORD = 'W<u;]-CS>a%sF/N8+-93'
+var PWS_STORE_STRING_TOO_FEW_ITERATIONS = 'UFdTM2NSi7EkqAv5MLStsmg0rWHZKHtU4TT7jnnSKK3KhCkD/wAAAPhH3PZH5MPRO4mP8m8Nji0wqr39DbE7dJ2pREJkyEH/fZTLERwvBrZk7YqaoFbLvPieXUWG2DeHndka2jO+rvDtccLn246+RK04oD7PRReLd5syBOogLeE0vjfVdWglCDJ2G/vHOHF7al4P6w1xWLEyGFc+oBKq12FD+8Y/PDNDH5to4KXwbf5OfIr7TzAmDL3kXmiZy/bIT547mk3Cz6Hz14eteALqb+Rz3xkC18zPHiRbPmKMyqpOveOmN726WqPHqRo8SkkXo9Xkpsns+MofjdmrQUUV';
+var PASSWORD = 'W<u;]-CS>a%sF/N8+-93';
 
 casper.test.comment('PWS Store');
 
@@ -43,6 +44,14 @@ function checkPWSStoreStructureCorrect(param){
 	return !!result;
 }
 
+function checkPWSStoreTooFewIterations(param){
+	try{
+		new PWS.Store(param.string, param.password);
+	}catch(e){
+		return e instanceof PWS.TooFewIterationsError;
+	}
+}
+
 var helper = require('./djangocasper.js');
 helper.scenario(
 	'/',
@@ -50,25 +59,31 @@ helper.scenario(
 		this.test.assert(true);
 	},
 	function(){
-		this.test.assertEval(checkPWSStoreIncorrect, 'Constructing with nothing causes `PWSError`', {
+		this.test.assertEval(checkPWSStoreIncorrect, 'Constructing with nothing causes `PWS.Error`', {
 			string: '',
 			password: PASSWORD
 		});
 	},
 	function(){
-		this.test.assertEval(checkPWSStoreIncorrect, 'Constructing with string without "TAG" causes `PWSError`', {
+		this.test.assertEval(checkPWSStoreIncorrect, 'Constructing with string without "TAG" causes `PWS.Error`', {
 			string: '',
 			password: PASSWORD
 		});
 	},
 	function(){
-		this.test.assertEval(checkPWSStoreStructureCorrect, 'Correctly structured PWSStore string is being read', {
+		this.test.assertEval(checkPWSStoreTooFewIterations, 'Too small "ITER" value causes `PWS.TooFewIterationsError`', {
+			string: PWS_STORE_STRING_TOO_FEW_ITERATIONS,
+			password: PASSWORD
+		});
+	},
+	function(){
+		this.test.assertEval(checkPWSStoreStructureCorrect, 'Correctly structured PWS.Store string is being read', {
 			string: PWS_STORE_STRING,
 			password: PASSWORD
 		});
 	},
 	function(){
-		this.test.assertEval(checkPWSStoreIncorrectPassword, 'Incorrect password causes `PWSIncorrectPasswordError`', {
+		this.test.assertEval(checkPWSStoreIncorrectPassword, 'Incorrect password causes `PWS.IncorrectPasswordError`', {
 			string: PWS_STORE_STRING,
 			password: 'topsecret'
 		});
