@@ -2,7 +2,10 @@
 
 import crypto
 import itertools
+from casper import tests as casper_test
+from os import path
 from tastypie import test as tastypie_test
+from django.conf import settings
 
 
 ACCOUNTER_API_URL = '/api/v1/accounter/'
@@ -177,6 +180,13 @@ class Accounter(TestCase):
             'contains': ' ',
         })
         self.assertHttpBadRequest(response)
+
+
+class JS(casper_test.CasperTestCase):
+    JS_DIR = path.join(settings.BASE_DIR, 'keys_of_peace', 'js')
+    
+    def test_pws(self):
+        self.assertTrue(self.casper(path.join(self.JS_DIR, 'pws-tests.js')))
 
 
 class SiteDisallowedRequestsMethods(TestCase):

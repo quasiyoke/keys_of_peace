@@ -2,6 +2,53 @@
 
 (function(CryptoJS){
 
+	
+	var WordStack = CryptoJS.lib.WordStack = CryptoJS.lib.WordArray.extend({
+		ValueError: function(message){
+			this.message = message;
+		},
+
+		IndexError: function(message){
+			this.message = message;
+		},
+
+		shift: function(){
+			/**
+			 * Removes the first word from stack.
+			 *
+			 * @return {number} removed word.
+			 */
+			this.sigBytes -= 4;
+			if(this.sigBytes < 0){
+				throw new WordStack.IndexError('Stack was finished unexpectedly.');
+			}
+			return this.words.shift();
+		},
+																																					
+		shiftWordArray: function(lengthWords){
+			/**
+			 * Removes the first `lengthWords` words from stack.
+			 *
+			 * @param {number} lengthWords How much words should be removed.
+			 * @return {WordArray} array of removed words.
+			 */
+			if(undefined === lengthWords){
+				throw new WordStack.ValueError('`lengthWords` should be specified.');
+			}
+			return CryptoJS.lib.WordArray.create(_.map(_.range(lengthWords), _.bindKey(this, 'shift')), lengthWords * 4);
+		},
+
+		shiftNumber: function(){
+			/**
+			 * Removes the first word from the stack and converts it to Little Endian number.
+			 *
+			 * @return {number} number at the first word.
+			 */
+			var word = this.shift();
+			return ((word & 0xff) << 24) | ((word & 0xff00) << 8) | ((word & 0xff0000) >>> 8) | (word >>> 24);
+		}
+	});
+
 
   var Encoder = CryptoJS.enc.Base64;
 
