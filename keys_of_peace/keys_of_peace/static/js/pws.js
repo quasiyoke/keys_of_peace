@@ -63,6 +63,8 @@
 		decrypt: function(password){
 			var stretchedKey = this.getStretchedKey(password);
 			this.checkStretchedKey(stretchedKey);
+			var key = CryptoJS.TwoFish.decrypt(this.b1b2, stretchedKey, { mode: CryptoJS.mode.ECB });
+			var hmacKey = CryptoJS.TwoFish.decrypt(this.b3b4, stretchedKey, { mode: CryptoJS.mode.ECB });
 		},
 
 		getStretchedKey: function(password){
@@ -102,10 +104,8 @@
 					throw new TooFewIterationsError();
 				}
 				this.stretchedKeyHash = s.shiftWordArray(Store.SALT_LENGTH / 4);
-				this.b1 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
-				this.b2 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
-				this.b3 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
-				this.b4 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
+				this.b1b2 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4 * 2);
+				this.b3b4 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4 * 2);
 				this.iv = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
 				this.ciphertext = Store.shiftCiphertext(s);
 				this.hmac = s.shiftWordArray(Store.SALT_LENGTH / 4);
