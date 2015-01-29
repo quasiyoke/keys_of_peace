@@ -6,6 +6,7 @@
 	<link rel="icon" type="image/x-icon" sizes="16x16" href="{{ STATIC_URL }}images/favicon.ico">
 	<link rel="icon" type="image/svg+xml" sizes="any" href="{{ STATIC_URL }}images/favicon.svg">
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" media="screen" />
+	{% block head %}{% endblock %}
 	{% block stylesheets %}{% endblock %}
   </head>
   <body>

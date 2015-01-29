@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 
 
+{% block head %}
+<meta name="description" content="Open website to keep your passwords safely">
+<meta name="author" content="Pyotr Ermishkin (quasiyoke)">
+{% endblock %}
+
+
 {% block stylesheets %}
 <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/app.css" media="screen">
 {% endblock %}
