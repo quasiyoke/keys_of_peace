@@ -1,7 +1,9 @@
 'use strict';
 
-(function(CryptoJS){
-
+(function(){
+	function switchEndianness(word) {
+    return ((word & 0xff) << 24) | ((word & 0xff00) << 8) | ((word & 0xff0000) >>> 8) | (word >>> 24);
+  }
 	
 	var WordStack = CryptoJS.lib.WordStack = CryptoJS.lib.WordArray.extend({
 		ValueError: function(message){
@@ -24,6 +26,39 @@
 			}
 			return this.words.shift();
 		},
+
+		shiftByte: function(){
+			--this.sigBytes;
+			if(this.sigBytes < 0){
+				throw new WordStack.IndexError('Stack was finished unexpectedly.');
+			}
+			this._beginOffset || (this._beginOffset = 0);
+			var n = (this.words[0] >>> (24 - this._beginOffset * 8)) & 0xff;
+			++this._beginOffset;
+			if(4 === this._beginOffset){
+				this.words.shift();
+				this._beginOffset = 0;
+			}
+			return n;
+		},
+
+		shiftBytes: function(length){
+			var words = [];
+			var word = 0;
+			var shift, i;
+			for(i=0, shift=24; i<length; ++i, shift-=8){
+				if(shift < 0){
+					shift = 24;
+					words.push(word);
+					word = 0;
+				}
+				word |= this.shiftByte() << shift;
+			}
+			if(shift < 24){
+				words.push(word);
+			}
+			return CryptoJS.lib.WordArray.create(words, length);
+		},
 																																					
 		shiftWordArray: function(lengthWords){
 			/**
@@ -39,13 +74,8 @@
 		},
 
 		shiftNumber: function(){
-			/**
-			 * Removes the first word from the stack and converts it to Little Endian number.
-			 *
-			 * @return {number} number at the first word.
-			 */
 			var word = this.shift();
-			return ((word & 0xff) << 24) | ((word & 0xff00) << 8) | ((word & 0xff0000) >>> 8) | (word >>> 24);
+			return switchEndianness(word);
 		}
 	});
 
@@ -112,7 +142,7 @@
   };
   
   
-  var Crypto = this.Crypto = {
+  var Crypto = window.Crypto = {
 		_getCipher: function(){
 			var cipher = Crypto._cipher;
 			if(!cipher){
@@ -277,4 +307,4 @@
   };
 
 	_.extend(Crypto, CONFIGURATION.CRYPTO);
-}).call(this, CryptoJS);
+})();
