@@ -13,6 +13,7 @@ function checkPWSStoreHeader(param){
 	var result = 1;
 	result &= 0x03 === store.version.major;
 	result &= 0x0d === store.version.minor;
+	result &= '3ac852d20cc445e6937e5db545b7ec70' === store.uuid.toString();
 	return !!result;
 }
 

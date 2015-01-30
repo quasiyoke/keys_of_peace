@@ -41,6 +41,7 @@
 		TAG_LENGTH: 4,
 		SALT_LENGTH: 256 / 8,
 		ITER_MIN: 2048,
+		_UUID_LENGTH: 16,
 		VERSION: {
 			major: 0x03,
 			minor: 0x0d
@@ -74,7 +75,7 @@
 			var block;
 			try{
 				while('PWS3-EOFPWS3-EOF' !== CryptoJS.enc.Latin1.stringify(block = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4))){
-					Array.prototype.push.apply(ciphertext, block.words);
+					ciphertext.push.apply(ciphertext, block.words);
 				}
 			}catch(e){
 				if(e instanceof CryptoJS.lib.WordStack.IndexError){
@@ -188,6 +189,12 @@
 					if(Store.VERSION.major != this.version.major){
 						throw new VersionError();
 					}
+					break;
+				case Store.HEADER_FIELDS_TYPES.UUID:
+					if(Store._UUID_LENGTH !== field.data.sigBytes){
+						throw new Error('Incorrect header\'s UUID.');
+					}
+					this.uuid = field.data;
 					break;
 				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:
 					break fieldsReading;
