@@ -205,8 +205,17 @@
 					});
 					break;
 				case Store.HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
-					_.extend(field.data, CryptoJS.lib.WordStack);
-					this.lastSave = new Date(field.data.shiftNumber() * 1000);
+					var time = field.data;
+					if(8 === time.sigBytes){ // TODO: Test this.
+						hex = CryptoJS.enc.Utf8.stringify(time);
+						if(/^[abcdef\d]+$/i.test(hex)){
+							time = CryptoJS.enc.Hex.parse(hex);
+						}
+					}else if(4 !== time.sigBytes){
+						throw new Error('Incorrect last save timestamp field\'s length.');
+					}
+					_.extend(time, CryptoJS.lib.WordStack);
+					this.lastSave = new Date(time.shiftNumber() * 1000);
 					break;
 				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:
 					break fieldsReading;
