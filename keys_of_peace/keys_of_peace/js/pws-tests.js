@@ -8,6 +8,14 @@ var PASSWORD = 'W<u;]-CS>a%sF/N8+-93';
 
 casper.test.comment('PWS Store');
 
+function checkPWSStoreHeader(param){
+	var store = new PWS.Store(param.string, param.password);
+	var result = 1;
+	result &= 0x03 === store.version.major;
+	result &= 0x0d === store.version.minor;
+	return !!result;
+}
+
 function checkPWSStoreIncorrect(param){
 	try{
 		new PWS.Store(param.string, param.password);
@@ -32,14 +40,21 @@ function checkPWSStoreIncorrectPassword(param){
 	}
 }
 
-function checkPWSStorePassword(param){
-	var store = new PWS.Store(param.string, param.password);
-	return true;
+function checkPWSStoreIncorrectVersion(param){
+	var majorVersion = PWS.Store.VERSION.major;
+	try{
+		++PWS.Store.VERSION.major;
+		new PWS.Store(param.string, param.password);
+	}catch(e){
+		return e instanceof PWS.VersionError;
+	}finally{
+		PWS.Store.VERSION.major = majorVersion;
+	}
 }
 
 function checkPWSStoreStructureCorrect(param){
 	var store = new PWS.Store(param.string, param.password);
-	var result = true;
+	var result = 1;
 	result &= '63528bb124a80bf930b4adb26834ad61d9287b54e134fb8e79d228adca842903' === store._salt.toString();
 	result &= 2048 === store._iter;
 	result &= 'f847dcf647e4c3d13b898ff26f0d8e2d30aabdfd0db13b749da9444264c841ff' === store._stretchedKeyHash.toString();
@@ -102,7 +117,13 @@ helper.scenario(
 		});
 	},
 	function(){
-		this.test.assertEval(checkPWSStorePassword, 'Correct password', {
+		this.test.assertEval(checkPWSStoreIncorrectVersion, 'Incorrect version causes `PWS.VersionError`', {
+			string: PWS_STORE_STRING,
+			password: PASSWORD
+		});
+	},
+	function(){
+		this.test.assertEval(checkPWSStoreHeader, 'Header is being read properly', {
 			string: PWS_STORE_STRING,
 			password: PASSWORD
 		});

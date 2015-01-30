@@ -15,7 +15,12 @@
 
 	var HmacError = PWS.HmacError = function(){};
 	HmacError.prototype = new Error('Storage HMAC is invalid. Looks like it was damaged.');
-	
+
+	var VersionError = PWS.VersionError = function(message){
+		this.message = message;
+	}
+	VersionError.prototype = new VersionError('This website doesn\'t supports storages of such version.');
+		
 	
 	var Store = PWS.Store = function(s, password){
 		/**
@@ -36,8 +41,33 @@
 		TAG_LENGTH: 4,
 		SALT_LENGTH: 256 / 8,
 		ITER_MIN: 2048,
+		VERSION: {
+			major: 0x03,
+			minor: 0x0d
+		},
 
-		END_OF_ENTRY: 0xff,
+		HEADER_FIELDS_TYPES: {
+			VERSION: 0x00,
+			UUID: 0x01,
+			NON_DEFAULT_PREFERENCES: 0x02,
+			TREE_DISPLAY_STATUS: 0x03,
+			TIMESTAMP_OF_LAST_SAVE: 0x04,
+			WHO_PERFORMED_LAST_SAVE: 0x05,
+			WHAT_PERFORMED_LAST_SAVE: 0x06,
+			LAST_SAVED_BY_USER: 0x07,
+			LAST_SAVED_ON_HOST: 0x08,
+			DATABASE_NAME: 0x09,
+			DATABASE_DESCRIPTION: 0x0a,
+			DATABASE_FILTERS: 0x0b,
+			RESERVED1: 0x0c,
+			RESERVED2: 0x0d,
+			RESERVED3: 0x0e,
+			RECENTLY_USED_ENTRIES: 0x0f,
+			NAMED_PASSWORD_POLICIES: 0x10,
+			EMPTY_GROUPS: 0x11,
+			YUBICO: 0x12,
+			END_OF_ENTRY: 0xff
+		},
 
 		_shiftCiphertext: function(s){
 			var ciphertext = [];
@@ -138,14 +168,33 @@
 		},
 
 		_readHeader: function(){
+			/**
+			 * @see ReadHeader at PWSfileV3.cpp
+			 */
 			_.extend(this._plaintext, CryptoJS.lib.WordStack);
 			this.header = [];
+			fieldsReading:
 			while(true){
 				var field = this._readField();
-				if(Store.END_OF_ENTRY == field.type){
+				switch(field.type){
+				case Store.HEADER_FIELDS_TYPES.VERSION:
+					if(2 != field.data.sigBytes && 4 != field.data.sigBytes){
+						throw new VersionError('Incorrect version field length.');
+					}
+					this.version = {};
+					_.extend(field.data, CryptoJS.lib.WordStack);
+					this.version.minor = field.data.shiftByte();
+					this.version.major = field.data.shiftByte();
+					if(Store.VERSION.major != this.version.major){
+						throw new VersionError();
+					}
+					break;
+				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:
+					break fieldsReading;
+				default:
+					this.header.push(field);
 					break;
 				}
-				this.header.push(field);
 			}
 		},
 
@@ -164,7 +213,7 @@
 			var record = [];
 			while(this._plaintext.sigBytes){
 				var field = this._readField();
-				if(Store.END_OF_ENTRY == field.type){
+				if(Store.HEADER_FIELDS_TYPES.END_OF_ENTRY == field.type){
 					this.records.push(record);
 					continue;
 				}
