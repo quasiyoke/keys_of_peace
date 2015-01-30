@@ -13,9 +13,12 @@ function checkPWSStoreHeader(param){
 	var result = 1;
 	result &= 0x03 === store.version.major;
 	result &= 0x0d === store.version.minor;
-	result &= '3ac852d20cc445e6937e5db545b7ec70' === store.uuid.toString();
+	result &= '3ac852d20cc445e6937e5db545b7ec70' === store.uuid;
 	result &= '' === store.preferences; // TODO: Add better non-default preferences test.
 	result &= 1422465318000 === store.lastSave.getTime();
+	result &= 'pwsafe V0.94' === store.whatPerformedLastSave;
+	result &= 'quasiyoke' === store.lastSavedByUser;
+	result &= 'quasiyoke-sony' === store.lastSavedOnHost;
 	return !!result;
 }
 

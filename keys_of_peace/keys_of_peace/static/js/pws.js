@@ -194,14 +194,14 @@
 					if(Store._UUID_LENGTH !== field.data.sigBytes){
 						throw new Error('Incorrect header\'s UUID.');
 					}
-					this.uuid = field.data;
+					this.uuid = field.data.toString();
 					break;
 				case Store.HEADER_FIELDS_TYPES.NON_DEFAULT_PREFERENCES:
 					this.preferences = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
 				case Store.HEADER_FIELDS_TYPES.TREE_DISPLAY_STATUS: // TODO: Test this.
 					this.treeDisplayStatus = _.map(CryptoJS.enc.Utf8.stringify(field.data), function(c){
-						return "1" === c;
+						return '1' === c;
 					});
 					break;
 				case Store.HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
@@ -217,8 +217,38 @@
 					_.extend(time, CryptoJS.lib.WordStack);
 					this.lastSave = new Date(time.shiftNumber() * 1000);
 					break;
+				case Store.HEADER_FIELDS_TYPES.WHAT_PERFORMED_LAST_SAVE:
+					this.whatPerformedLastSave = CryptoJS.enc.Utf8.stringify(field.data);
+					break;
+				case Store.HEADER_FIELDS_TYPES.LAST_SAVED_BY_USER:
+					this.lastSavedByUser = CryptoJS.enc.Utf8.stringify(field.data);
+					break;
+				case Store.HEADER_FIELDS_TYPES.LAST_SAVED_ON_HOST:
+					this.lastSavedOnHost = CryptoJS.enc.Utf8.stringify(field.data);
+					break;
+				case Store.HEADER_FIELDS_TYPES.DATABASE_NAME: // TODO: Test this.
+					this.databaseName = CryptoJS.enc.Utf8.stringify(field.data);
+					break;
+				case Store.HEADER_FIELDS_TYPES.DATABASE_DESCRIPTION: // TODO: Test this.
+					this.databaseDescription = CryptoJS.enc.Utf8.stringify(field.data);
+					break;
+				case Store.HEADER_FIELDS_TYPES.RECENTLY_USED_ENTRIES: // TODO: Test this.
+					var data = CryptoJS.enc.Utf8.stringify(field.data);
+					var count = CryptoJS.enc.Hex.parse(data.substr(0, 2));
+					_.extend(count, CryptoJS.lib.WordStack);
+					count = count.shiftByte();
+					if(data.length !== 2 + count * Store._UUID_LENGTH){
+						break;
+					}
+					this.recentlyUsedEntries = [];
+					for(var i=2; i<data.length; i+=Store._UUID_LENGTH){
+						this.recentlyUsedEntries.push(data.substr(i, Store._UUID_LENGTH));
+					}
+					break;
 				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:
 					break fieldsReading;
+				case Store.HEADER_FIELDS_TYPES.WHO_PERFORMED_LAST_SAVE:
+					break;
 				default:
 					this.header.push(field);
 					break;
