@@ -196,6 +196,18 @@
 					}
 					this.uuid = field.data;
 					break;
+				case Store.HEADER_FIELDS_TYPES.NON_DEFAULT_PREFERENCES:
+					this.preferences = CryptoJS.enc.Utf8.stringify(field.data);
+					break;
+				case Store.HEADER_FIELDS_TYPES.TREE_DISPLAY_STATUS: // TODO: Test this.
+					this.treeDisplayStatus = _.map(CryptoJS.enc.Utf8.stringify(field.data), function(c){
+						return "1" === c;
+					});
+					break;
+				case Store.HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
+					_.extend(field.data, CryptoJS.lib.WordStack);
+					this.lastSave = new Date(field.data.shiftNumber() * 1000);
+					break;
 				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:
 					break fieldsReading;
 				default:
