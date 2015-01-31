@@ -40,7 +40,15 @@
 		ENCRYPTION_BLOCK_LENGTH: 128 / 8,
 		TAG_LENGTH: 4,
 		SALT_LENGTH: 256 / 8,
+		_HEX_REGEX: /^[abcdef\d]+$/i,
 		ITER_MIN: 2048,
+		PASSWORD_POLICY_USE_LOWERCASE: 0x8000,
+		PASSWORD_POLICY_USE_UPPERCASE: 0x4000,
+		PASSWORD_POLICY_USE_DIGITS: 0x2000,
+		PASSWORD_POLICY_USE_SYMBOLS: 0x1000,
+		PASSWORD_POLICY_USE_HEX_DIGITS: 0x0800,
+		PASSWORD_POLICY_USE_EASY_VISION: 0x0400,
+		PASSWORD_POLICY_MAKE_PRONOUNCEABLE: 0x0200,
 		_UUID_LENGTH: 16,
 		VERSION: {
 			major: 0x03,
@@ -208,7 +216,7 @@
 					var time = field.data;
 					if(8 === time.sigBytes){ // TODO: Test this.
 						hex = CryptoJS.enc.Utf8.stringify(time);
-						if(/^[abcdef\d]+$/i.test(hex)){
+						if(Store._HEX_REGEX.test(hex)){
 							time = CryptoJS.enc.Hex.parse(hex);
 						}
 					}else if(4 !== time.sigBytes){
@@ -243,6 +251,52 @@
 					this.recentlyUsedEntries = [];
 					for(var i=2; i<data.length; i+=Store._UUID_LENGTH){
 						this.recentlyUsedEntries.push(data.substr(i, Store._UUID_LENGTH));
+					}
+					break;
+				case Store.HEADER_FIELDS_TYPES.NAMED_PASSWORD_POLICIES: // TODO: Test this.
+					/*
+						Very sad situation here: this field code was also assigned to YUBI_SK in 3.27Y. Here we try to infer the actual type
+						based on the actual value stored in the field. Specifically, YUBI_SK is YUBI_SK_LEN bytes of binary data, whereas HDR_PSWDPOLICIES
+						is of varying length, starting with at least 4 hex digits.
+					*/
+					var data = field.data.clone();
+					_.extend(data, CryptoJS.lib.WordStack);
+					data = CryptoJS.enc.Utf8.stringify(data.shiftWordArray(1));
+					if(field.data.sigBytes !== Store._YUBI_SK_LENGTH || !Store._HEX_REGEX.test(data)){
+						_.extend(field.data, CryptoJS.lib.WordStack);
+						var count = field.data.shiftNumberHex(2);
+						this.namedPasswordPolicies = [];
+						try{
+							for(var i=0; i<count; ++i){
+								var policy = {};
+								var length = field.data.shiftNumberHex(2);
+								policy.name = CryptoJS.enc.Utf8.stringify(field.data.shiftBytes(length));
+								var flags = field.data.shiftNumberHex(4);
+								policy.useLowercase = !!(flags & Store.PASSWORD_POLICY_USE_LOWERCASE);
+								policy.useUppercase = !!(flags & Store.PASSWORD_POLICY_USE_UPPERCASE);
+								policy.useDigits = !!(flags & Store.PASSWORD_POLICY_USE_DIGITS);
+								policy.useSymbols = !!(flags & Store.PASSWORD_POLICY_USE_SYMBOLS);
+								policy.useHexDigits = !!(flags & Store.PASSWORD_POLICY_USE_HEX_DIGITS);
+								policy.useEasyVision = !!(flags & Store.PASSWORD_POLICY_USE_EASY_VISION);
+								policy.makePronounceable = !!(flags & Store.PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+								policy.length = field.data.shiftNumberHex(3);
+								policy.lowercaseCountMin = field.data.shiftNumberHex(3);
+								policy.uppercaseCountMin = field.data.shiftNumberHex(3);
+								policy.digitsCountMin = field.data.shiftNumberHex(3);
+								policy.symbolsCountMin = field.data.shiftNumberHex(3);
+								length = field.data.shiftNumberHex(2);
+								policy.specialSymbols = CryptoJS.enc.Utf8.stringify(field.data.shiftBytes(length));
+								this.namedPasswordPolicies.push(policy);
+							}
+						}catch(e){
+							if(e instanceof CryptoJS.lib.WordStack.IndexError){
+								break;
+							}else{
+								throw e;
+							}
+						}
+					}else{
+						this.yubiSk = this.readBytes(Store._YUBI_SK_LENGTH);
 					}
 					break;
 				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:

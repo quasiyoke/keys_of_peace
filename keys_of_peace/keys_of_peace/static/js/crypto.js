@@ -76,6 +76,14 @@
 		shiftNumber: function(){
 			var word = this.shift();
 			return switchEndianness(word);
+		},
+
+		shiftNumberHex: function(length){
+			var n = this.shiftBytes(length);
+			n = CryptoJS.enc.Utf8.stringify(n);
+			n = CryptoJS.enc.Hex.parse(n);
+			_.extend(count, CryptoJS.lib.WordStack);
+			return count.shiftNumber();
 		}
 	});
 
