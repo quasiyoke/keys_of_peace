@@ -78,6 +78,86 @@
 			END_OF_ENTRY: 0xff
 		},
 
+		_RECORDS_FIELDS_TYPES: {
+			UUID: 0x01,
+			GROUP: 0x02,
+			TITLE: 0x03,
+			USERNAME: 0x04,
+			NOTES: 0x05,
+			PASSWORD: 0x06,
+			CREATION_TIME: 0x07,
+			PASSWORD_MODIFICATION_TIME: 0x08,
+			LAST_ACCESS_TIME: 0x09,
+			PASSWORD_EXPIRY_TIME: 0x0a,
+			RESERVED: 0x0b,
+			LAST_MODIFICATION_TIME: 0x0c,
+			URL: 0x0d,
+			AUTOTYPE: 0x0e,
+			PASSWORD_HISTORY: 0x0f,
+			PASSWORD_POLICY: 0x10,
+			PASSWORD_EXPIRY_INTERVAL: 0x11,
+			RUN_COMMAND: 0x12,
+			DOUBLE_CLICK_ACTION: 0x13,
+			EMAIL: 0x14,
+			PROTECTED_ENTRY: 0x15,
+			OWN_SYMBOLS_FOR_PASSWORD: 0x16,
+			SHIFT_DOUBLE_CLICK_ACTION: 0x17,
+			PASSWORD_POLICY_NAME: 0x18,
+			ENTRY_KEYBOARD_SHORTCUT: 0x19,
+			END_OF_ENTRY: 0xff
+		},
+
+		_getPasswordPolicy: function(wordStack, hasName){
+			var policy = {};
+			if(hasName){
+				var length = wordStack.shiftNumberHex(2);
+				policy.name = Store._getText(wordStack.shiftBytes(length));
+			}
+			var flags = wordStack.shiftNumberHex(4);
+			policy.useLowercase = !!(flags & Store._PASSWORD_POLICY_USE_LOWERCASE);
+			policy.useUppercase = !!(flags & Store._PASSWORD_POLICY_USE_UPPERCASE);
+			policy.useDigits = !!(flags & Store._PASSWORD_POLICY_USE_DIGITS);
+			policy.useSymbols = !!(flags & Store._PASSWORD_POLICY_USE_SYMBOLS);
+			policy.useHexDigits = !!(flags & Store._PASSWORD_POLICY_USE_HEX_DIGITS);
+			policy.useEasyVision = !!(flags & Store._PASSWORD_POLICY_USE_EASY_VISION);
+			policy.makePronounceable = !!(flags & Store._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+			policy.length = wordStack.shiftNumberHex(3);
+			policy.lowercaseCountMin = wordStack.shiftNumberHex(3);
+			policy.uppercaseCountMin = wordStack.shiftNumberHex(3);
+			policy.digitsCountMin = wordStack.shiftNumberHex(3);
+			policy.symbolsCountMin = wordStack.shiftNumberHex(3);
+			if(hasName){
+				length = wordStack.shiftNumberHex(2);
+				policy.specialSymbols = Store._getText(wordStack.shiftBytes(length));
+			}
+			return policy;
+		},
+
+		_getText: function(wordArray){
+			return CryptoJS.enc.Utf8.stringify(wordArray);
+		},
+
+		_getTime: function(wordArray){
+			var wordArray = wordArray;
+			if(8 === wordArray.sigBytes){ // TODO: Test this.
+				hex = Store._getText(wordArray);
+				if(Store._HEX_REGEX.test(hex)){
+					wordArray = CryptoJS.enc.Hex.parse(hex);
+				}
+			}else if(4 !== wordArray.sigBytes){
+				throw new Error('Incorrect timestamp field\'s length.');
+			}
+			_.extend(wordArray, CryptoJS.lib.WordStack);
+			return new Date(wordArray.shiftNumber() * 1000);
+		},
+
+		_getUuid: function(wordArray){
+			if(Store._UUID_LENGTH !== wordArray.sigBytes){
+				throw new Error('Incorrect UUID.');
+			}
+			return wordArray.toString();
+		},
+
 		_shiftCiphertext: function(s){
 			var ciphertext = [];
 			var block;
@@ -187,7 +267,7 @@
 			while(true){
 				var field = this._readField();
 				switch(field.type){
-				case Store._HEADER_FIELDS_TYPES.VERSION:
+				case Store._HEADER_FIELDS_TYPES.VERSION: // TODO: Test beta version format.
 					if(2 != field.data.sigBytes && 4 != field.data.sigBytes){
 						throw new VersionError('Incorrect version field length.');
 					}
@@ -200,49 +280,36 @@
 					}
 					break;
 				case Store._HEADER_FIELDS_TYPES.UUID:
-					if(Store._UUID_LENGTH !== field.data.sigBytes){
-						throw new Error('Incorrect header\'s UUID.');
-					}
-					this.uuid = field.data.toString();
+					this.uuid = Store._getUuid(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.NON_DEFAULT_PREFERENCES:
-					this.preferences = CryptoJS.enc.Utf8.stringify(field.data);
+					this.preferences = Store._getText(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.TREE_DISPLAY_STATUS: // TODO: Test this.
-					this.treeDisplayStatus = _.map(CryptoJS.enc.Utf8.stringify(field.data), function(c){
+					this.treeDisplayStatus = _.map(Store._getText(field.data), function(c){
 						return '1' === c;
 					});
 					break;
 				case Store._HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
-					var time = field.data;
-					if(8 === time.sigBytes){ // TODO: Test this.
-						hex = CryptoJS.enc.Utf8.stringify(time);
-						if(Store._HEX_REGEX.test(hex)){
-							time = CryptoJS.enc.Hex.parse(hex);
-						}
-					}else if(4 !== time.sigBytes){
-						throw new Error('Incorrect last save timestamp field\'s length.');
-					}
-					_.extend(time, CryptoJS.lib.WordStack);
-					this.lastSave = new Date(time.shiftNumber() * 1000);
+					this.lastSave = Store._getTime(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.WHAT_PERFORMED_LAST_SAVE:
-					this.whatPerformedLastSave = CryptoJS.enc.Utf8.stringify(field.data);
+					this.whatPerformedLastSave = Store._getText(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.LAST_SAVED_BY_USER:
-					this.lastSavedByUser = CryptoJS.enc.Utf8.stringify(field.data);
+					this.lastSavedByUser = Store._getText(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.LAST_SAVED_ON_HOST:
-					this.lastSavedOnHost = CryptoJS.enc.Utf8.stringify(field.data);
+					this.lastSavedOnHost = Store._getText(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.DATABASE_NAME: // TODO: Test this.
-					this.databaseName = CryptoJS.enc.Utf8.stringify(field.data);
+					this.databaseName = Store._getText(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.DATABASE_DESCRIPTION: // TODO: Test this.
-					this.databaseDescription = CryptoJS.enc.Utf8.stringify(field.data);
+					this.databaseDescription = Store._getText(field.data);
 					break;
 				case Store._HEADER_FIELDS_TYPES.RECENTLY_USED_ENTRIES: // TODO: Test this.
-					var data = CryptoJS.enc.Utf8.stringify(field.data);
+					var data = Store._getText(field.data);
 					var count = CryptoJS.enc.Hex.parse(data.substr(0, 2));
 					_.extend(count, CryptoJS.lib.WordStack);
 					count = count.shiftByte();
@@ -262,32 +329,14 @@
 					*/
 					var data = field.data.clone();
 					_.extend(data, CryptoJS.lib.WordStack);
-					data = CryptoJS.enc.Utf8.stringify(data.shiftWordArray(1));
+					data = Store._getText(data.shiftWordArray(1));
 					_.extend(field.data, CryptoJS.lib.WordStack);
 					if(field.data.sigBytes !== Store._YUBI_SK_LENGTH || !Store._HEX_REGEX.test(data)){
 						var count = field.data.shiftNumberHex(2);
 						this.namedPasswordPolicies = [];
 						try{
 							for(var i=0; i<count; ++i){
-								var policy = {};
-								var length = field.data.shiftNumberHex(2);
-								policy.name = CryptoJS.enc.Utf8.stringify(field.data.shiftBytes(length));
-								var flags = field.data.shiftNumberHex(4);
-								policy.useLowercase = !!(flags & Store._PASSWORD_POLICY_USE_LOWERCASE);
-								policy.useUppercase = !!(flags & Store._PASSWORD_POLICY_USE_UPPERCASE);
-								policy.useDigits = !!(flags & Store._PASSWORD_POLICY_USE_DIGITS);
-								policy.useSymbols = !!(flags & Store._PASSWORD_POLICY_USE_SYMBOLS);
-								policy.useHexDigits = !!(flags & Store._PASSWORD_POLICY_USE_HEX_DIGITS);
-								policy.useEasyVision = !!(flags & Store._PASSWORD_POLICY_USE_EASY_VISION);
-								policy.makePronounceable = !!(flags & Store._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
-								policy.length = field.data.shiftNumberHex(3);
-								policy.lowercaseCountMin = field.data.shiftNumberHex(3);
-								policy.uppercaseCountMin = field.data.shiftNumberHex(3);
-								policy.digitsCountMin = field.data.shiftNumberHex(3);
-								policy.symbolsCountMin = field.data.shiftNumberHex(3);
-								length = field.data.shiftNumberHex(2);
-								policy.specialSymbols = CryptoJS.enc.Utf8.stringify(field.data.shiftBytes(length));
-								this.namedPasswordPolicies.push(policy);
+								this.namedPasswordPolicies.push(Store._getPasswordPolicy(field.data, true));
 							}
 						}catch(e){
 							if(e instanceof CryptoJS.lib.WordStack.IndexError){
@@ -301,7 +350,7 @@
 					}
 					break;
 				case Store._HEADER_FIELDS_TYPES.EMPTY_GROUPS:
-					this.emptyGroups.push(CryptoJS.enc.Utf8.stringify(field.data))
+					this.emptyGroups.push(Store._getText(field.data))
 					break;
 				case Store._HEADER_FIELDS_TYPES.END_OF_ENTRY:
 					break fieldsReading;
@@ -326,14 +375,108 @@
 
 		_readRecords: function(){
 			this.records = [];
-			var record = [];
-			while(this._plaintext.sigBytes){
+			var record = {};
+			while(this._plaintext.sigBytes > 0){
 				var field = this._readField();
-				if(Store._HEADER_FIELDS_TYPES.END_OF_ENTRY == field.type){
+				switch(field.type){
+				case Store._RECORDS_FIELDS_TYPES.UUID:
+					record.uuid = Store._getUuid(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.GROUP:
+					record.group = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.TITLE:
+					record.title = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.USERNAME:
+					record.username = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.NOTES:
+					record.notes = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD:
+					record.password = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.CREATION_TIME:
+					record.creationTime = Store._getTime(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD_MODIFICATION_TIME:
+					record.passwordModificationTime = Store._getTime(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.LAST_ACCESS_TIME:
+					record.lastAccessTime = Store._getTime(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD_EXPIRY_TIME:
+					record.passwordExpiryTime = Store._getTime(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.LAST_MODIFICATION_TIME:
+					record.lastModificationTime = Store._getTime(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.URL:
+					record.url = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.AUTOTYPE:
+					record.autotype = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD_HISTORY:
+					_.extend(field.data, CryptoJS.lib.WordStack);
+					record.passwordHistory = {
+						on: '1'.charCodeAt(0) === field.data.shiftByte()
+					};
+					record.passwordHistory.maxSize = field.data.shiftNumberHex(2);
+					var length = field.data.shiftNumberHex(2);
+					var items = record.passwordHistory.items = [];
+					for(var i=0; i<length; ++i){
+						var item = {
+							time: new Date(field.data.shiftNumberHex(8) * 1000)
+						};
+						item.password = Store._getText(field.data.shiftBytes(field.data.shiftNumberHex(4)));
+						items.push(item);
+					}
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD_POLICY:
+					_.extend(field.data, CryptoJS.lib.WordStack);
+					record.passwordPolicy = Store._getPasswordPolicy(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD_EXPIRY_INTERVAL:
+					_.extend(field.data, CryptoJS.lib.WordStack);
+					record.passwordExpiryInterval = field.data.shiftNumber();
+					break;
+				case Store._RECORDS_FIELDS_TYPES.RUN_COMMAND:
+					record.runCommand = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.DOUBLE_CLICK_ACTION:
+
+					break;
+				case Store._RECORDS_FIELDS_TYPES.EMAIL:
+					record.email = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PROTECTED_ENTRY:
+
+					break;
+				case Store._RECORDS_FIELDS_TYPES.OWN_SYMBOLS_FOR_PASSWORD:
+					record.ownSymbolsForPassword = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.SHIFT_DOUBLE_CLICK_ACTION:
+
+					break;
+				case Store._RECORDS_FIELDS_TYPES.PASSWORD_POLICY_NAME:
+					record.passwordPolicyName = Store._getText(field.data);
+					break;
+				case Store._RECORDS_FIELDS_TYPES.ENTRY_KEYBOARD_SHORTCUT:
+
+					break;
+				case Store._RECORDS_FIELDS_TYPES.END_OF_ENTRY:
 					this.records.push(record);
-					continue;
+					record = {};
+					break;
+				case Store._RECORDS_FIELDS_TYPES.RESERVED:
+					break;
+				default:
+					record.unknownFields || (record.unknownFields = []);
+					record.unknownFields.push(field);
+					break;
 				}
-				record.push(field);
 			}
 		}
 	});

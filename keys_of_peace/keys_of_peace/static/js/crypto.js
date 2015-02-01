@@ -90,7 +90,7 @@
 			}
 			return n;
 		}
-	});p
+	});
 
 
   var Encoder = CryptoJS.enc.Base64;
