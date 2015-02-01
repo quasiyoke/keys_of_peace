@@ -79,13 +79,18 @@
 		},
 
 		shiftNumberHex: function(length){
-			var n = this.shiftBytes(length);
-			n = CryptoJS.enc.Utf8.stringify(n);
-			n = CryptoJS.enc.Hex.parse(n);
-			_.extend(count, CryptoJS.lib.WordStack);
-			return count.shiftNumber();
+			var hexStr = this.shiftBytes(length);
+			hexStr = CryptoJS.enc.Utf8.stringify(hexStr);
+			if(hexStr.length % 2){
+				hexStr = '0' + hexStr;
+			}
+			var n = 0;
+			for (var i = 0; i < hexStr.length; i += 2) {
+				n |= parseInt(hexStr.substr(hexStr.length - i - 2, 2), 16) << (i / 2 * 8);
+			}
+			return n;
 		}
-	});
+	});p
 
 
   var Encoder = CryptoJS.enc.Base64;

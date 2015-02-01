@@ -3,6 +3,7 @@
 var PWS_STORE_STRING_NO_TAG = 'aGVsbG8=';
 var PWS_STORE_STRING = 'UFdTM2NSi7EkqAv5MLStsmg0rWHZKHtU4TT7jnnSKK3KhCkDAAgAAPhH3PZH5MPRO4mP8m8Nji0wqr39DbE7dJ2pREJkyEH/fZTLERwvBrZk7YqaoFbLvPieXUWG2DeHndka2jO+rvDtccLn246+RK04oD7PRReLd5syBOogLeE0vjfVdWglCDJ2G/vHOHF7al4P6w1xWLEyGFc+oBKq12FD+8Y/PDNDH5to4KXwbf5OfIr7TzAmDL3kXmiZy/bIT547mk3Cz6Hz14eteALqb+Rz3xkC18zPHiRbPmKMyqpOveOmN726WqPHqRo8SkkXo9Xkpsns+MofjdmrQUUVsh6ZWnew8am/+bLsaBSQADgQb7sxb5MDE+qlJqyz8nl3uJqfAbsxpK0tQ1CYhS26ykzeebAPdL3nA2lC82ISrBR9EPEFZXDnSoG55/ppimp3LkILVPlC23zjoijdJxojnVuVzYCQqLT1HaZ2v8TgPu1TLX/f5IUwk7oc+p9L1aQ9uFrKYQHrHRqsqyHlKb8EVtfJcuyjoPyfzoiiTMpfV0arzV/ngO9mMlSxK/ttLolpjtQf6EcEQmbJFfwNVY0s8HguAt3ShvraaMq1wK4bq+lsa6fZ1tBwKtm652iqq7aas4kk49mMyMFCRd+TWorzSM1VPUhncg1wo8fn+qpDB3Ruv0uebBJReoEWQu4pPnCeV3cny1hh1pTG3rY6vhnt/dYBqvMWmjn2vw9eR0e6/OhnvuhLAoI/je7vv4Sz71RqlvIp5z/7YdKkE+/pA4g7NxNqyIB48/WWAcOSOooh4w742dHdWFz+glLfVNc4J2kWy6bnKf1ubwZ5eHmM/c47/yaomWCAgSeaTc1eZ+8BG3VlNKxRBNfLLA0LaLPX4XvsYehRop4UhXzKWUpwSCnJVF4GBjSkexubvWVVG1rB1+MCFGx8vD0O/ZxpUpzK2aTz6pc0BJ57o/zIS+sj1OVWNqp188CxnKRDIg2FoQrx8tr+xnLQSr2u8CT0tuQOb718ppiNKNJ9mG8w3cJmY8+XQFDodxpTHkei7kJyyYrQBc0w2FPTj9VPU7W2JJiMKTtoYDEzJejhMZcExZEO1Vv1wSHwubGqeC8UZjShNUE0trXVS69ZlrOsdMkAxDGPo2gIE48yahq/Ic4u23sDBPc8vUNdDz6xwSjwqYInT9Rf4l1ior1Sn/vHbL+rgL9q3ykDu31Q8cKDiM0FVTePXcOF+kFbDhRn7u2FolKM1JQEjoIIjvW0a6cWJrEoZUiSbp3tDLIBfz1jOZUj+B3Hooy4edKI9ui9loyQPe0FviFyO4cPEbEamvZvUFbUdTtwtmub77NnvaMb6n0Gj9h9MB6KBNMs047qTCauwKs7/cRC5dOX/d7eNJkmCostrPk36joics5WR1VG0UAdII1OI4agzT3JAaCyKvYu0HEpuGNnfV27d4nsjrGwGmPJZVpz3f5UyG2kxnJiGK6DBczv5ZAR2DizW5fGYUbfT7bDjonC0LXWBLktZ4WPWDbA+WelpWAwPr79SiNYjYVBp7K6yemobxge2XT5VcqoFjfYbg1ZwB5DFjC3Vq3zmQPSg/MWwRjOaS6cdxJeHIga2OeRJW8QBW7QjnZkqg9KSZwFM0HtvDUeLybVxPlVjFBXUzMtRU9GUFdTMy1FT0bCepE2z8eIsr9z66YnQ2a4kTVbAXsv/40EUo2z5/lcBg==';
 var PWS_STORE_STRING_INCORRECT_HMAC = 'UFdTM2NSi7EkqAv5MLStsmg0rWHZKHtU4TT7jnnSKK3KhCkDAAgAAPhH3PZH5MPRO4mP8m8Nji0wqr39DbE7dJ2pREJkyEH/fZTLERwvBrZk7YqaoFbLvPieXUWG2DeHndka2jO+rvDtccLn246+RK04oD7PRReLd5syBOogLeE0vjfVdWglCDJ2G/vHOHF7al4P6w1xWLEyGFc+oBKq12FD+8Y/PDNDH5to4KXwbf5OfIr7TzAmDL3kXmiZy/bIT547mk3Cz6Hz14eteALqb+Rz3xkC18zPHiRbPmKMyqpOveOmN726WqPHqRo8SkkXo9Xkpsns+MofjdmrQUUVsh6ZWnew8am/+bLsaBSQADgQb7sxb5MDE+qlJqyz8nl3uJqfAbsxpK0tQ1CYhS26ykzeebAPdL3nA2lC82ISrBR9EPEFZXDnSoG55/ppimp3LkILVPlC23zjoijdJxojnVuVzYCQqLT1HaZ2v8TgPu1TLX/f5IUwk7oc+p9L1aQ9uFrKYQHrHRqsqyHlKb8EVtfJcuyjoPyfzoiiTMpfV0arzV/ngO9mMlSxK/ttLolpjtQf6EcEQmbJFfwNVY0s8HguAt3ShvraaMq1wK4bq+lsa6fZ1tBwKtm652iqq7aas4kk49mMyMFCRd+TWorzSM1VPUhncg1wo8fn+qpDB3Ruv0uebBJReoEWQu4pPnCeV3cny1hh1pTG3rY6vhnt/dYBqvMWmjn2vw9eR0e6/OhnvuhLAoI/je7vv4Sz71RqlvIp5z/7YdKkE+/pA4g7NxNqyIB48/WWAcOSOooh4w742dHdWFz+glLfVNc4J2kWy6bnKf1ubwZ5eHmM/c47/yaomWCAgSeaTc1eZ+8BG3VlNKxRBNfLLA0LaLPX4XvsYehRop4UhXzKWUpwSCnJVF4GBjSkexubvWVVG1rB1+MCFGx8vD0O/ZxpUpzK2aTz6pc0BJ57o/zIS+sj1OVWNqp188CxnKRDIg2FoQrx8tr+xnLQSr2u8CT0tuQOb718ppiNKNJ9mG8w3cJmY8+XQFDodxpTHkei7kJyyYrQBc0w2FPTj9VPU7W2JJiMKTtoYDEzJejhMZcExZEO1Vv1wSHwubGqeC8UZjShNUE0trXVS69ZlrOsdMkAxDGPo2gIE48yahq/Ic4u23sDBPc8vUNdDz6xwSjwqYInT9Rf4l1ior1Sn/vHbL+rgL9q3ykDu31Q8cKDiM0FVTePXcOF+kFbDhRn7u2FolKM1JQEjoIIjvW0a6cWJrEoZUiSbp3tDLIBfz1jOZUj+B3Hooy4edKI9ui9loyQPe0FviFyO4cPEbEamvZvUFbUdTtwtmub77NnvaMb6n0Gj9h9MB6KBNMs047qTCauwKs7/cRC5dOX/d7eNJkmCostrPk36joics5WR1VG0UAdII1OI4agzT3JAaCyKvYu0HEpuGNnfV27d4nsjrGwGmPJZVpz3f5UyG2kxnJiGK6DBczv5ZAR2DizW5fGYUbfT7bDjonC0LXWBLktZ4WPWDbA+WelpWAwPr79SiNYjYVBp7K6yemobxge2XT5VcqoFjfYbg1ZwB5DFjC3Vq3zmQPSg/MWwRjOaS6cdxJeHIga2OeRJW8QBW7QjnZkqg9KSZwFM0HtvDUeLybVxPlVjFBXUzMtRU9GUFdTMy1FT0bCepE2z8eIsr9z66YnQ2a4kTVbAXsv/40EUo2z5/lcBw==';
+var PWS_STORE_STRING_RICH_HEADER = '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';
 var PWS_STORE_STRING_TOO_FEW_ITERATIONS = 'UFdTM2NSi7EkqAv5MLStsmg0rWHZKHtU4TT7jnnSKK3KhCkD/wAAAPhH3PZH5MPRO4mP8m8Nji0wqr39DbE7dJ2pREJkyEH/fZTLERwvBrZk7YqaoFbLvPieXUWG2DeHndka2jO+rvDtccLn246+RK04oD7PRReLd5syBOogLeE0vjfVdWglCDJ2G/vHOHF7al4P6w1xWLEyGFc+oBKq12FD+8Y/PDNDH5to4KXwbf5OfIr7TzAmDL3kXmiZy/bIT547mk3Cz6Hz14eteALqb+Rz3xkC18zPHiRbPmKMyqpOveOmN726WqPHqRo8SkkXo9Xkpsns+MofjdmrQUUV';
 var PASSWORD = 'W<u;]-CS>a%sF/N8+-93';
 
@@ -14,11 +15,45 @@ function checkPWSStoreHeader(param){
 	result &= 0x03 === store.version.major;
 	result &= 0x0d === store.version.minor;
 	result &= '3ac852d20cc445e6937e5db545b7ec70' === store.uuid;
-	result &= '' === store.preferences; // TODO: Add better non-default preferences test.
-	result &= 1422465318000 === store.lastSave.getTime();
+	result &= 'B 1 1 B 2 1 B 31 1 I 11 2 ' === store.preferences;
+	result &= 1422744976000 === store.lastSave.getTime();
 	result &= 'pwsafe V0.94' === store.whatPerformedLastSave;
 	result &= 'quasiyoke' === store.lastSavedByUser;
 	result &= 'quasiyoke-sony' === store.lastSavedOnHost;
+	result &= 2 === store.namedPasswordPolicies.length;
+	var googlePolicy = store.namedPasswordPolicies['G0ogle' === store.namedPasswordPolicies[0].name ? 0 : 1];
+	var icqPolicy = store.namedPasswordPolicies['ICQ' === store.namedPasswordPolicies[0].name ? 0 : 1];
+	result &= 'G0ogle' === googlePolicy.name;
+	result &= 40 === googlePolicy.length;
+	result &= false === googlePolicy.useLowercase;
+	result &= 1 === googlePolicy.lowercaseCountMin;
+	result &= false === googlePolicy.useUppercase;
+	result &= 1 === googlePolicy.uppercaseCountMin;
+	result &= false === googlePolicy.useDigits;
+	result &= 1 === googlePolicy.digitsCountMin;
+	result &= true === googlePolicy.useHexDigits;
+	result &= false === googlePolicy.useSymbols;
+	result &= 1 === googlePolicy.symbolsCountMin;
+	result &= false === googlePolicy.useEasyVision;
+	result &= false === googlePolicy.makePronounceable;
+	result &= '+-=_@#$%^&;:,.<>/~\\[](){}?!|' === googlePolicy.specialSymbols;
+	result &= 'ICQ' === icqPolicy.name;
+	result &= 6 === icqPolicy.length;
+	result &= true === icqPolicy.useLowercase;
+	result &= 1 === googlePolicy.lowercaseCountMin;
+	result &= false === icqPolicy.useUppercase;
+	result &= 1 === googlePolicy.uppercaseCountMin;
+	result &= true === icqPolicy.useDigits;
+	result &= 1 === googlePolicy.digitsCountMin;
+	result &= false === icqPolicy.useHexDigits;
+	result &= true === icqPolicy.useSymbols;
+	result &= 1 === googlePolicy.symbolsCountMin;
+	result &= false === icqPolicy.useEasyVision;
+	result &= true === icqPolicy.makePronounceable;
+	result &= '@&(#!|$+' === icqPolicy.specialSymbols;
+	result &= 2 === store.emptyGroups.length;
+	result &= store.emptyGroups.indexOf('Work') >= 0;
+	result &= store.emptyGroups.indexOf('Work.Banks') >= 0;
 	return !!result;
 }
 
@@ -47,14 +82,14 @@ function checkPWSStoreIncorrectPassword(param){
 }
 
 function checkPWSStoreIncorrectVersion(param){
-	var majorVersion = PWS.Store.VERSION.major;
+	var majorVersion = PWS.Store._VERSION.major;
 	try{
-		++PWS.Store.VERSION.major;
+		++PWS.Store._VERSION.major;
 		new PWS.Store(param.string, param.password);
 	}catch(e){
 		return e instanceof PWS.VersionError;
 	}finally{
-		PWS.Store.VERSION.major = majorVersion;
+		PWS.Store._VERSION.major = majorVersion;
 	}
 }
 
@@ -130,7 +165,7 @@ helper.scenario(
 	},
 	function(){
 		this.test.assertEval(checkPWSStoreHeader, 'Header is being read properly', {
-			string: PWS_STORE_STRING,
+			string: PWS_STORE_STRING_RICH_HEADER,
 			password: PASSWORD
 		});
 	}

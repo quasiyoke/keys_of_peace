@@ -27,7 +27,7 @@
 		 * Implements Password Safe store parsing.
 		 *
 		 * @param {string} s Base64-encoded Password Safe store string.
-		 * @throws PWS.Error if storage format incorrect.
+		 * @throws PWS.Error if storage format is incorrect.
 		 */
 		this._parse(s);
 		this._decrypt(password);
@@ -37,25 +37,25 @@
 	};
 
 	_.extend(Store, {
-		ENCRYPTION_BLOCK_LENGTH: 128 / 8,
-		TAG_LENGTH: 4,
-		SALT_LENGTH: 256 / 8,
+		_ENCRYPTION_BLOCK_LENGTH: 128 / 8,
+		_TAG_LENGTH: 4,
+		_SALT_LENGTH: 256 / 8,
 		_HEX_REGEX: /^[abcdef\d]+$/i,
-		ITER_MIN: 2048,
-		PASSWORD_POLICY_USE_LOWERCASE: 0x8000,
-		PASSWORD_POLICY_USE_UPPERCASE: 0x4000,
-		PASSWORD_POLICY_USE_DIGITS: 0x2000,
-		PASSWORD_POLICY_USE_SYMBOLS: 0x1000,
-		PASSWORD_POLICY_USE_HEX_DIGITS: 0x0800,
-		PASSWORD_POLICY_USE_EASY_VISION: 0x0400,
-		PASSWORD_POLICY_MAKE_PRONOUNCEABLE: 0x0200,
+		_ITER_MIN: 2048,
+		_PASSWORD_POLICY_USE_LOWERCASE: 0x8000,
+		_PASSWORD_POLICY_USE_UPPERCASE: 0x4000,
+		_PASSWORD_POLICY_USE_DIGITS: 0x2000,
+		_PASSWORD_POLICY_USE_SYMBOLS: 0x1000,
+		_PASSWORD_POLICY_USE_HEX_DIGITS: 0x0800,
+		_PASSWORD_POLICY_USE_EASY_VISION: 0x0400,
+		_PASSWORD_POLICY_MAKE_PRONOUNCEABLE: 0x0200,
 		_UUID_LENGTH: 16,
-		VERSION: {
+		_VERSION: {
 			major: 0x03,
 			minor: 0x0d
 		},
 
-		HEADER_FIELDS_TYPES: {
+		_HEADER_FIELDS_TYPES: {
 			VERSION: 0x00,
 			UUID: 0x01,
 			NON_DEFAULT_PREFERENCES: 0x02,
@@ -82,7 +82,7 @@
 			var ciphertext = [];
 			var block;
 			try{
-				while('PWS3-EOFPWS3-EOF' !== CryptoJS.enc.Latin1.stringify(block = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4))){
+				while('PWS3-EOFPWS3-EOF' !== CryptoJS.enc.Latin1.stringify(block = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4))){
 					ciphertext.push.apply(ciphertext, block.words);
 				}
 			}catch(e){
@@ -152,21 +152,21 @@
 			_.extend(s, CryptoJS.lib.WordStack);
 			try{
 				/* "TAG" check. */
-				var tag = s.shiftWordArray(Store.TAG_LENGTH / 4);
+				var tag = s.shiftWordArray(Store._TAG_LENGTH / 4);
 				if('PWS3' !== CryptoJS.enc.Latin1.stringify(tag)){
 					throw new Error('Incorrect "TAG".');
 				}
-				this._salt = s.shiftWordArray(Store.SALT_LENGTH / 4);
+				this._salt = s.shiftWordArray(Store._SALT_LENGTH / 4);
 				this._iter = s.shiftNumber();
-				if(this._iter < Store.ITER_MIN){
+				if(this._iter < Store._ITER_MIN){
 					throw new TooFewIterationsError();
 				}
-				this._stretchedKeyHash = s.shiftWordArray(Store.SALT_LENGTH / 4);
-				this._b1b2 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4 * 2);
-				this._b3b4 = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4 * 2);
-				this._iv = s.shiftWordArray(Store.ENCRYPTION_BLOCK_LENGTH / 4);
+				this._stretchedKeyHash = s.shiftWordArray(Store._SALT_LENGTH / 4);
+				this._b1b2 = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4 * 2);
+				this._b3b4 = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4 * 2);
+				this._iv = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4);
 				this._ciphertext = Store._shiftCiphertext(s);
-				this._hmacValue = s.shiftWordArray(Store.SALT_LENGTH / 4);
+				this._hmacValue = s.shiftWordArray(Store._SALT_LENGTH / 4);
 			}catch(e){
 				if(e instanceof CryptoJS.lib.WordStack.IndexError){
 					throw new Error('PWS store string was finished unexpectedly.');
@@ -181,12 +181,13 @@
 			 * @see ReadHeader at PWSfileV3.cpp
 			 */
 			_.extend(this._plaintext, CryptoJS.lib.WordStack);
-			this.header = [];
+			this.emptyGroups = [];
+			this.unknownFields = [];
 			fieldsReading:
 			while(true){
 				var field = this._readField();
 				switch(field.type){
-				case Store.HEADER_FIELDS_TYPES.VERSION:
+				case Store._HEADER_FIELDS_TYPES.VERSION:
 					if(2 != field.data.sigBytes && 4 != field.data.sigBytes){
 						throw new VersionError('Incorrect version field length.');
 					}
@@ -194,25 +195,25 @@
 					_.extend(field.data, CryptoJS.lib.WordStack);
 					this.version.minor = field.data.shiftByte();
 					this.version.major = field.data.shiftByte();
-					if(Store.VERSION.major != this.version.major){
+					if(Store._VERSION.major != this.version.major){
 						throw new VersionError();
 					}
 					break;
-				case Store.HEADER_FIELDS_TYPES.UUID:
+				case Store._HEADER_FIELDS_TYPES.UUID:
 					if(Store._UUID_LENGTH !== field.data.sigBytes){
 						throw new Error('Incorrect header\'s UUID.');
 					}
 					this.uuid = field.data.toString();
 					break;
-				case Store.HEADER_FIELDS_TYPES.NON_DEFAULT_PREFERENCES:
+				case Store._HEADER_FIELDS_TYPES.NON_DEFAULT_PREFERENCES:
 					this.preferences = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
-				case Store.HEADER_FIELDS_TYPES.TREE_DISPLAY_STATUS: // TODO: Test this.
+				case Store._HEADER_FIELDS_TYPES.TREE_DISPLAY_STATUS: // TODO: Test this.
 					this.treeDisplayStatus = _.map(CryptoJS.enc.Utf8.stringify(field.data), function(c){
 						return '1' === c;
 					});
 					break;
-				case Store.HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
+				case Store._HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
 					var time = field.data;
 					if(8 === time.sigBytes){ // TODO: Test this.
 						hex = CryptoJS.enc.Utf8.stringify(time);
@@ -225,22 +226,22 @@
 					_.extend(time, CryptoJS.lib.WordStack);
 					this.lastSave = new Date(time.shiftNumber() * 1000);
 					break;
-				case Store.HEADER_FIELDS_TYPES.WHAT_PERFORMED_LAST_SAVE:
+				case Store._HEADER_FIELDS_TYPES.WHAT_PERFORMED_LAST_SAVE:
 					this.whatPerformedLastSave = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
-				case Store.HEADER_FIELDS_TYPES.LAST_SAVED_BY_USER:
+				case Store._HEADER_FIELDS_TYPES.LAST_SAVED_BY_USER:
 					this.lastSavedByUser = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
-				case Store.HEADER_FIELDS_TYPES.LAST_SAVED_ON_HOST:
+				case Store._HEADER_FIELDS_TYPES.LAST_SAVED_ON_HOST:
 					this.lastSavedOnHost = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
-				case Store.HEADER_FIELDS_TYPES.DATABASE_NAME: // TODO: Test this.
+				case Store._HEADER_FIELDS_TYPES.DATABASE_NAME: // TODO: Test this.
 					this.databaseName = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
-				case Store.HEADER_FIELDS_TYPES.DATABASE_DESCRIPTION: // TODO: Test this.
+				case Store._HEADER_FIELDS_TYPES.DATABASE_DESCRIPTION: // TODO: Test this.
 					this.databaseDescription = CryptoJS.enc.Utf8.stringify(field.data);
 					break;
-				case Store.HEADER_FIELDS_TYPES.RECENTLY_USED_ENTRIES: // TODO: Test this.
+				case Store._HEADER_FIELDS_TYPES.RECENTLY_USED_ENTRIES: // TODO: Test this.
 					var data = CryptoJS.enc.Utf8.stringify(field.data);
 					var count = CryptoJS.enc.Hex.parse(data.substr(0, 2));
 					_.extend(count, CryptoJS.lib.WordStack);
@@ -253,7 +254,7 @@
 						this.recentlyUsedEntries.push(data.substr(i, Store._UUID_LENGTH));
 					}
 					break;
-				case Store.HEADER_FIELDS_TYPES.NAMED_PASSWORD_POLICIES: // TODO: Test this.
+				case Store._HEADER_FIELDS_TYPES.NAMED_PASSWORD_POLICIES:
 					/*
 						Very sad situation here: this field code was also assigned to YUBI_SK in 3.27Y. Here we try to infer the actual type
 						based on the actual value stored in the field. Specifically, YUBI_SK is YUBI_SK_LEN bytes of binary data, whereas HDR_PSWDPOLICIES
@@ -262,8 +263,8 @@
 					var data = field.data.clone();
 					_.extend(data, CryptoJS.lib.WordStack);
 					data = CryptoJS.enc.Utf8.stringify(data.shiftWordArray(1));
+					_.extend(field.data, CryptoJS.lib.WordStack);
 					if(field.data.sigBytes !== Store._YUBI_SK_LENGTH || !Store._HEX_REGEX.test(data)){
-						_.extend(field.data, CryptoJS.lib.WordStack);
 						var count = field.data.shiftNumberHex(2);
 						this.namedPasswordPolicies = [];
 						try{
@@ -272,13 +273,13 @@
 								var length = field.data.shiftNumberHex(2);
 								policy.name = CryptoJS.enc.Utf8.stringify(field.data.shiftBytes(length));
 								var flags = field.data.shiftNumberHex(4);
-								policy.useLowercase = !!(flags & Store.PASSWORD_POLICY_USE_LOWERCASE);
-								policy.useUppercase = !!(flags & Store.PASSWORD_POLICY_USE_UPPERCASE);
-								policy.useDigits = !!(flags & Store.PASSWORD_POLICY_USE_DIGITS);
-								policy.useSymbols = !!(flags & Store.PASSWORD_POLICY_USE_SYMBOLS);
-								policy.useHexDigits = !!(flags & Store.PASSWORD_POLICY_USE_HEX_DIGITS);
-								policy.useEasyVision = !!(flags & Store.PASSWORD_POLICY_USE_EASY_VISION);
-								policy.makePronounceable = !!(flags & Store.PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+								policy.useLowercase = !!(flags & Store._PASSWORD_POLICY_USE_LOWERCASE);
+								policy.useUppercase = !!(flags & Store._PASSWORD_POLICY_USE_UPPERCASE);
+								policy.useDigits = !!(flags & Store._PASSWORD_POLICY_USE_DIGITS);
+								policy.useSymbols = !!(flags & Store._PASSWORD_POLICY_USE_SYMBOLS);
+								policy.useHexDigits = !!(flags & Store._PASSWORD_POLICY_USE_HEX_DIGITS);
+								policy.useEasyVision = !!(flags & Store._PASSWORD_POLICY_USE_EASY_VISION);
+								policy.makePronounceable = !!(flags & Store._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
 								policy.length = field.data.shiftNumberHex(3);
 								policy.lowercaseCountMin = field.data.shiftNumberHex(3);
 								policy.uppercaseCountMin = field.data.shiftNumberHex(3);
@@ -295,16 +296,19 @@
 								throw e;
 							}
 						}
-					}else{
-						this.yubiSk = this.readBytes(Store._YUBI_SK_LENGTH);
+					}else{ // TODO: Test this.
+						this.yubiSk = field.data.readBytes(Store._YUBI_SK_LENGTH);
 					}
 					break;
-				case Store.HEADER_FIELDS_TYPES.END_OF_ENTRY:
+				case Store._HEADER_FIELDS_TYPES.EMPTY_GROUPS:
+					this.emptyGroups.push(CryptoJS.enc.Utf8.stringify(field.data))
+					break;
+				case Store._HEADER_FIELDS_TYPES.END_OF_ENTRY:
 					break fieldsReading;
-				case Store.HEADER_FIELDS_TYPES.WHO_PERFORMED_LAST_SAVE:
+				case Store._HEADER_FIELDS_TYPES.WHO_PERFORMED_LAST_SAVE:
 					break;
 				default:
-					this.header.push(field);
+					this.unknownFields.push(field);
 					break;
 				}
 			}
@@ -315,7 +319,7 @@
 			var length = this._plaintext.shiftNumber();
 			field.type = this._plaintext.shiftByte();
 			field.data = this._plaintext.shiftBytes(length);
-			this._plaintext.shiftBytes(this._plaintext.sigBytes % Store.ENCRYPTION_BLOCK_LENGTH);
+			this._plaintext.shiftBytes(this._plaintext.sigBytes % Store._ENCRYPTION_BLOCK_LENGTH);
 			this._hmac.update(field.data);
 			return field;
 		},
@@ -325,7 +329,7 @@
 			var record = [];
 			while(this._plaintext.sigBytes){
 				var field = this._readField();
-				if(Store.HEADER_FIELDS_TYPES.END_OF_ENTRY == field.type){
+				if(Store._HEADER_FIELDS_TYPES.END_OF_ENTRY == field.type){
 					this.records.push(record);
 					continue;
 				}
