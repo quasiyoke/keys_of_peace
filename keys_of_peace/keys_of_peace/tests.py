@@ -186,6 +186,7 @@ class JS(casper_test.CasperTestCase):
     JS_DIR = path.join(settings.BASE_DIR, 'keys_of_peace', 'js')
     
     def test_pws(self):
+        self.assertTrue(self.casper(path.join(self.JS_DIR, 'keys-of-peace-tests.js')))
         self.assertTrue(self.casper(path.join(self.JS_DIR, 'pws-tests.js')))
 
 

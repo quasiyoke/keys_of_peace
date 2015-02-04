@@ -1,7 +1,6 @@
 'use strict';
 
-importScripts('/configuration/');
-var scripts = ['json2', 'lodash', 'crypto/core', 'crypto/enc-base64', 'crypto/sha256', 'crypto/hmac', 'crypto/pbkdf2', 'crypto/cipher-core', 'crypto/aes', 'crypto'];
+var scripts = ['json2', 'lodash', 'crypto/core', 'crypto/enc-base64', 'crypto/sha256', 'crypto/hmac', 'crypto/cipher-core', 'crypto/aes', 'keys-of-peace'];
 for(var i=scripts.length; i--;){
 	scripts[i] = '/static/js/' + scripts[i] + '.js';
 }

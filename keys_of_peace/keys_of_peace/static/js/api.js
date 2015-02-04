@@ -1,8 +1,8 @@
 'use strict';
 
 (function($){
-	var Api = window.Api = {
-		URL: CONFIGURATION.API_URL,
+	var API = KeysOfPeace.API = {
+		URL: '/api/v1/',
 		
 		fetch: function(options){
 			options = _.clone(options);
@@ -85,11 +85,11 @@
 		var i = 0;
 		var callbacks = {};
 
-		Api.make = function(m){
+		API.make = function(m){
 			m.id = i++;
 			callbacks[m.id] = m.callback;
 			delete m.callback;
-			var method = Api.makeMethods[m.method];
+			var method = API.makeMethods[m.method];
 			if(method && method.serializeArgs){
 				m.args = method.serializeArgs(m.args);
 			}
@@ -98,7 +98,7 @@
 		
 		cryptoWorker.onmessage = function(e){
 			var m = e.data;
-			var method = Api.makeMethods[m.method];
+			var method = API.makeMethods[m.method];
 			if(method && method.deserializeResult){
 				m.result = method.deserializeResult(m.result);
 			}
@@ -106,7 +106,7 @@
 			delete callbacks[m.id];
 		};
 	}else{
-		Api.make = function(m){
+		API.make = function(m){
 			m.callback(Crypto[m.method].apply(Crypto, m.args));
 		};
 	}

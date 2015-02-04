@@ -1,17 +1,22 @@
 'use strict';
+
+/**
+ * Module implementing KeysOfPeace compatibility with Password Safe password manager.
+ *
+ * @see http://pwsafe.org/
+ */
+
 (function(){
-	window.PWS = {};
-	
-	
+	var PWS = KeysOfPeace.PWS = {};
+
+
 	var Error = PWS.Error = function(message){
-		this._message = message;
+		this.message = message;
 	};
+	Error.prototype = new KeysOfPeace.Error();
 	
 	var IncorrectPasswordError = PWS.IncorrectPasswordError = function(){};
 	IncorrectPasswordError.prototype = new Error('Incorrect password.');
-	
-	var TooFewIterationsError = PWS.TooFewIterationsError = function(){};
-	TooFewIterationsError.prototype = new Error('Storage has too small hashing iterations count for key stretching specified.');
 
 	var HmacError = PWS.HmacError = function(){};
 	HmacError.prototype = new Error('Storage HMAC is invalid. Looks like it was damaged.');
@@ -19,10 +24,10 @@
 	var VersionError = PWS.VersionError = function(message){
 		this.message = message;
 	}
-	VersionError.prototype = new VersionError('This website doesn\'t supports storages of such version.');
+	VersionError.prototype = new Error('This website doesn\'t supports storages of such version.');
 		
 	
-	var Store = PWS.Store = function(s, password){
+	var Store = PWS.Store = function(s, stretchedKeyGenerator){
 		/**
 		 * Implements Password Safe store parsing.
 		 *
@@ -30,18 +35,19 @@
 		 * @throws PWS.Error if storage format is incorrect.
 		 */
 		this._parse(s);
-		this._decrypt(password);
+		this._decrypt(stretchedKeyGenerator);
 		this._readHeader();
 		this._readRecords();
 		this._checkHMAC();
 	};
-
+	
+	
 	_.extend(Store, {
 		_ENCRYPTION_BLOCK_LENGTH: 128 / 8,
 		_TAG_LENGTH: 4,
-		_SALT_LENGTH: 256 / 8,
+		_HEADER_FIELDS_TYPES: {},
+		_RECORDS_FIELDS_TYPES: {},
 		_HEX_REGEX: /^[abcdef\d]+$/i,
-		_ITER_MIN: 2048,
 		_PASSWORD_POLICY_USE_LOWERCASE: 0x8000,
 		_PASSWORD_POLICY_USE_UPPERCASE: 0x4000,
 		_PASSWORD_POLICY_USE_DIGITS: 0x2000,
@@ -53,58 +59,6 @@
 		_VERSION: {
 			major: 0x03,
 			minor: 0x0d
-		},
-
-		_HEADER_FIELDS_TYPES: {
-			VERSION: 0x00,
-			UUID: 0x01,
-			NON_DEFAULT_PREFERENCES: 0x02,
-			TREE_DISPLAY_STATUS: 0x03,
-			TIMESTAMP_OF_LAST_SAVE: 0x04,
-			WHO_PERFORMED_LAST_SAVE: 0x05,
-			WHAT_PERFORMED_LAST_SAVE: 0x06,
-			LAST_SAVED_BY_USER: 0x07,
-			LAST_SAVED_ON_HOST: 0x08,
-			DATABASE_NAME: 0x09,
-			DATABASE_DESCRIPTION: 0x0a,
-			DATABASE_FILTERS: 0x0b,
-			RESERVED1: 0x0c,
-			RESERVED2: 0x0d,
-			RESERVED3: 0x0e,
-			RECENTLY_USED_ENTRIES: 0x0f,
-			NAMED_PASSWORD_POLICIES: 0x10,
-			EMPTY_GROUPS: 0x11,
-			YUBICO: 0x12,
-			END_OF_ENTRY: 0xff
-		},
-
-		_RECORDS_FIELDS_TYPES: {
-			UUID: 0x01,
-			GROUP: 0x02,
-			TITLE: 0x03,
-			USERNAME: 0x04,
-			NOTES: 0x05,
-			PASSWORD: 0x06,
-			CREATION_TIME: 0x07,
-			PASSWORD_MODIFICATION_TIME: 0x08,
-			LAST_ACCESS_TIME: 0x09,
-			PASSWORD_EXPIRY_TIME: 0x0a,
-			RESERVED: 0x0b,
-			LAST_MODIFICATION_TIME: 0x0c,
-			URL: 0x0d,
-			AUTOTYPE: 0x0e,
-			PASSWORD_HISTORY: 0x0f,
-			PASSWORD_POLICY: 0x10,
-			PASSWORD_EXPIRY_INTERVAL: 0x11,
-			RUN_COMMAND: 0x12,
-			DOUBLE_CLICK_ACTION: 0x13,
-			EMAIL: 0x14,
-			PROTECTED_ENTRY: 0x15,
-			OWN_SYMBOLS_FOR_PASSWORD: 0x16,
-			SHIFT_DOUBLE_CLICK_ACTION: 0x17,
-			PASSWORD_POLICY_NAME: 0x18,
-			ENTRY_KEYBOARD_SHORTCUT: 0x19,
-			END_OF_ENTRY: 0xff
 		},
 
 		_getPasswordPolicy: function(wordStack, hasName){
@@ -162,7 +116,7 @@
 			var ciphertext = [];
 			var block;
 			try{
-				while('PWS3-EOFPWS3-EOF' !== CryptoJS.enc.Latin1.stringify(block = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4))){
+				while('PWS3-EOFPWS3-EOF' !== CryptoJS.enc.Latin1.stringify(block = s.shiftWords(Store._ENCRYPTION_BLOCK_LENGTH / 4))){
 					ciphertext.push.apply(ciphertext, block.words);
 				}
 			}catch(e){
@@ -180,6 +134,595 @@
 		}
 	});
 
+
+	var Field = Store._Field = CryptoJS.lib.Base.extend({
+		init: function(options){
+			this.type = options.type;
+			this.parse = options.parse;
+			this.serialize = options.serialize;
+		}
+	});
+
+	var HeaderField = Store._HeaderField = Field.extend({
+		init: function(options){
+			HeaderField.$super.init.apply(this, arguments);
+			Store._HEADER_FIELDS_TYPES[options.type] = this;
+		}
+	});
+
+	var RecordField = Store._RecordField = Field.extend({
+		init: function(options){
+			RecordField.$super.init.apply(this, arguments);
+			Store._RECORDS_FIELDS_TYPES[options.type] = this;
+		}
+	});
+
+	Store._HEADER_FIELDS = {
+		VERSION: HeaderField.create({
+			type: 0x00,
+			parse: function(wordStack){ // TODO: Test beta version format.
+				if(2 != wordStack.sigBytes && 4 != wordStack.sigBytes){
+					throw new VersionError('Incorrect version field length.');
+				}
+				var extender = {
+					version: {
+						minor: wordStack.shiftByte(),
+						major: wordStack.shiftByte()
+					}
+				};
+				if(Store._VERSION.major != extender.version.major){
+					throw new VersionError();
+				}
+				return extender;
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+				data.pushByte(store.version.minor);
+				data.pushByte(store.version.major);
+				return data;
+			}
+		}),
+		UUID: HeaderField.create({
+			type: 0x01,
+			parse: function(wordStack){
+				return {
+					uuid: Store._getUuid(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		NON_DEFAULT_PREFERENCES: HeaderField.create({
+			type: 0x02,
+			parse: function(wordStack){
+				return {
+					preferences: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		TREE_DISPLAY_STATUS: HeaderField.create({
+			type: 0x03,
+			parse: function(wordStack){ // TODO: Test this.
+				return {
+					treeDisplayStatus: _.map(Store._getText(wordStack), function(c){
+						return '1' === c;
+					})
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		TIMESTAMP_OF_LAST_SAVE: HeaderField.create({
+			type: 0x04,
+			parse: function(wordStack){
+				return {
+					lastSave: Store._getTime(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		WHO_PERFORMED_LAST_SAVE: HeaderField.create({
+			type: 0x05,
+			parse: function(){}
+		}),
+		WHAT_PERFORMED_LAST_SAVE: HeaderField.create({
+			type: 0x06,
+			parse: function(wordStack){
+				return {
+					whatPerformedLastSave: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		LAST_SAVED_BY_USER: HeaderField.create({
+			type: 0x07,
+			parse: function(wordStack){
+				return {
+					lastSavedByUser: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		LAST_SAVED_ON_HOST: HeaderField.create({
+			type: 0x08,
+			parse: function(wordStack){
+				return {
+					lastSavedOnHost: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		DATABASE_NAME: HeaderField.create({
+			type: 0x09,
+			parse: function(wordStack){ // TODO: Test this.
+				return {
+					databaseName: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		DATABASE_DESCRIPTION: HeaderField.create({
+			type: 0x0a,
+			parse: function(wordStack){ // TODO: Test this.
+				return {
+					databaseDescription: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		RECENTLY_USED_ENTRIES: HeaderField.create({
+			type: 0x0f,
+			parse: function(wordStack){ // TODO: Test this.
+				var data = Store._getText(wordStack);
+				var count = CryptoJS.enc.Hex.parse(data.substr(0, 2));
+				_.extend(count, CryptoJS.lib.WordStack);
+				count = count.shiftByte();
+				if(data.length !== 2 + count * Store._UUID_LENGTH){
+					return;
+				}
+				var extender = {
+					recentlyUsedEntries: []
+				};
+				for(var i=2; i<data.length; i+=Store._UUID_LENGTH){
+					extender.recentlyUsedEntries.push(data.substr(i, Store._UUID_LENGTH));
+				}
+				return extender;
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		NAMED_PASSWORD_POLICIES: HeaderField.create({
+			type: 0x10,
+			parse: function(wordStack){
+				/*
+					Very sad situation here: this field code was also assigned to YUBI_SK in 3.27Y. Here we try to infer the actual type
+					based on the actual value stored in the field. Specifically, YUBI_SK is YUBI_SK_LEN bytes of binary data, whereas HDR_PSWDPOLICIES
+					is of varying length, starting with at least 4 hex digits.
+				*/
+				var data = wordStack.clone();
+				data = Store._getText(data.shiftWords(1));
+				var extender = {};
+				if(wordStack.sigBytes !== Store._YUBI_SK_LENGTH || !Store._HEX_REGEX.test(data)){
+					var count = wordStack.shiftNumberHex(2);
+					extender.namedPasswordPolicies = [];
+					try{
+						for(var i=0; i<count; ++i){
+							extender.namedPasswordPolicies.push(Store._getPasswordPolicy(wordStack, true));
+						}
+					}catch(e){
+						if(e instanceof CryptoJS.lib.WordStack.IndexError){
+							return;
+						}else{
+							throw e;
+						}
+					}
+				}else{ // TODO: Test this.
+					extender.yubiSk = wordStack.readBytes(Store._YUBI_SK_LENGTH);
+				}
+				return extender;
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		EMPTY_GROUPS: HeaderField.create({
+			type: 0x11,
+			parse: function(wordStack, store){
+				store.emptyGroups.push(Store._getText(wordStack))
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		END_OF_ENTRY: HeaderField.create({
+			type: 0xff,
+			parse: function(wordStack, store){
+				return this;
+			},
+			serialize: function(){}
+		})
+	};
+
+	Store._RECORDS_FIELDS = {
+		UUID: RecordField.create({
+			type: 0x01,
+			parse: function(wordStack){
+				return {
+					uuid: Store._getUuid(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		GROUP: RecordField.create({
+			type: 0x02,
+			parse: function(wordStack){
+				return {
+					group: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		TITLE: RecordField.create({
+			type: 0x03,
+			parse: function(wordStack){
+				return {
+					title: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		USERNAME: RecordField.create({
+			type: 0x04,
+			parse: function(wordStack){
+				return {
+					username: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		NOTES: RecordField.create({
+			type: 0x05,
+			parse: function(wordStack){
+				return {
+					notes: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD: RecordField.create({
+			type: 0x06,
+			parse: function(wordStack){
+				return {
+					password: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		CREATION_TIME: RecordField.create({
+			type: 0x07,
+			parse: function(wordStack){
+				return {
+					creationTime: Store._getTime(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD_MODIFICATION_TIME: RecordField.create({
+			type: 0x08,
+			parse: function(wordStack){
+				return {
+					passwordModificationTime: Store._getTime(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		LAST_ACCESS_TIME: RecordField.create({
+			type: 0x09,
+			parse: function(wordStack){
+				return {
+					lastAccessTime: Store._getTime(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD_EXPIRY_TIME: RecordField.create({
+			type: 0x0a,
+			parse: function(wordStack){
+				return {
+					passwordExpiryTime: Store._getTime(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		RESERVED: RecordField.create({
+			type: 0x0b,
+			parse: function(){}
+		}),
+		LAST_MODIFICATION_TIME: RecordField.create({
+			type: 0x0c,
+			parse: function(wordStack){
+				return {
+					lastModificationTime: Store._getTime(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		URL: RecordField.create({
+			type: 0x0d,
+			parse: function(wordStack){
+				return {
+					url: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		AUTOTYPE: RecordField.create({
+			type: 0x0e,
+			parse: function(wordStack){
+				return {
+					autotype: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD_HISTORY: RecordField.create({
+			type: 0x0f,
+			parse: function(wordStack){
+				var extender = {};
+				extender.passwordHistory = {
+					on: '1'.charCodeAt(0) === wordStack.shiftByte()
+				};
+				extender.passwordHistory.maxSize = wordStack.shiftNumberHex(2);
+				var length = wordStack.shiftNumberHex(2);
+				var items = extender.passwordHistory.items = [];
+				for(var i=0; i<length; ++i){
+					var item = {
+						time: new Date(wordStack.shiftNumberHex(8) * 1000)
+					};
+					item.password = Store._getText(wordStack.shiftBytes(wordStack.shiftNumberHex(4)));
+					items.push(item);
+				}
+				return extender;
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD_POLICY: RecordField.create({
+			type: 0x10,
+			parse: function(wordStack){
+				return {
+					passwordPolicy: Store._getPasswordPolicy(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD_EXPIRY_INTERVAL: RecordField.create({
+			type: 0x11,
+			parse: function(wordStack){
+				return {
+					passwordExpiryInterval: wordStack.shiftNumber()
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		RUN_COMMAND: RecordField.create({
+			type: 0x12,
+			parse: function(wordStack){
+				return {
+					runCommand: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		DOUBLE_CLICK_ACTION: RecordField.create({
+			type: 0x13,
+			parse: function(wordStack){
+				return {
+
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		EMAIL: RecordField.create({
+			type: 0x14,
+			parse: function(wordStack){
+				return {
+					email: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PROTECTED_ENTRY: RecordField.create({
+			type: 0x15,
+			parse: function(wordStack){
+				return {
+
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		OWN_SYMBOLS_FOR_PASSWORD: RecordField.create({
+			type: 0x16,
+			parse: function(wordStack){
+				return {
+					ownSymbolsForPassword: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		SHIFT_DOUBLE_CLICK_ACTION: RecordField.create({
+			type: 0x17,
+			parse: function(wordStack){
+				return {
+
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		PASSWORD_POLICY_NAME: RecordField.create({
+			type: 0x18,
+			parse: function(wordStack){
+				return {
+					passwordPolicyName: Store._getText(wordStack)
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		ENTRY_KEYBOARD_SHORTCUT: RecordField.create({
+			type: 0x19,
+			parse: function(wordStack){
+				return {
+
+				};
+			},
+			serialize: function(store){
+				var data = CryptoJS.lib.WordStack.create();
+
+				return data;
+			}
+		}),
+		END_OF_ENTRY: RecordField.create({
+			type: 0xff,
+			parse: function(wordStack){
+				return this;
+			},
+			serialize: function(){}
+		})
+	};
+
 	_.extend(Store.prototype, {
 		_checkHMAC: function(key){
 			var h =this._hmac.finalize().toString();
@@ -196,57 +739,44 @@
 			}
 		},
 		
-		_decrypt: function(password){
-			var stretchedKey = this._getStretchedKey(password);
+		_decrypt: function(stretchedKeyGenerator){
+			var stretchedKey = stretchedKeyGenerator.getStretchedKey(this._salt, this._iter);
 			this._checkStretchedKey(stretchedKey);
+			// TODO: Use here CipherParams.
 			var key = CryptoJS.TwoFish.decrypt({ ciphertext: this._b1b2 }, stretchedKey, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding });
 			var hmacKey = CryptoJS.TwoFish.decrypt({ ciphertext: this._b3b4 }, stretchedKey, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding });
 			this._plaintext = CryptoJS.TwoFish.decrypt({ ciphertext: this._ciphertext }, key, { iv: this._iv, padding: CryptoJS.pad.NoPadding });
 			this._hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, hmacKey);
 		},
 
-		_getStretchedKey: function(password){
-			/**
-			 * @see StretchKey at PWSfileV3.cpp
-			 */
-			var hasher = CryptoJS.algo.SHA256.create();
-			hasher.update(password);
-			hasher.update(this._salt);
-			for(var i=0; i<this._iter; ++i){
-				var hash = hasher.finalize();
-				hasher.reset();
-				hasher.update(hash);
-			}
-			return hasher.finalize();
+		getSerialized: function(){
+			var retval = CryptoJS.lib.WordStack.create();
+			var plaintext = CryptoJS.lib.WordStack.create();
+			this._pushSerializedHeader(plaintext);
+			this._pushSerializedRecords(plaintext);
 		},
 		
 		_parse: function(s){
-			/**
-			 * @return warnings
-			 */
 			if(!s){
 				throw new Error('PWS store wasn\'t defined.');
 			}
 			var warnings = [];
-			s = Crypto.fromString(s);
+			s = CryptoJS.enc.Base64.parse(s);
 			_.extend(s, CryptoJS.lib.WordStack);
 			try{
 				/* "TAG" check. */
-				var tag = s.shiftWordArray(Store._TAG_LENGTH / 4);
+				var tag = s.shiftWords(Store._TAG_LENGTH / 4);
 				if('PWS3' !== CryptoJS.enc.Latin1.stringify(tag)){
 					throw new Error('Incorrect "TAG".');
 				}
-				this._salt = s.shiftWordArray(Store._SALT_LENGTH / 4);
+				this._salt = s.shiftWords(KeysOfPeace.SALT_LENGTH / 4);
 				this._iter = s.shiftNumber();
-				if(this._iter < Store._ITER_MIN){
-					throw new TooFewIterationsError();
-				}
-				this._stretchedKeyHash = s.shiftWordArray(Store._SALT_LENGTH / 4);
-				this._b1b2 = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4 * 2);
-				this._b3b4 = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4 * 2);
-				this._iv = s.shiftWordArray(Store._ENCRYPTION_BLOCK_LENGTH / 4);
+				this._stretchedKeyHash = s.shiftWords(KeysOfPeace.SALT_LENGTH / 4);
+				this._b1b2 = s.shiftWords(Store._ENCRYPTION_BLOCK_LENGTH / 4 * 2);
+				this._b3b4 = s.shiftWords(Store._ENCRYPTION_BLOCK_LENGTH / 4 * 2);
+				this._iv = s.shiftWords(Store._ENCRYPTION_BLOCK_LENGTH / 4);
 				this._ciphertext = Store._shiftCiphertext(s);
-				this._hmacValue = s.shiftWordArray(Store._SALT_LENGTH / 4);
+				this._hmacValue = s.shiftWords(KeysOfPeace.SALT_LENGTH / 4);
 			}catch(e){
 				if(e instanceof CryptoJS.lib.WordStack.IndexError){
 					throw new Error('PWS store string was finished unexpectedly.');
@@ -256,6 +786,19 @@
 			}
 		},
 
+		_pushField: function(wordStack, type, data){
+			data || (data = CryptoJS.lib.WordArray.create());
+			wordStack.pushNumber(data.sigBytes);
+			wordStack.pushByte(type);
+			wordStack.pushBytes(data);
+			this._hmac.update(data);
+			wordStack.pushBytes(CryptoJS.lib.WordArray.random((Store._ENCRYPTION_BLOCK_LENGTH - wordStack.sigBytes % Store._ENCRYPTION_BLOCK_LENGTH) % Store._ENCRYPTION_BLOCK_LENGTH)); // Fill the rest of the field with random bytes.
+		},
+
+		_pushSerializedHeader: function(wordStack){
+			//this._pushField(wordStack, );
+		},
+
 		_readHeader: function(){
 			/**
 			 * @see ReadHeader at PWSfileV3.cpp
@@ -263,102 +806,21 @@
 			_.extend(this._plaintext, CryptoJS.lib.WordStack);
 			this.emptyGroups = [];
 			this.unknownFields = [];
-			fieldsReading:
 			while(true){
 				var field = this._readField();
-				switch(field.type){
-				case Store._HEADER_FIELDS_TYPES.VERSION: // TODO: Test beta version format.
-					if(2 != field.data.sigBytes && 4 != field.data.sigBytes){
-						throw new VersionError('Incorrect version field length.');
-					}
-					this.version = {};
+				var fieldHandler = Store._HEADER_FIELDS_TYPES[field.type];
+				if(fieldHandler){
 					_.extend(field.data, CryptoJS.lib.WordStack);
-					this.version.minor = field.data.shiftByte();
-					this.version.major = field.data.shiftByte();
-					if(Store._VERSION.major != this.version.major){
-						throw new VersionError();
-					}
-					break;
-				case Store._HEADER_FIELDS_TYPES.UUID:
-					this.uuid = Store._getUuid(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.NON_DEFAULT_PREFERENCES:
-					this.preferences = Store._getText(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.TREE_DISPLAY_STATUS: // TODO: Test this.
-					this.treeDisplayStatus = _.map(Store._getText(field.data), function(c){
-						return '1' === c;
-					});
-					break;
-				case Store._HEADER_FIELDS_TYPES.TIMESTAMP_OF_LAST_SAVE:
-					this.lastSave = Store._getTime(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.WHAT_PERFORMED_LAST_SAVE:
-					this.whatPerformedLastSave = Store._getText(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.LAST_SAVED_BY_USER:
-					this.lastSavedByUser = Store._getText(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.LAST_SAVED_ON_HOST:
-					this.lastSavedOnHost = Store._getText(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.DATABASE_NAME: // TODO: Test this.
-					this.databaseName = Store._getText(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.DATABASE_DESCRIPTION: // TODO: Test this.
-					this.databaseDescription = Store._getText(field.data);
-					break;
-				case Store._HEADER_FIELDS_TYPES.RECENTLY_USED_ENTRIES: // TODO: Test this.
-					var data = Store._getText(field.data);
-					var count = CryptoJS.enc.Hex.parse(data.substr(0, 2));
-					_.extend(count, CryptoJS.lib.WordStack);
-					count = count.shiftByte();
-					if(data.length !== 2 + count * Store._UUID_LENGTH){
+					var extender = fieldHandler.parse(field.data, this);
+					if(!extender){
+						continue;
+					}else if(fieldHandler === extender){
 						break;
+					}else{
+						_.extend(this, extender);
 					}
-					this.recentlyUsedEntries = [];
-					for(var i=2; i<data.length; i+=Store._UUID_LENGTH){
-						this.recentlyUsedEntries.push(data.substr(i, Store._UUID_LENGTH));
-					}
-					break;
-				case Store._HEADER_FIELDS_TYPES.NAMED_PASSWORD_POLICIES:
-					/*
-						Very sad situation here: this field code was also assigned to YUBI_SK in 3.27Y. Here we try to infer the actual type
-						based on the actual value stored in the field. Specifically, YUBI_SK is YUBI_SK_LEN bytes of binary data, whereas HDR_PSWDPOLICIES
-						is of varying length, starting with at least 4 hex digits.
-					*/
-					var data = field.data.clone();
-					_.extend(data, CryptoJS.lib.WordStack);
-					data = Store._getText(data.shiftWordArray(1));
-					_.extend(field.data, CryptoJS.lib.WordStack);
-					if(field.data.sigBytes !== Store._YUBI_SK_LENGTH || !Store._HEX_REGEX.test(data)){
-						var count = field.data.shiftNumberHex(2);
-						this.namedPasswordPolicies = [];
-						try{
-							for(var i=0; i<count; ++i){
-								this.namedPasswordPolicies.push(Store._getPasswordPolicy(field.data, true));
-							}
-						}catch(e){
-							if(e instanceof CryptoJS.lib.WordStack.IndexError){
-								break;
-							}else{
-								throw e;
-							}
-						}
-					}else{ // TODO: Test this.
-						this.yubiSk = field.data.readBytes(Store._YUBI_SK_LENGTH);
-					}
-					break;
-				case Store._HEADER_FIELDS_TYPES.EMPTY_GROUPS:
-					this.emptyGroups.push(Store._getText(field.data))
-					break;
-				case Store._HEADER_FIELDS_TYPES.END_OF_ENTRY:
-					break fieldsReading;
-				case Store._HEADER_FIELDS_TYPES.WHO_PERFORMED_LAST_SAVE:
-					break;
-				default:
+				}else{
 					this.unknownFields.push(field);
-					break;
 				}
 			}
 		},
@@ -375,108 +837,27 @@
 
 		_readRecords: function(){
 			this.records = [];
-			var record = {};
 			while(this._plaintext.sigBytes > 0){
-				var field = this._readField();
-				switch(field.type){
-				case Store._RECORDS_FIELDS_TYPES.UUID:
-					record.uuid = Store._getUuid(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.GROUP:
-					record.group = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.TITLE:
-					record.title = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.USERNAME:
-					record.username = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.NOTES:
-					record.notes = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD:
-					record.password = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.CREATION_TIME:
-					record.creationTime = Store._getTime(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD_MODIFICATION_TIME:
-					record.passwordModificationTime = Store._getTime(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.LAST_ACCESS_TIME:
-					record.lastAccessTime = Store._getTime(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD_EXPIRY_TIME:
-					record.passwordExpiryTime = Store._getTime(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.LAST_MODIFICATION_TIME:
-					record.lastModificationTime = Store._getTime(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.URL:
-					record.url = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.AUTOTYPE:
-					record.autotype = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD_HISTORY:
-					_.extend(field.data, CryptoJS.lib.WordStack);
-					record.passwordHistory = {
-						on: '1'.charCodeAt(0) === field.data.shiftByte()
-					};
-					record.passwordHistory.maxSize = field.data.shiftNumberHex(2);
-					var length = field.data.shiftNumberHex(2);
-					var items = record.passwordHistory.items = [];
-					for(var i=0; i<length; ++i){
-						var item = {
-							time: new Date(field.data.shiftNumberHex(8) * 1000)
-						};
-						item.password = Store._getText(field.data.shiftBytes(field.data.shiftNumberHex(4)));
-						items.push(item);
+				var record = {};
+				while(true){
+					var field = this._readField();
+					var fieldHandler = Store._RECORDS_FIELDS_TYPES[field.type];
+					if(fieldHandler){
+						_.extend(field.data, CryptoJS.lib.WordStack);
+						var extender = fieldHandler.parse(field.data, this);
+						if(!extender){
+							continue;
+						}else if(fieldHandler === extender){
+							break;
+						}else{
+							_.extend(record, extender);
+						}
+					}else{
+						record.unknownFields || (record.unknownFields = []);
+						record.unknownFields.push(field);
 					}
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD_POLICY:
-					_.extend(field.data, CryptoJS.lib.WordStack);
-					record.passwordPolicy = Store._getPasswordPolicy(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD_EXPIRY_INTERVAL:
-					_.extend(field.data, CryptoJS.lib.WordStack);
-					record.passwordExpiryInterval = field.data.shiftNumber();
-					break;
-				case Store._RECORDS_FIELDS_TYPES.RUN_COMMAND:
-					record.runCommand = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.DOUBLE_CLICK_ACTION:
-
-					break;
-				case Store._RECORDS_FIELDS_TYPES.EMAIL:
-					record.email = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PROTECTED_ENTRY:
-
-					break;
-				case Store._RECORDS_FIELDS_TYPES.OWN_SYMBOLS_FOR_PASSWORD:
-					record.ownSymbolsForPassword = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.SHIFT_DOUBLE_CLICK_ACTION:
-
-					break;
-				case Store._RECORDS_FIELDS_TYPES.PASSWORD_POLICY_NAME:
-					record.passwordPolicyName = Store._getText(field.data);
-					break;
-				case Store._RECORDS_FIELDS_TYPES.ENTRY_KEYBOARD_SHORTCUT:
-
-					break;
-				case Store._RECORDS_FIELDS_TYPES.END_OF_ENTRY:
-					this.records.push(record);
-					record = {};
-					break;
-				case Store._RECORDS_FIELDS_TYPES.RESERVED:
-					break;
-				default:
-					record.unknownFields || (record.unknownFields = []);
-					record.unknownFields.push(field);
-					break;
 				}
+				this.records.push(record);
 			}
 		}
 	});

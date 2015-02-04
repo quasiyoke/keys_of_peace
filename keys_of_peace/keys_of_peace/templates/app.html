@@ -1,52 +1,54 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 
 {% block stylesheets %}
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/app.css" media="screen">
+<link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}" media="screen">
 {% endblock %}
 
 
 {% block scripts %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/core.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/enc-base64.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/sha256.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/hmac.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/cipher-core.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/twofish.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/mode-ecb.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto/pad-nopadding.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.caret.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.validate.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.core.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.effect.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.position.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.widget.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.menu.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.ui.autocomplete.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.qtip.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lodash.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/json2.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/ZeroClipboard.js"></script>
-<script type="text/javascript" src="{% url 'configuration' %}"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/clipboard.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/crypto.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/form.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/password.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/pws.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/util.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/api.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/backbone.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/store.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/account-form.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/account-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/app-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/dashboard-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/home-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/registration-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/registration-success-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/settings-view.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/router.js"></script>
+<script type="text/javascript" src="{% static 'js/crypto/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/cipher-core.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/enc-base64.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/sha256.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/twofish.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/mode-ecb.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/pad-nopadding.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/crypto/hmac.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.caret.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.validate.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.ui.core.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.ui.effect.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.ui.position.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.ui.widget.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.ui.menu.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.ui.autocomplete.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.qtip.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.cookie.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lodash.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/json2.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/ZeroClipboard.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/clipboard.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/keys-of-peace.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/word-stack.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/form.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/password.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/pws.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/util.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/api.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/backbone.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/store.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/account-form.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/account-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/app-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/dashboard-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/home-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/registration-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/registration-success-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/settings-view.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/router.js' %}"></script>
 
 <script class="account-template" type="text/html">
   <tr class="account">
@@ -191,7 +193,7 @@
 {% block content %}
 <div class="app">
   <div class="app-header">
-	<h1 class="app-title"><a class="app-title-link" href="{% url 'home' %}"><img class="app-title-link-image" src="{{ STATIC_URL }}images/logo.svg">Keys of Peace</a></h1>
+	<h1 class="app-title"><a class="app-title-link" href="{% url 'home' %}"><img class="app-title-link-image" src="{% static 'images/logo.svg' %}">Keys of Peace</a></h1>
 	<div class="bar-wrap bar-wrap_hidden">
 	  <div class="bar">
 		<span class="bar-item bar-notification bar-additional">You're still logged in as</span>

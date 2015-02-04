@@ -6,7 +6,6 @@ from django.conf import urls
 
 urlpatterns = urls.patterns(
     '',
-    urls.url(r'^configuration/$', views.configuration, name='configuration'),
     urls.url(r'^$', views.App.as_view(), name='home'),
     urls.url(r'^dashboard/$', views.App.as_view(), name='dashboard'),
     urls.url(r'^registration/$', views.App.as_view(), name='registration'),
