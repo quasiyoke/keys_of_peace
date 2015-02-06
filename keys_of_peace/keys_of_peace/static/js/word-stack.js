@@ -24,7 +24,8 @@
 		},
 
 		pushBytes: function(wordArray){
-			for(var i=0; i<wordArray.sigBytes/4; ++i){
+			var wordsCount = Math.floor(wordArray.sigBytes/4);
+			for(var i=0; i<wordsCount; ++i){
 				this.pushWord(wordArray.words[i]);
 			}
 			for(var i=24; i > 24 - (wordArray.sigBytes % 4) * 8; i-=8){
@@ -34,6 +35,25 @@
 
 		pushNumber: function(n){
 			this.pushWord(switchEndianness(n));
+		},
+
+		pushNumberHex: function(n, length){
+			if(isNaN(length)){
+				throw KeysOfPeace.Error('Hex number length wasn\'t specified properly.');
+			}
+			var hexStr = n.toString(16);
+			for(var i=length-hexStr.length; i>0; --i){
+				this.pushByte('0'.charCodeAt(0));
+			}
+			if(length < hexStr.length){
+				hexStr = hexStr.substr(hexStr.length - length, length);
+			}
+			this.pushBytes(CryptoJS.enc.Latin1.parse(hexStr));
+		},
+
+		pushShort: function(n){
+			this.pushByte(n & 0xff);
+			this.pushByte(n >>> 8);
 		},
 
 		pushWord: function(word){
@@ -50,7 +70,7 @@
 			 */
 			this.sigBytes -= 4;
 			if(this.sigBytes < 0){
-				throw new WordStack.IndexError('Stack was finished unexpectedly.');
+				throw new WordStack.IndexError('WordStack was finished unexpectedly.');
 			}
 			return this.words.shift();
 		},
@@ -58,7 +78,7 @@
 		shiftByte: function(){
 			--this.sigBytes;
 			if(this.sigBytes < 0){
-				throw new WordStack.IndexError('Stack was finished unexpectedly.');
+				throw new WordStack.IndexError('WordStack was finished unexpectedly.');
 			}
 			this._beginOffset || (this._beginOffset = 0);
 			var n = (this.words[0] >>> (24 - this._beginOffset * 8)) & 0xff;
@@ -87,6 +107,10 @@
 			}
 			return CryptoJS.lib.WordArray.create(words, length);
 		},
+
+		shiftShort: function(){
+			return this.shiftByte() | (this.shiftByte() << 8);
+		},
 																																					
 		shiftWords: function(lengthWords){
 			/**
@@ -109,14 +133,7 @@
 		shiftNumberHex: function(length){
 			var hexStr = this.shiftBytes(length);
 			hexStr = CryptoJS.enc.Utf8.stringify(hexStr);
-			if(hexStr.length % 2){
-				hexStr = '0' + hexStr;
-			}
-			var n = 0;
-			for (var i = 0; i < hexStr.length; i += 2) {
-				n |= parseInt(hexStr.substr(hexStr.length - i - 2, 2), 16) << (i / 2 * 8);
-			}
-			return n;
+			return parseInt(hexStr, 16);
 		}
 	});
 })();
