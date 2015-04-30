@@ -1,10 +1,9 @@
-'use strict';
-
 var PASSWORD = 'W<u;]-CS>a%sF/N8+-93';
 var SALT = '07723be817d72c621f4d6c6ab48e551c586a3edd9a5a639067f81eb99506951f';
 var SALT_SHORT = '07723be817d72c621f4d6c6ab48e551c586a3edd9a5a639067f81eb9950695';
 
 casper.test.comment('Keys of Peace utils');
+var assert = require('assert');
 
 function stretchingKey(param){
 	var salt = CryptoJS.enc.Hex.parse(param.salt);
@@ -29,7 +28,6 @@ function stretchingKeyTooFewIterations(param){
 	}
 }
 
-var helper = require('./djangocasper.js');
 helper.scenario(
 	'/',
 	function(){
@@ -68,4 +66,3 @@ helper.scenario(
 		});
 	}
 );
-helper.run();

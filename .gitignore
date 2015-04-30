@@ -44,3 +44,10 @@ nosetests.xml
 
 # Deployment configuration
 deployment.json
+
+# NPM
+node_modules
+npm-debug.log
+
+# Bower
+bower_components

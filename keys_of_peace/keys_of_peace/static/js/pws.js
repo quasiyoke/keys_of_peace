@@ -24,9 +24,13 @@
 	HmacError.prototype = new Error();
 
 	var VersionError = PWS.VersionError = function(message){
-		this.message = message;
+		if(_.isString(message)){
+			this.message = message;
+		}else{
+			this.message = 'This website doesn\'t supports storages of version ' + KeysOfPeace.getVersionString(message);
+		}
 	}
-	VersionError.prototype = new Error('This website doesn\'t supports storages of such version.');
+	VersionError.prototype = new Error();
 	
 	
 	var Store = PWS.Store = function(s, stretchedKeyGenerator){
@@ -63,11 +67,16 @@
 		_PASSWORD_POLICY_USE_EASY_VISION: 0x0400,
 		_PASSWORD_POLICY_MAKE_PRONOUNCEABLE: 0x0200,
 		_UUID_LENGTH: 16,
-		_VERSION: {
-			major: 0x03,
-			minor: 0x0d
-		},
+		_VERSION: { major: 0x03, minor: 0x0d },
 		_YUBI_SK_LENGTH: 20,
+		
+		_getVersionString: function(version){
+			var minor = version.minor.toString();
+			if(minor.length < 2){
+				minor = '0' + minor;
+			}
+			return version.major + '.' + minor;
+		},
 
 		_parsePasswordPolicy: function(wordStack, hasName){
 			var policy = {};
@@ -840,6 +849,9 @@
 		},
 
 		getSerialized: function(stretchedKeyGenerator){
+			/**
+			 * @throws PWS.Error If some mandatory record's fields weren't specified.
+			 */
 			this._plaintext = CryptoJS.lib.WordStack.create();
 			this._hmacKey = CryptoJS.lib.WordArray.random(KeysOfPeace.SALT_LENGTH);
 			this._hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, this._hmacKey);
@@ -889,6 +901,10 @@
 		},
 
 		_pushHeader: function(){
+			this.version = Store._VERSION;
+			this.lastSave = new Date();
+			this.whatPerformedLastSave = 'Keys of Peace V' + Store._getVersionString(KeysOfPeace.VERSION);
+			delete this.lastSavedOnHost;
 			var fieldHandler = Store._HEADER_FIELDS.version;
 			this._pushField(fieldHandler.code, fieldHandler.serialize(this.version));
 			var that = this;
@@ -917,8 +933,14 @@
 		},
 
 		_pushRecords: function(){
+			/**
+			 * @throws PWS.Error If some mandatory fields weren't specified.
+			 */
 			var that = this;
 			_.each(this.records, function(record){
+				if(!record.uuid || !record.title || !record.password){
+					throw new Error('Some mandatory record\'s field(s) weren\'t specified.');
+				}
 				var fieldHandler;
 				_.each(record, function(value, name){
 					fieldHandler = Store._RECORDS_FIELDS[name];

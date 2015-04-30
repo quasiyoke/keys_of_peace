@@ -1,0 +1,13 @@
+{
+  "name": "keys-of-peace",
+  "version": "0.2.0",
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-bower-requirejs": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-uglify": "latest",
+    "grunt-contrib-watch": "latest",
+    "grunt-mocha-test": "latest",
+    "requirejs": "latest"
+  }
+}
