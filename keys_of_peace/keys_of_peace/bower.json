@@ -7,9 +7,14 @@
   ],
   "license": "GPL",
   "dependencies": {
-    "backbone": "latest",
-    "crypto-js": "latest",
-    "jquery": "latest",
-    "underscore": "latest"
+    "backbone": "~1.1.2",
+    "bower-qtip2": "~2.1.1",
+    "crypto-js": "~3.1.4",
+    "jquery": "~2.1.4",
+    "jquery.caret": "~1.5.2",
+    "jquery.cookie": "~1.4.1",
+    "jquery.ui": "~1.11.4",
+    "jquery.validate": "~1.13.0",
+    "lodash": "~3.7.0"
   }
 }
