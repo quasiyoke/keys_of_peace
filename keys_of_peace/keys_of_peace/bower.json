@@ -15,7 +15,6 @@
     "jquery.caret": "~1.5.2",
     "jquery.cookie": "~1.4.1",
     "jquery.ui": "~1.11.4",
-    "jquery.validate": "~1.13.0",
-    "lodash": "~3.7.0"
+    "jquery.validate": "~1.13.0"
   }
 }
