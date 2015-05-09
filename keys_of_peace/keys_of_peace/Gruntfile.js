@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     jshint: {
-      files: ['Gruntfile.js', 'test/StretchedKeyGenerator.js'],
+      files: ['Gruntfile.js', 'test/pws/StoreFile.js', 'test/StretchedKeyGenerator.js'],
       options: {
         globals: {
           jQuery: true
@@ -10,7 +10,7 @@ module.exports = function(grunt) {
     },
     mochaTest: {
       test: {
-        src: ['test/StretchedKeyGenerator.js']
+        src: ['test/pws/StoreFile.js', 'test/StretchedKeyGenerator.js']
       }
     },
     watch: {

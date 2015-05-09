@@ -4,7 +4,9 @@ requirejs.config({
   nodeRequire: require,
   paths: {
     backbone: '../../bower_components/backbone/backbone',
+    jdataview: '../../bower_components/jdataview/dist/browser/jdataview',
     jquery: '../../bower_components/jquery/dist/jquery',
+    'crypto-js/twofish': 'twofish',
     underscore: '../../bower_components/underscore/underscore'
   },
   packages: [
@@ -13,6 +15,5 @@ requirejs.config({
       location: '../../bower_components/crypto-js',
       main: 'index'
     }
-  ],
-  shim: {}
+  ]
 });
