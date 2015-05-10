@@ -1,10 +1,12 @@
 define('pws/StoreSerializer', [
   'crypto-js/core',
+  'pws/Error',
   'jdataview',
   'pws/Store',
   'pws/VersionError'
 ], function(
   CryptoJS,
+  Error,
   jDataView,
   Store,
   VersionError
@@ -22,6 +24,26 @@ define('pws/StoreSerializer', [
   StoreSerializer._HEADER_FIELDS_CODES = {};
   StoreSerializer._RECORDS_FIELDS = {};
   StoreSerializer._RECORDS_FIELDS_CODES = {};
+  StoreSerializer._UUID_LENGTH = 16;
+
+  StoreSerializer._parseText = function(data){
+    return data.getString(undefined, 0);
+  };
+
+  StoreSerializer._serializeText = function(text){
+    return new jDataView(text);
+  };
+
+  StoreSerializer._parseUuid = function(data) {
+    if (StoreSerializer._UUID_LENGTH !== data.byteLength) {
+      throw new Error('Incorrect UUID.');
+    }
+    return CryptoJS.enc.Latin1.parse(data.getString(undefined, 0)).toString();
+  };
+
+  StoreSerializer._serializeUuid = function(uuid){
+    return CryptoJS.enc.Hex.parse(uuid);
+  };
 
 	var Field = StoreSerializer._Field = CryptoJS.lib.Base.extend({
 		init: function(options){
