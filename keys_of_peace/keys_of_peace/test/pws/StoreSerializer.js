@@ -191,4 +191,153 @@ describe('pws/StoreSerializer', function() {
     });
   });
 
+  describe('header\'s who performed last save field', function() {
+    describe('parsing', function() {
+      it('should be ignored', function() {
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x05,
+          data: new jDataView(base64.decode("b6vNVA=="), 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.deepEqual({}, store);
+      });
+    });
+  });
+
+  describe('header\'s what performed last save field', function() {
+    describe('parsing', function() {
+      it('should work', function() {
+        var WHAT_PERFORMED_LAST_SAVE = 'pwsafe V0.94';
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x06,
+          data: new jDataView(WHAT_PERFORMED_LAST_SAVE, 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.equal(WHAT_PERFORMED_LAST_SAVE, store.whatPerformedLastSave);
+      });
+    });
+  });
+
+  describe('header\'s last saved by user field', function() {
+    describe('parsing', function() {
+      it('should work', function() {
+        var LAST_SAVED_BY_USER = 'John Doe';
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x07,
+          data: new jDataView(LAST_SAVED_BY_USER, 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.equal(LAST_SAVED_BY_USER, store.lastSavedByUser);
+      });
+    });
+  });
+
+  describe('header\'s last saved on host field', function() {
+    describe('parsing', function() {
+      it('should work', function() {
+        var LAST_SAVED_ON_HOST = 'John Doe\'s laptop';
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x08,
+          data: new jDataView(LAST_SAVED_ON_HOST, 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.equal(LAST_SAVED_ON_HOST, store.lastSavedOnHost);
+      });
+    });
+  });
+
+  describe('header\'s database name field', function() {
+    describe('parsing', function() {
+      it('should work', function() {
+        var DATABASE_NAME = 'John Doe\'s database';
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x09,
+          data: new jDataView(DATABASE_NAME, 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.equal(DATABASE_NAME, store.databaseName);
+      });
+    });
+  });
+
+  describe('header\'s database description field', function() {
+    describe('parsing', function() {
+      it('should work', function() {
+        var DATABASE_DESCRIPTION = 'John Doe\'s favorite database';
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x0a,
+          data: new jDataView(DATABASE_DESCRIPTION, 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.equal(DATABASE_DESCRIPTION, store.databaseDescription);
+      });
+    });
+  });
+
+  describe('header\'s recently used entries field', function() {
+    describe('parsing', function() {
+      it('should work', function() {
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x0f,
+          data: new jDataView('05407efc5ba04c2a3adf4381feb0edc48def6ff192c2721f5a0b5fc28e7088be768f8a6f86529b0605', 0, undefined, true)
+        };
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert.deepEqual(['407efc5ba04c2a3a', 'df4381feb0edc48d', 'ef6ff192c2721f5a', '0b5fc28e7088be76', '8f8a6f86529b0605'], store.recentlyUsedEntries);
+      });
+
+      describe('length doesn\'t match', function() {
+        it('should be ignored', function() {
+          var store = {};
+          var storeSerializer = new StoreSerializer(store, {});
+          var field = {
+            code: 0x0f,
+            data: new jDataView('05407efc5ba04c2a3adf4381feb0edc48def6ff192c2721f5a0b5fc28e7088be', 0, undefined, true)
+          };
+          assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+          assert.deepEqual({}, store);
+        });
+      });
+
+      describe('incorrect length specified', function() {
+        it('should be ignored', function() {
+          var store = {};
+          var storeSerializer = new StoreSerializer(store, {});
+          var field = {
+            code: 0x0f,
+            data: new jDataView('ww407efc5ba04c2a3adf4381feb0edc48def6ff192c2721f5a0b5fc28e7088be', 0, undefined, true)
+          };
+          assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+          assert.deepEqual({}, store);
+        });
+      });
+
+      describe('incorrect UUID', function() {
+        it('should be ignored', function() {
+          var store = {};
+          var storeSerializer = new StoreSerializer(store, {});
+          var field = {
+            code: 0x0f,
+            data: new jDataView('05407efc5ba04c2a3a!!!!!1feb0edc48def6ff192c2721f5a!!!!!28e7088be768f8a6f86529b0605', 0, undefined, true)
+          };
+          assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+          assert.deepEqual(['407efc5ba04c2a3a', 'ef6ff192c2721f5a', '8f8a6f86529b0605'], store.recentlyUsedEntries);
+        });
+      });
+    });
+  });
+
 });

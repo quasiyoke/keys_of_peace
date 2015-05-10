@@ -85,7 +85,9 @@ define('pws/StoreSerializer', [
 			if(this === value){
 				return this;
 			}
-			obj[this.name] = value;
+      if (undefined !== value) {
+  			obj[this.name] = value;
+      }
 		},
 
 		serialize: function(){}
@@ -95,7 +97,9 @@ define('pws/StoreSerializer', [
 		init: function(options){
 			HeaderField.$super.init.apply(this, arguments);
 			StoreSerializer._HEADER_FIELDS_CODES[options.code] = this;
-			StoreSerializer._HEADER_FIELDS[options.name] = this;
+      if (options.name) {
+  			StoreSerializer._HEADER_FIELDS[options.name] = this;
+      }
 		}
 	});
 
@@ -213,7 +217,7 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'databaseName',
 		code: 0x09,
-		parse: function(data){ // TODO: Test this.
+		parse: function(data){
 			return StoreSerializer._parseText(data);
 		},
 		serialize: function(value){
@@ -227,7 +231,7 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'databaseDescription',
 		code: 0x0a,
-		parse: function(data){ // TODO: Test this.
+		parse: function(data){
 			return StoreSerializer._parseText(data);
 		},
 		serialize: function(value){
@@ -241,17 +245,24 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'recentlyUsedEntries',
 		code: 0x0f,
-		parse: function(data){ // TODO: Test this.
-			var data = StoreSerializer._parseText(data);
-			var count = CryptoJS.enc.Hex.parse(data.substr(0, 2));
-			_.extend(count, CryptoJS.lib.WordStack);
-			count = count.shiftByte();
-			if(data.length !== 2 + count * StoreSerializer._UUID_LENGTH){
+		parse: function(data) {
+			var count = data.getString(2, 0);
+      if (!StoreSerializer._HEX_REGEX.test(count)) {
+        return;
+      }
+      count = CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Hex.parse(count));
+      count = new jDataView(count, 0, undefined, true);
+			count = count.getUint8();
+			if (data.byteLength !== 2 + count * StoreSerializer._UUID_LENGTH) {
 				return;
 			}
 			var value = [];
-			for(var i=2; i<data.length; i+=StoreSerializer._UUID_LENGTH){
-				value.push(data.substr(i, StoreSerializer._UUID_LENGTH));
+			for (var i=2; i<data.byteLength; i+=StoreSerializer._UUID_LENGTH) {
+        var uuid = data.getString(StoreSerializer._UUID_LENGTH);
+        if (!StoreSerializer._HEX_REGEX.test(uuid)) {
+          continue;
+        }
+				value.push(uuid);
 			}
 			return value;
 		},
