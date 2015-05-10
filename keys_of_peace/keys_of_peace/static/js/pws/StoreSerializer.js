@@ -22,16 +22,36 @@ define('pws/StoreSerializer', [
 
   StoreSerializer._HEADER_FIELDS = {};
   StoreSerializer._HEADER_FIELDS_CODES = {};
+  StoreSerializer._HEX_REGEX = /^[abcdef\d]+$/i;
   StoreSerializer._RECORDS_FIELDS = {};
   StoreSerializer._RECORDS_FIELDS_CODES = {};
   StoreSerializer._UUID_LENGTH = 16;
 
-  StoreSerializer._parseText = function(data){
+  StoreSerializer._parseText = function(data) {
     return data.getString(undefined, 0);
   };
 
-  StoreSerializer._serializeText = function(text){
+  StoreSerializer._serializeText = function(text) {
     return new jDataView(text);
+  };
+
+  StoreSerializer._parseTime = function(data){
+    /* @see ReadHeader at PWSfileV3.cpp */
+    if (8 === data.byteLength) {
+      data = StoreSerializer._parseText(data);
+      if (StoreSerializer._HEX_REGEX.test(data)) {
+        data = new jDataView(CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Hex.parse(data)), 0, undefined, true);
+      }
+    } else if (4 !== data.byteLength){
+      throw new Error('Incorrect timestamp field\'s length.');
+    }
+    return new Date(data.getUint32() * 1000);
+  };
+
+  StoreSerializer._serializeTime = function(time) {
+    var serialized = CryptoJS.lib.WordStack.create();
+    serialized.pushNumber(time.getTime() / 1000);
+    return serialized;
   };
 
   StoreSerializer._parseUuid = function(data) {
@@ -128,7 +148,7 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'treeDisplayStatus',
 		code: 0x03,
-		parse: function(data){ // TODO: Test this.
+		parse: function(data){
 			return _.map(StoreSerializer._parseText(data), function(c){
 				return '1' === c;
 			});
