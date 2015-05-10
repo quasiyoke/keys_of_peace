@@ -6,6 +6,7 @@ var base64 = require('base64-arraybuffer');
 var Base64;
 var CryptoJS;
 var Hex;
+var HmacError;
 var IncorrectPasswordError;
 var jDataView;
 var sinon = require('sinon');
@@ -18,6 +19,7 @@ describe('pws/StoreFile', function() {
       'crypto-js/enc-base64',
       'crypto-js/core',
       'crypto-js/enc-hex',
+      'pws/HmacError',
       'pws/IncorrectPasswordError',
       'jdataview',
       'pws/StoreFile',
@@ -27,6 +29,7 @@ describe('pws/StoreFile', function() {
       _Base64,
       _CryptoJS,
       _Hex,
+      _HmacError,
       _IncorrectPasswordError,
       _jDataView,
       _StoreFile,
@@ -36,6 +39,7 @@ describe('pws/StoreFile', function() {
       Base64 = _Base64;
       CryptoJS = _CryptoJS;
       Hex = _Hex;
+      HmacError = _HmacError;
       IncorrectPasswordError = _IncorrectPasswordError;
       jDataView = _jDataView;
       StoreFile = _StoreFile;
@@ -77,6 +81,26 @@ describe('pws/StoreFile', function() {
           new StoreFile(PWS_STORE, generator);
         },
         IncorrectPasswordError
+      );
+      assert(generator.getStretchedKey.withArgs(SALT, ITER).calledOnce);
+    });
+  });
+
+  describe('when file has wrong HMAC', function() {
+    it('should throw HmacError', function() {
+      var PWS_STORE_WRONG_HMAC = base64.decode('UFdTM2NSi7EkqAv5MLStsmg0rWHZKHtU4TT7jnnSKK3KhCkDAAgAAPhH3PZH5MPRO4mP8m8Nji0wqr39DbE7dJ2pREJkyEH/fZTLERwvBrZk7YqaoFbLvPieXUWG2DeHndka2jO+rvDtccLn246+RK04oD7PRReLd5syBOogLeE0vjfVdWglCDJ2G/vHOHF7al4P6w1xWLEyGFc+oBKq12FD+8Y/PDNDH5to4KXwbf5OfIr7TzAmDL3kXmiZy/bIT547mk3Cz6Hz14eteALqb+Rz3xkC18zPHiRbPmKMyqpOveOmN726WqPHqRo8SkkXo9Xkpsns+MofjdmrQUUVsh6ZWnew8am/+bLsaBSQADgQb7sxb5MDE+qlJqyz8nl3uJqfAbsxpK0tQ1CYhS26ykzeebAPdL3nA2lC82ISrBR9EPEFZXDnSoG55/ppimp3LkILVPlC23zjoijdJxojnVuVzYCQqLT1HaZ2v8TgPu1TLX/f5IUwk7oc+p9L1aQ9uFrKYQHrHRqsqyHlKb8EVtfJcuyjoPyfzoiiTMpfV0arzV/ngO9mMlSxK/ttLolpjtQf6EcEQmbJFfwNVY0s8HguAt3ShvraaMq1wK4bq+lsa6fZ1tBwKtm652iqq7aas4kk49mMyMFCRd+TWorzSM1VPUhncg1wo8fn+qpDB3Ruv0uebBJReoEWQu4pPnCeV3cny1hh1pTG3rY6vhnt/dYBqvMWmjn2vw9eR0e6/OhnvuhLAoI/je7vv4Sz71RqlvIp5z/7YdKkE+/pA4g7NxNqyIB48/WWAcOSOooh4w742dHdWFz+glLfVNc4J2kWy6bnKf1ubwZ5eHmM/c47/yaomWCAgSeaTc1eZ+8BG3VlNKxRBNfLLA0LaLPX4XvsYehRop4UhXzKWUpwSCnJVF4GBjSkexubvWVVG1rB1+MCFGx8vD0O/ZxpUpzK2aTz6pc0BJ57o/zIS+sj1OVWNqp188CxnKRDIg2FoQrx8tr+xnLQSr2u8CT0tuQOb718ppiNKNJ9mG8w3cJmY8+XQFDodxpTHkei7kJyyYrQBc0w2FPTj9VPU7W2JJiMKTtoYDEzJejhMZcExZEO1Vv1wSHwubGqeC8UZjShNUE0trXVS69ZlrOsdMkAxDGPo2gIE48yahq/Ic4u23sDBPc8vUNdDz6xwSjwqYInT9Rf4l1ior1Sn/vHbL+rgL9q3ykDu31Q8cKDiM0FVTePXcOF+kFbDhRn7u2FolKM1JQEjoIIjvW0a6cWJrEoZUiSbp3tDLIBfz1jOZUj+B3Hooy4edKI9ui9loyQPe0FviFyO4cPEbEamvZvUFbUdTtwtmub77NnvaMb6n0Gj9h9MB6KBNMs047qTCauwKs7/cRC5dOX/d7eNJkmCostrPk36joics5WR1VG0UAdII1OI4agzT3JAaCyKvYu0HEpuGNnfV27d4nsjrGwGmPJZVpz3f5UyG2kxnJiGK6DBczv5ZAR2DizW5fGYUbfT7bDjonC0LXWBLktZ4WPWDbA+WelpWAwPr79SiNYjYVBp7K6yemobxge2XT5VcqoFjfYbg1ZwB5DFjC3Vq3zmQPSg/MWwRjOaS6cdxJeHIga2OeRJW8QBW7QjnZkqg9KSZwFM0HtvDUeLybVxPlVjFBXUzMtRU9GUFdTMy1FT0bCepE2z8eIsr9z66YnQ2a4kTVbAXsv/40EUo2z5/lcBw==');
+      var SALT = Base64.parse('Y1KLsSSoC/kwtK2yaDStYdkoe1ThNPuOedIorcqEKQM=');
+      var STRETCHED_KEY = Base64.parse('BaHrsqGgkC9gwrFr38KKnfbDCYC+k90C1y9O2m1xK44=');
+      var generator = {
+        getStretchedKey: sinon.stub()
+          .withArgs(SALT, ITER)
+          .returns(STRETCHED_KEY)
+      };
+      assert.throws(
+        function() {
+          new StoreFile(PWS_STORE_WRONG_HMAC, generator);
+        },
+        HmacError
       );
       assert(generator.getStretchedKey.withArgs(SALT, ITER).calledOnce);
     });
