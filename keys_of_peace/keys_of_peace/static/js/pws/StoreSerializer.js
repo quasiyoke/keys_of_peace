@@ -253,12 +253,12 @@ define('pws/StoreSerializer', [
       count = CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Hex.parse(count));
       count = new jDataView(count, 0, undefined, true);
 			count = count.getUint8();
-			if (data.byteLength !== 2 + count * StoreSerializer._UUID_LENGTH) {
+			if (data.byteLength !== 2 + count * StoreSerializer._UUID_LENGTH * 2) {
 				return;
 			}
 			var value = [];
-			for (var i=2; i<data.byteLength; i+=StoreSerializer._UUID_LENGTH) {
-        var uuid = data.getString(StoreSerializer._UUID_LENGTH);
+			for (var i=2; i<data.byteLength; i+=StoreSerializer._UUID_LENGTH*2) {
+        var uuid = data.getString(StoreSerializer._UUID_LENGTH * 2);
         if (!StoreSerializer._HEX_REGEX.test(uuid)) {
           continue;
         }

@@ -293,10 +293,10 @@ describe('pws/StoreSerializer', function() {
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x0f,
-          data: new jDataView('05407efc5ba04c2a3adf4381feb0edc48def6ff192c2721f5a0b5fc28e7088be768f8a6f86529b0605', 0, undefined, true)
+          data: new jDataView('02086f1a06ebe7409ba91ec706d8617bd39d7dc37a63ae45dd9b689d564e2cda02', 0, undefined, true)
         };
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert.deepEqual(['407efc5ba04c2a3a', 'df4381feb0edc48d', 'ef6ff192c2721f5a', '0b5fc28e7088be76', '8f8a6f86529b0605'], store.recentlyUsedEntries);
+        assert.deepEqual(['086f1a06ebe7409ba91ec706d8617bd3', '9d7dc37a63ae45dd9b689d564e2cda02'], store.recentlyUsedEntries);
       });
 
       describe('length doesn\'t match', function() {
@@ -331,10 +331,10 @@ describe('pws/StoreSerializer', function() {
           var storeSerializer = new StoreSerializer(store, {});
           var field = {
             code: 0x0f,
-            data: new jDataView('05407efc5ba04c2a3a!!!!!1feb0edc48def6ff192c2721f5a!!!!!28e7088be768f8a6f86529b0605', 0, undefined, true)
+            data: new jDataView('02086f1a06ebe7409ba91ec706d8617bd3!!!!c37a63ae45dd9b689d564e2cda02', 0, undefined, true)
           };
           assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-          assert.deepEqual(['407efc5ba04c2a3a', 'ef6ff192c2721f5a', '8f8a6f86529b0605'], store.recentlyUsedEntries);
+          assert.deepEqual(['086f1a06ebe7409ba91ec706d8617bd3'], store.recentlyUsedEntries);
         });
       });
     });
