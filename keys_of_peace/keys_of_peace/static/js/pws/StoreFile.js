@@ -158,7 +158,7 @@ define('pws/StoreFile', [
             block = CryptoJS.enc.Latin1.stringify(block);
             block = new jDataView(block, 0, undefined, true);
             var LENGTH = block.getUint32();
-            var field = { type: block.getUint8() };
+            var field = { code: block.getUint8() };
             if (LENGTH) {
               field.data = new jDataView(LENGTH, 0, undefined, true);
               var lengthRemains = LENGTH;
