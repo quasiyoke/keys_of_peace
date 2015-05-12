@@ -23,9 +23,69 @@ define('pws/StoreSerializer', [
   StoreSerializer._HEADER_FIELDS = {};
   StoreSerializer._HEADER_FIELDS_CODES = {};
   StoreSerializer._HEX_REGEX = /^[abcdef\d]+$/i;
+  StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE = 0x8000;
+  StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE = 0x4000;
+  StoreSerializer._PASSWORD_POLICY_USE_DIGITS = 0x2000;
+  StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS = 0x1000;
+  StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS = 0x0800;
+  StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION = 0x0400;
+  StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE = 0x0200;
   StoreSerializer._RECORDS_FIELDS = {};
   StoreSerializer._RECORDS_FIELDS_CODES = {};
   StoreSerializer._UUID_LENGTH = 16;
+
+	StoreSerializer._parsePasswordPolicy = function(data, hasName) {
+		var policy = {};
+		if (hasName) {
+			var length = parseInt(data.getString(2), 16);
+			policy.name = data.getString(length);
+		}
+		var flags = parseInt(data.getString(4), 16);
+		policy.useLowercase = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE);
+		policy.useUppercase = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE);
+		policy.useDigits = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_DIGITS);
+		policy.useSymbols = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS);
+		policy.useHexDigits = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS);
+		policy.useEasyVision = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION);
+		policy.makePronounceable = !!(flags & StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+		policy.length = parseInt(data.getString(3), 16);
+		policy.lowercaseCountMin = parseInt(data.getString(3), 16);
+		policy.uppercaseCountMin = parseInt(data.getString(3), 16);
+		policy.digitsCountMin = parseInt(data.getString(3), 16);
+		policy.symbolsCountMin = parseInt(data.getString(3), 16);
+		if (hasName) {
+			length = parseInt(data.getString(2), 16);
+			policy.specialSymbols = data.getString(length);
+		}
+		return policy;
+	};
+
+  StoreSerializer._serializePasswordPolicy = function(policy, hasName) {
+		var serialized = CryptoJS.lib.WordStack.create();
+		if (hasName) {
+			serialized.pushNumberHex(policy.name.length, 2);
+			serialized.pushBytes(Store._serializeText(policy.name));
+		}
+		var flags = 0;
+		policy.useLowercase && (flags |= Store._PASSWORD_POLICY_USE_LOWERCASE);
+		policy.useUppercase && (flags |= Store._PASSWORD_POLICY_USE_UPPERCASE);
+		policy.useDigits && (flags |= Store._PASSWORD_POLICY_USE_DIGITS);
+		policy.useSymbols && (flags |= Store._PASSWORD_POLICY_USE_SYMBOLS);
+		policy.useHexDigits && (flags |= Store._PASSWORD_POLICY_USE_HEX_DIGITS);
+		policy.useEasyVision && (flags |= Store._PASSWORD_POLICY_USE_EASY_VISION);
+		policy.makePronounceable && (flags |= Store._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+		serialized.pushNumberHex(flags, 4);
+		serialized.pushNumberHex(policy.length, 3);
+		serialized.pushNumberHex(policy.lowercaseCountMin, 3);
+		serialized.pushNumberHex(policy.uppercaseCountMin, 3);
+		serialized.pushNumberHex(policy.digitsCountMin, 3);
+		serialized.pushNumberHex(policy.symbolsCountMin, 3);
+		if(hasName){
+			serialized.pushNumberHex(policy.specialSymbols.length, 2);
+			serialized.pushBytes(Store._serializeText(policy.specialSymbols));
+		}
+		return serialized;
+	};
 
   StoreSerializer._parseText = function(data) {
     return data.getString(undefined, 0);
@@ -66,7 +126,7 @@ define('pws/StoreSerializer', [
   };
 
 	var Field = StoreSerializer._Field = CryptoJS.lib.Base.extend({
-		init: function(options){
+		init: function(options) {
 			this.name = options.name;
 			this.code = options.code;
 			if (options.extendObject) {
@@ -78,11 +138,11 @@ define('pws/StoreSerializer', [
 		},
 
 		extendObject: function(obj, data) {
-			if(!this.parse){
+			if (!this.parse) {
 				return;
 			}
 			var value = this.parse(data);
-			if(this === value){
+			if (this === value) {
 				return this;
 			}
       if (undefined !== value) {
@@ -90,11 +150,11 @@ define('pws/StoreSerializer', [
       }
 		},
 
-		serialize: function(){}
+		serialize: function() {}
 	});
 
 	var HeaderField = StoreSerializer._HeaderField = Field.extend({
-		init: function(options){
+		init: function(options) {
 			HeaderField.$super.init.apply(this, arguments);
 			StoreSerializer._HEADER_FIELDS_CODES[options.code] = this;
       if (options.name) {
@@ -106,7 +166,7 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'version',
 		code: 0x00,
-		parse: function(data){
+		parse: function(data) {
 			if (2 != data.byteLength && 4 != data.byteLength) {
 				throw new VersionError('Incorrect version field length.');
 			}
@@ -119,7 +179,7 @@ define('pws/StoreSerializer', [
 			}
 			return value;
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			var data = new jDataView(2);
 			data.writeUint8(value.minor);
 			data.writeUint8(value.major);
@@ -130,10 +190,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'uuid',
 		code: 0x01,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseUuid(data);
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			return StoreSerializer._serializeUuid(value);
 		}
 	});
@@ -141,10 +201,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'preferences',
 		code: 0x02,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseText(data);
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
 		}
 	});
@@ -152,16 +212,16 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'treeDisplayStatus',
 		code: 0x03,
-		parse: function(data){
-			return _.map(StoreSerializer._parseText(data), function(c){
+		parse: function(data) {
+			return _.map(StoreSerializer._parseText(data), function(c) {
 				return '1' === c;
 			});
 		},
-		serialize: function(value){
-			if(!value){
+		serialize: function(value) {
+			if(!value) {
 				return;
 			}
-			value = _.map(value, function(expanded){
+			value = _.map(value, function(expanded) {
 				return expanded ? '1' : '0';
 			});
 			return StoreSerializer._serializeText(value.join(''));
@@ -171,10 +231,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'lastSave',
 		code: 0x04,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseTime(data);
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			return StoreSerializer._serializeTime(value);
 		}
 	});
@@ -184,10 +244,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'whatPerformedLastSave',
 		code: 0x06,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseText(data);
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
 		}
 	});
@@ -195,10 +255,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'lastSavedByUser',
 		code: 0x07,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseText(data);
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
 		}
 	});
@@ -206,10 +266,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'lastSavedOnHost',
 		code: 0x08,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseText(data);
 		},
-		serialize: function(value){
+		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
 		}
 	});
@@ -217,11 +277,11 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'databaseName',
 		code: 0x09,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseText(data);
 		},
-		serialize: function(value){
-			if(!value){
+		serialize: function(value) {
+			if (!value) {
 				return;
 			}
 			return StoreSerializer._serializeText(value);
@@ -231,11 +291,11 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'databaseDescription',
 		code: 0x0a,
-		parse: function(data){
+		parse: function(data) {
 			return StoreSerializer._parseText(data);
 		},
-		serialize: function(value){
-			if(!value){
+		serialize: function(value) {
+			if (!value) {
 				return;
 			}
 			return StoreSerializer._serializeText(value);
@@ -266,16 +326,16 @@ define('pws/StoreSerializer', [
 			}
 			return value;
 		},
-		serialize: function(value){
-			if(!value || !value.length){
+		serialize: function(value) {
+			if (!value || !value.length) {
 				return;
 			}
 			var data = CryptoJS.lib.WordStack.create();
-			if(value.length > 0xff){
+			if (value.length > 0xff) {
 				value = value.slice(0, 0xff); // TODO: Check slicing.
 			}
 			data.pushNumberHex(value.length, 2);
-			_.each(value, function(uuid){
+			_.each(value, function(uuid) {
 				data.pushBytes(StoreSerializer._serializeUuid(uuid), 2);
 			});
 			return data;
@@ -285,43 +345,45 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'namedPasswordPolicies',
 		code: 0x10,
-		extendObject: function(store, data){
+		extendObject: function(store, data) {
 			/*
-				Very sad situation here: this field code was also assigned to YUBI_SK in 3.27Y. Here we try to infer the actual type based on the actual value
-				stored in the field. Specifically, YUBI_SK is StoreSerializer._YUBI_SK_LENGTH bytes of binary data, whereas NAMED_PASSWORD_POLICIES is of varying length,
-				starting with at least 4 hex digits.
-				@see ReadHeader at PWSfileV3.cpp
-			*/
-			var data = data.clone();
-			data = StoreSerializer._parseText(data.shiftWords(1));
-			if(data.sigBytes !== StoreSerializer._YUBI_SK_LENGTH || StoreSerializer._HEX_REGEX.test(data)){
-				var count = data.shiftNumberHex(2);
+			 * Very sad situation here: this field code was also assigned to YUBI_SK in 3.27Y. Here we try
+       * to infer the actual type based on the actual value stored in the field. Specifically,
+       * YUBI_SK is StoreSerializer._YUBI_SK_LENGTH bytes of binary data, whereas
+       * NAMED_PASSWORD_POLICIES is of varying length, starting with at least 4 hex digits.
+			 * @see ReadHeader at PWSfileV3.cpp
+			 */
+			var count = data.getString(4, 0);
+			if (data.byteLength !== StoreSerializer._YUBI_SK_LENGTH || StoreSerializer._HEX_REGEX.test(count)) {
+				count = parseInt(count.substring(0, 2), 16);
+        data.seek(2);
 				store.namedPasswordPolicies = [];
-				try{
-					for(var i=0; i<count; ++i){
+				try {
+					for (var i=0; i<count; ++i) {
 						store.namedPasswordPolicies.push(StoreSerializer._parsePasswordPolicy(data, true));
 					}
-				}catch(e){
-					if(e instanceof CryptoJS.lib.WordStack.IndexError){
-						return;
-					}else{
+				} catch(e) {
+					//if (e instanceof ) {
+					//	return;
+					//} else {
 						throw e;
-					}
+					//}
 				}
-			}else{ // TODO: Test this.
-				store.yubiSk = data.readBytes(StoreSerializer._YUBI_SK_LENGTH);
+			} else { // TODO: Test this.
+        data.seek(0);
+				store.yubiSk = data;
 			}
 		},
-		serialize: function(value){
-			if(!value || !value.length){
+		serialize: function(value) {
+			if (!value || !value.length) {
 				return;
 			}
-			if(value.length > 0xff){
+			if (value.length > 0xff) {
 				value = value.slice(0, 0xff); // TODO: Check slicing.
 			}
 			var data = CryptoJS.lib.WordStack.create();
 			data.pushNumberHex(value.length, 2);
-			_.each(value, function(policy){
+			_.each(value, function(policy) {
 				data.pushBytes(StoreSerializer._serializePasswordPolicy(policy, true));
 			});
 			return data;

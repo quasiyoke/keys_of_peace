@@ -340,4 +340,62 @@ describe('pws/StoreSerializer', function() {
     });
   });
 
+  describe('header\'s named password policies field', function() {
+    describe('parsing', function() {
+      it('calls ._parsePasswordPolicy()', function() {
+        var POLICIES_SERIALIZED = '0206G0ogle08000280010010010011c+-=_@#$%^&;:,.<>/~\\[](){}?!|03ICQb20000600100100100108@&(#!|$+';
+        var store = {};
+        var storeSerializer = new StoreSerializer(store, {});
+        var field = {
+          code: 0x10,
+          data: new jDataView(POLICIES_SERIALIZED, 0, undefined, true)
+        };
+        var spy = sinon.spy(StoreSerializer, '_parsePasswordPolicy');
+        assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+        assert(spy.calledTwice);
+        assert.equal(spy.firstCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
+        assert(spy.firstCall.args[1]);
+        assert.equal(spy.firstCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
+        assert(spy.secondCall.args[1]);
+        assert.deepEqual([
+          spy.firstCall.returnValue,
+          spy.secondCall.returnValue
+        ], store.namedPasswordPolicies);
+        assert.deepEqual([
+          {
+            name: 'G0ogle',
+            length: 40,
+            useLowercase: false,
+        		lowercaseCountMin: 1,
+        		useUppercase: false,
+        		uppercaseCountMin: 1,
+        		useDigits: false,
+        		digitsCountMin: 1,
+        		useHexDigits: true,
+        		useSymbols: false,
+        		symbolsCountMin: 1,
+        		useEasyVision: false,
+        		makePronounceable: false,
+        		specialSymbols: '+-=_@#$%^&;:,.<>/~\\[](){}?!|'
+          }, {
+            name: 'ICQ',
+            length: 6,
+            useLowercase: true,
+        		lowercaseCountMin: 1,
+        		useUppercase: false,
+        		uppercaseCountMin: 1,
+        		useDigits: true,
+        		digitsCountMin: 1,
+        		useHexDigits: false,
+        		useSymbols: true,
+        		symbolsCountMin: 1,
+        		useEasyVision: false,
+        		makePronounceable: true,
+        		specialSymbols: '@&(#!|$+'
+          }
+        ], store.namedPasswordPolicies);
+      });
+    });
+  });
+
 });
