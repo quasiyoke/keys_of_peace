@@ -323,48 +323,45 @@ describe('pws/StoreSerializer', function() {
 
   describe('header\'s last saved on host field', function() {
     describe('parsing', function() {
-      it('should work', function() {
-        var LAST_SAVED_ON_HOST = 'John Doe\'s laptop';
+      it('should work with unicode chars', function() {
         var store = {};
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x08,
-          data: new jDataView(LAST_SAVED_ON_HOST, 0, undefined, true)
+          data: new jDataView(base64.decode('0JDQvdC+0L3QuNC80L3Ri9C5INGF0L7RgdGCIC8gQW5vbnltb3VzIGhvc3Q='), 0, undefined, true)
         };
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert.equal(LAST_SAVED_ON_HOST, store.lastSavedOnHost);
+        assert.equal('Анонимный хост / Anonymous host', store.lastSavedOnHost);
       });
     });
   });
 
   describe('header\'s database name field', function() {
     describe('parsing', function() {
-      it('should work', function() {
-        var DATABASE_NAME = 'John Doe\'s database';
+      it('should work with unicode chars', function() {
         var store = {};
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x09,
-          data: new jDataView(DATABASE_NAME, 0, undefined, true)
+          data: new jDataView(base64.decode('0JDQvdC+0L3QuNC80L3QsNGPINCR0JQgLyBBbm9ueW1vdXMgREI='), 0, undefined, true)
         };
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert.equal(DATABASE_NAME, store.databaseName);
+        assert.equal('Анонимная БД / Anonymous DB', store.databaseName);
       });
     });
   });
 
   describe('header\'s database description field', function() {
     describe('parsing', function() {
-      it('should work', function() {
-        var DATABASE_DESCRIPTION = 'John Doe\'s favorite database';
+      it('should work with unicode chars', function() {
         var store = {};
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x0a,
-          data: new jDataView(DATABASE_DESCRIPTION, 0, undefined, true)
+          data: new jDataView(base64.decode('0J7Qv9C40YHQsNC90LjQtSDQkdCUIC8gREIgZGVzY3JpcHRpb24='), 0, undefined, true)
         };
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert.equal(DATABASE_DESCRIPTION, store.databaseDescription);
+        assert.equal('Описание БД / DB description', store.databaseDescription);
       });
     });
   });
