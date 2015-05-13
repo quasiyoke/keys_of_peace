@@ -398,7 +398,7 @@ define('pws/StoreSerializer', [
   					}
   				}
 				}
-			} else { // TODO: Test this.
+			} else {
         data.seek(0);
 				store.yubiSk = data;
 			}

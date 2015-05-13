@@ -293,16 +293,15 @@ describe('pws/StoreSerializer', function() {
 
   describe('header\'s what performed last save field', function() {
     describe('parsing', function() {
-      it('should work', function() {
-        var WHAT_PERFORMED_LAST_SAVE = 'pwsafe V0.94';
+      it('should work with unicode chars', function() {
         var store = {};
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x06,
-          data: new jDataView(WHAT_PERFORMED_LAST_SAVE, 0, undefined, true)
+          data: new jDataView(base64.decode('0J3QtdC60LDRjyDQv9GA0L7Qs9GA0LDQvNC80LAgLyBTb21lIHByb2dyYW0gdi4gMQ=='), 0, undefined, true)
         };
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert.equal(WHAT_PERFORMED_LAST_SAVE, store.whatPerformedLastSave);
+        assert.equal('Некая программа / Some program v. 1', store.whatPerformedLastSave);
       });
     });
   });
