@@ -171,12 +171,13 @@ define('pws/StoreSerializer', [
 				return;
 			}
 			var value = this.parse(data);
-			if (this === value) {
-				return this;
-			}
-      if (undefined !== value) {
-  			obj[this.name] = value;
+			switch (value) {
+      case null:
+				return null;
+			case undefined:
+        return;
       }
+      obj[this.name] = value;
 		},
 
 		serialize: function() {}
@@ -422,12 +423,14 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'emptyGroups',
 		code: 0x11,
-		extendObject: function(store, data){
-			store.emptyGroups || (store.emptyGroups = []);
-			store.emptyGroups.push(StoreSerializer._parseText(data));
+		extendObject: function(store, data) {
+			if (!store.emptyGroups) {
+        store.emptyGroups = [];
+      }
+			store.emptyGroups.push(StoreSerializer._parseUnicode(data.getString(undefined, 0)));
 		},
-		serialize: function(value){
-			return _.map(value, function(group){
+		serialize: function(value) {
+			return _.map(value, function(group) {
 				return StoreSerializer._serializeText(group);
 			});
 		}
@@ -436,10 +439,10 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'yubiSk',
 		code: 0x12,
-		parse: function(data){ // TODO: Test this.
+		parse: function(data) {
 			return data;
 		},
-		serialize: function(value){ // TODO: Test this.
+		serialize: function(value) { // TODO: Test this.
 			return value;
 		}
 	});
@@ -447,7 +450,7 @@ define('pws/StoreSerializer', [
 	HeaderField.create({
 		name: 'endOfEntry',
 		code: 0xff,
-		parse: function(){
+		parse: function() {
 			return null; // This means that header definition was finished. Start records parsing.
 		}
 	})
