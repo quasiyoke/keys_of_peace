@@ -308,16 +308,15 @@ describe('pws/StoreSerializer', function() {
 
   describe('header\'s last saved by user field', function() {
     describe('parsing', function() {
-      it('should work', function() {
-        var LAST_SAVED_BY_USER = 'John Doe';
+      it('should work with unicode chars', function() {
         var store = {};
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x07,
-          data: new jDataView(LAST_SAVED_BY_USER, 0, undefined, true)
+          data: new jDataView(base64.decode('0JDQvdC+0L3QuNC8IC8gQW5vbnltb3Vz'), 0, undefined, true)
         };
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert.equal(LAST_SAVED_BY_USER, store.lastSavedByUser);
+        assert.equal('Аноним / Anonymous', store.lastSavedByUser);
       });
     });
   });
