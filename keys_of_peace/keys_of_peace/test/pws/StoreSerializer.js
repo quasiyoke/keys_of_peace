@@ -144,6 +144,26 @@ describe('pws/StoreSerializer', function() {
     });
   });
 
+  describe('._parseHeader()', function() {
+    it('should call ._parseHeaderField()', function() {
+      var file = {
+        fields: ['1', '2', '3', '4']
+      };
+      var storeSerializer = new StoreSerializer({}, file);
+      var stub = sinon.stub(storeSerializer, '_parseHeaderField');
+      stub
+        .onFirstCall().returns(undefined)
+        .onSecondCall().returns(undefined)
+        .onThirdCall().returns(null)
+      ;
+      storeSerializer._parseHeader();
+      assert(stub.calledThrice);
+      assert(stub.firstCall.calledWith('1'));
+      assert(stub.secondCall.calledWith('2'));
+      assert(stub.thirdCall.calledWith('3'));
+    });
+  });
+
   describe('._parseHeaderField()', function() {
     describe('version', function() {
       describe('parsing', function() {
