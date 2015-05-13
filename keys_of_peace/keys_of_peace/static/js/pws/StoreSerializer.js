@@ -3,12 +3,14 @@ define('pws/StoreSerializer', [
   'pws/Error',
   'jdataview',
   'pws/Store',
+  'pws/ValueError',
   'pws/VersionError'
 ], function(
   CryptoJS,
   Error,
   jDataView,
   Store,
+  ValueError,
   VersionError
 ) {
   /**
@@ -34,30 +36,56 @@ define('pws/StoreSerializer', [
   StoreSerializer._RECORDS_FIELDS_CODES = {};
   StoreSerializer._UUID_LENGTH = 16;
 
+  /**
+   * @throws pws/ValueError
+   */
+  StoreSerializer._parseHex = function(str) {
+    /*
+     * parseInt returns NaN only if there're wrong symbols from the very beginning:
+     *
+     * parseInt('123+', 16); // 0x123
+     */
+    if (!StoreSerializer._HEX_REGEX.test(str)) {
+      throw new ValueError('Hex number is incorrect: \"' + str + '\"');
+    }
+    return parseInt(str, 16);
+  };
+
+  /**
+   * @throws pws/Error
+   */
 	StoreSerializer._parsePasswordPolicy = function(data, hasName) {
 		var policy = {};
-		if (hasName) {
-			var length = parseInt(data.getString(2), 16);
-			policy.name = data.getString(length);
-		}
-		var flags = parseInt(data.getString(4), 16);
-		policy.useLowercase = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE);
-		policy.useUppercase = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE);
-		policy.useDigits = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_DIGITS);
-		policy.useSymbols = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS);
-		policy.useHexDigits = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS);
-		policy.useEasyVision = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION);
-		policy.makePronounceable = !!(flags & StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
-		policy.length = parseInt(data.getString(3), 16);
-		policy.lowercaseCountMin = parseInt(data.getString(3), 16);
-		policy.uppercaseCountMin = parseInt(data.getString(3), 16);
-		policy.digitsCountMin = parseInt(data.getString(3), 16);
-		policy.symbolsCountMin = parseInt(data.getString(3), 16);
-		if (hasName) {
-			length = parseInt(data.getString(2), 16);
-			policy.specialSymbols = data.getString(length);
-		}
-		return policy;
+    try {
+    	if (hasName) {
+    		var length = StoreSerializer._parseHex(data.getString(2));
+    		policy.name = StoreSerializer._parseUnicode(data.getString(length));
+    	}
+    	var flags = StoreSerializer._parseHex(data.getString(4));
+    	policy.useLowercase = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE);
+    	policy.useUppercase = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE);
+    	policy.useDigits = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_DIGITS);
+    	policy.useSymbols = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS);
+    	policy.useHexDigits = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS);
+    	policy.useEasyVision = !!(flags & StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION);
+    	policy.makePronounceable = !!(flags & StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+    	policy.length = StoreSerializer._parseHex(data.getString(3));
+    	policy.lowercaseCountMin = StoreSerializer._parseHex(data.getString(3));
+    	policy.uppercaseCountMin = StoreSerializer._parseHex(data.getString(3));
+    	policy.digitsCountMin = StoreSerializer._parseHex(data.getString(3));
+    	policy.symbolsCountMin = StoreSerializer._parseHex(data.getString(3));
+    	if (hasName) {
+    		length = StoreSerializer._parseHex(data.getString(2));
+    		policy.specialSymbols = StoreSerializer._parseUnicode(data.getString(length));
+    	}
+    } catch(e) {
+      if (e instanceof ValueError || e instanceof RangeError) {
+        throw new Error('Password policy parsing was failed. ' + e);
+      } else {
+        throw e;
+      }
+    }
+    return policy;
 	};
 
   StoreSerializer._serializePasswordPolicy = function(policy, hasName) {
@@ -87,18 +115,10 @@ define('pws/StoreSerializer', [
 		return serialized;
 	};
 
-  StoreSerializer._parseText = function(data) {
-    return data.getString(undefined, 0);
-  };
-
-  StoreSerializer._serializeText = function(text) {
-    return new jDataView(text);
-  };
-
   StoreSerializer._parseTime = function(data){
     /* @see ReadHeader at PWSfileV3.cpp */
     if (8 === data.byteLength) {
-      data = StoreSerializer._parseText(data);
+      data = data.getString(undefined, 0);
       if (StoreSerializer._HEX_REGEX.test(data)) {
         data = new jDataView(CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Hex.parse(data)), 0, undefined, true);
       }
@@ -112,6 +132,14 @@ define('pws/StoreSerializer', [
     var serialized = CryptoJS.lib.WordStack.create();
     serialized.pushNumber(time.getTime() / 1000);
     return serialized;
+  };
+
+  StoreSerializer._parseUnicode = function(str) {
+    return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Latin1.parse(str));
+  };
+
+  StoreSerializer._serializeUnicode = function(str) {
+    return CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Utf8.parse(str));
   };
 
   StoreSerializer._parseUuid = function(data) {
@@ -202,7 +230,7 @@ define('pws/StoreSerializer', [
 		name: 'preferences',
 		code: 0x02,
 		parse: function(data) {
-			return StoreSerializer._parseText(data);
+			return data.getString(undefined, 0);
 		},
 		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
@@ -213,7 +241,7 @@ define('pws/StoreSerializer', [
 		name: 'treeDisplayStatus',
 		code: 0x03,
 		parse: function(data) {
-			return _.map(StoreSerializer._parseText(data), function(c) {
+			return _.map(data.getString(undefined, 0), function(c) {
 				return '1' === c;
 			});
 		},
@@ -245,7 +273,7 @@ define('pws/StoreSerializer', [
 		name: 'whatPerformedLastSave',
 		code: 0x06,
 		parse: function(data) {
-			return StoreSerializer._parseText(data);
+			return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 		},
 		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
@@ -256,7 +284,7 @@ define('pws/StoreSerializer', [
 		name: 'lastSavedByUser',
 		code: 0x07,
 		parse: function(data) {
-			return StoreSerializer._parseText(data);
+			return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 		},
 		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
@@ -267,7 +295,7 @@ define('pws/StoreSerializer', [
 		name: 'lastSavedOnHost',
 		code: 0x08,
 		parse: function(data) {
-			return StoreSerializer._parseText(data);
+			return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 		},
 		serialize: function(value) {
 			return StoreSerializer._serializeText(value);
@@ -278,7 +306,7 @@ define('pws/StoreSerializer', [
 		name: 'databaseName',
 		code: 0x09,
 		parse: function(data) {
-			return StoreSerializer._parseText(data);
+			return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 		},
 		serialize: function(value) {
 			if (!value) {
@@ -292,7 +320,7 @@ define('pws/StoreSerializer', [
 		name: 'databaseDescription',
 		code: 0x0a,
 		parse: function(data) {
-			return StoreSerializer._parseText(data);
+			return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 		},
 		serialize: function(value) {
 			if (!value) {
@@ -353,21 +381,21 @@ define('pws/StoreSerializer', [
        * NAMED_PASSWORD_POLICIES is of varying length, starting with at least 4 hex digits.
 			 * @see ReadHeader at PWSfileV3.cpp
 			 */
-			var count = data.getString(4, 0);
-			if (data.byteLength !== StoreSerializer._YUBI_SK_LENGTH || StoreSerializer._HEX_REGEX.test(count)) {
-				count = parseInt(count.substring(0, 2), 16);
+			var hex = data.getString(4, 0);
+			if (data.byteLength !== StoreSerializer._YUBI_SK_LENGTH || StoreSerializer._HEX_REGEX.test(hex)) {
+				var count = StoreSerializer._parseHex(hex.substring(0, 2));
         data.seek(2);
 				store.namedPasswordPolicies = [];
-				try {
-					for (var i=0; i<count; ++i) {
-						store.namedPasswordPolicies.push(StoreSerializer._parsePasswordPolicy(data, true));
-					}
-				} catch(e) {
-					//if (e instanceof ) {
-					//	return;
-					//} else {
-						throw e;
-					//}
+				for (var i = 0; i < count; ++i) {
+  			  try {
+    				store.namedPasswordPolicies.push(StoreSerializer._parsePasswordPolicy(data, true));
+  				} catch(e) {
+  					if (e instanceof Error) {
+  						continue;
+  					} else {
+  						throw e;
+  					}
+  				}
 				}
 			} else { // TODO: Test this.
         data.seek(0);

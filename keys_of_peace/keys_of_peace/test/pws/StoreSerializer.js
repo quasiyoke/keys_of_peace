@@ -12,24 +12,109 @@ var VersionError;
 describe('pws/StoreSerializer', function() {
   before(function(done) {
     requirejs([
+      'underscore',
       'pws/Error',
       'jdataview',
-      'underscore',
       'pws/StoreSerializer',
       'pws/VersionError'
     ], function(
+      Underscore,
       _Error,
       _jDataView,
-      Underscore,
       _StoreSerializer,
       _VersionError
     ) {
+      _ = Underscore;
       Error = _Error;
       jDataView = _jDataView;
-      _ = Underscore;
       StoreSerializer = _StoreSerializer;
       VersionError = _VersionError;
       done();
+    });
+  });
+
+  describe('._parsePasswordPolicy()', function() {
+    describe('parsing named policies', function() {
+      it('should work', function() {
+        var data = new jDataView('06G0ogle08000280010010010011c+-=_@#$%^&;:,.<>/~\\[](){}?!|', 0, undefined, true);
+        var policy = {
+          name: 'G0ogle',
+          length: 40,
+          useLowercase: false,
+          lowercaseCountMin: 1,
+          useUppercase: false,
+          uppercaseCountMin: 1,
+          useDigits: false,
+          digitsCountMin: 1,
+          useHexDigits: true,
+          useSymbols: false,
+          symbolsCountMin: 1,
+          useEasyVision: false,
+          makePronounceable: false,
+          specialSymbols: '+-=_@#$%^&;:,.<>/~\\[](){}?!|'
+        };
+        assert.deepEqual(policy, StoreSerializer._parsePasswordPolicy(data, true));
+      });
+
+      it('should work with unicode special symbols', function() {
+        var data = new jDataView(base64.decode('MDNJQ1FiMjAwMDA2MDAxMDAxMDAxMDAxMDjigKIj0KvRiQ=='), 0, undefined, true);
+        var policy = {
+          name: 'ICQ',
+          length: 6,
+          useLowercase: true,
+          lowercaseCountMin: 1,
+          useUppercase: false,
+          uppercaseCountMin: 1,
+          useDigits: true,
+          digitsCountMin: 1,
+          useHexDigits: false,
+          useSymbols: true,
+          symbolsCountMin: 1,
+          useEasyVision: false,
+          makePronounceable: true,
+          specialSymbols: '•#Ыщ'
+        };
+        assert.deepEqual(policy, StoreSerializer._parsePasswordPolicy(data, true));
+      });
+
+      it('should work with unicode names', function() {
+        var data = new jDataView(base64.decode('MTPQnNC+0Lgg0L/QsNGA0L7Qu9C4NjYwMDAxZjAwMjAwMzAwNDAwNTAw'), 0, undefined, true);
+        var policy = {
+          name: 'Мои пароли',
+          length: 31,
+          useLowercase: false,
+          lowercaseCountMin: 2,
+          useUppercase: true,
+          uppercaseCountMin: 3,
+          useDigits: true,
+          digitsCountMin: 4,
+          useHexDigits: false,
+          useSymbols: false,
+          symbolsCountMin: 5,
+          useEasyVision: true,
+          makePronounceable: true,
+          specialSymbols: ''
+        };
+        assert.deepEqual(policy, StoreSerializer._parsePasswordPolicy(data, true));
+      });
+    });
+
+    describe('wrong name length', function() {
+      it('should throw pws/Error', function() {
+        var data = new jDataView('07G0ogle08000280010010010011c+-=_@#$%^&;:,.<>/~\\[](){}?!|', 0, undefined, true);
+        assert.throws(function() {
+          StoreSerializer._parsePasswordPolicy(data, true);
+        }, Error);
+      });
+    });
+
+    describe('wrong special symbols length', function() {
+      it('should throw pws/Error', function() {
+        var data = new jDataView('06G0ogle08000280010010010011d+-=_@#$%^&;:,.<>/~\\[](){}?!|', 0, undefined, true);
+        assert.throws(function() {
+          StoreSerializer._parsePasswordPolicy(data, true);
+        }, Error);
+      });
     });
   });
 
@@ -342,58 +427,71 @@ describe('pws/StoreSerializer', function() {
 
   describe('header\'s named password policies field', function() {
     describe('parsing', function() {
+      var POLICIES_SERIALIZED = '03Here goes serialized policies.';
+      var POLICIES_SERIALIZED_MATCH = sinon.match(function(data) {
+        assert.equal(2, data.tell());
+        assert.equal(POLICIES_SERIALIZED, data.getString(undefined, 0));
+        data.seek(2);
+      });
+      var sandbox;
+
+      beforeEach(function() {
+        sandbox = sinon.sandbox.create();
+        sandbox.stub(StoreSerializer, '_parsePasswordPolicy');
+      });
+
+      afterEach(function() {
+        sandbox.restore();
+      });
+
       it('calls ._parsePasswordPolicy()', function() {
-        var POLICIES_SERIALIZED = '0206G0ogle08000280010010010011c+-=_@#$%^&;:,.<>/~\\[](){}?!|03ICQb20000600100100100108@&(#!|$+';
         var store = {};
         var storeSerializer = new StoreSerializer(store, {});
         var field = {
           code: 0x10,
           data: new jDataView(POLICIES_SERIALIZED, 0, undefined, true)
         };
-        var spy = sinon.spy(StoreSerializer, '_parsePasswordPolicy');
+        StoreSerializer._parsePasswordPolicy
+          .onFirstCall()
+          .returns('1')
+          .onSecondCall()
+          .returns('2')
+          .onThirdCall()
+          .returns('3')
+        ;
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-        assert(spy.calledTwice);
-        assert.equal(spy.firstCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
-        assert(spy.firstCall.args[1]);
-        assert.equal(spy.firstCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
-        assert(spy.secondCall.args[1]);
-        assert.deepEqual([
-          spy.firstCall.returnValue,
-          spy.secondCall.returnValue
-        ], store.namedPasswordPolicies);
-        assert.deepEqual([
-          {
-            name: 'G0ogle',
-            length: 40,
-            useLowercase: false,
-        		lowercaseCountMin: 1,
-        		useUppercase: false,
-        		uppercaseCountMin: 1,
-        		useDigits: false,
-        		digitsCountMin: 1,
-        		useHexDigits: true,
-        		useSymbols: false,
-        		symbolsCountMin: 1,
-        		useEasyVision: false,
-        		makePronounceable: false,
-        		specialSymbols: '+-=_@#$%^&;:,.<>/~\\[](){}?!|'
-          }, {
-            name: 'ICQ',
-            length: 6,
-            useLowercase: true,
-        		lowercaseCountMin: 1,
-        		useUppercase: false,
-        		uppercaseCountMin: 1,
-        		useDigits: true,
-        		digitsCountMin: 1,
-        		useHexDigits: false,
-        		useSymbols: true,
-        		symbolsCountMin: 1,
-        		useEasyVision: false,
-        		makePronounceable: true,
-        		specialSymbols: '@&(#!|$+'
-          }
-        ], store.namedPasswordPolicies);
+        sinon.assert.calledThrice(StoreSerializer._parsePasswordPolicy);
+        StoreSerializer._parsePasswordPolicy.firstCall.calledWith(POLICIES_SERIALIZED_MATCH, true);
+        StoreSerializer._parsePasswordPolicy.secondCall.calledWith(POLICIES_SERIALIZED_MATCH, true);
+        StoreSerializer._parsePasswordPolicy.thirdCall.calledWith(POLICIES_SERIALIZED_MATCH, true);
+        assert.deepEqual({
+          namedPasswordPolicies: ['1', '2', '3']
+        }, store);
+      });
+
+      describe('when some password policies are wrong', function() {
+        it('tries to store others', function() {
+          var store = {};
+          var storeSerializer = new StoreSerializer(store, {});
+          var field = {
+            code: 0x10,
+            data: new jDataView(POLICIES_SERIALIZED, 0, undefined, true)
+          };
+          StoreSerializer._parsePasswordPolicy.onFirstCall().returns('1');
+          StoreSerializer._parsePasswordPolicy.onSecondCall().throws(new Error);
+          StoreSerializer._parsePasswordPolicy.onThirdCall().returns('3');
+          assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+          sinon.assert.calledThrice(StoreSerializer._parsePasswordPolicy);
+          assert.equal(StoreSerializer._parsePasswordPolicy.firstCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
+          assert(StoreSerializer._parsePasswordPolicy.firstCall.args[1]);
+          assert.equal(StoreSerializer._parsePasswordPolicy.secondCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
+          assert(StoreSerializer._parsePasswordPolicy.secondCall.args[1]);
+          assert.equal(StoreSerializer._parsePasswordPolicy.thirdCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
+          assert(StoreSerializer._parsePasswordPolicy.thirdCall.args[1]);
+          assert.deepEqual({
+            namedPasswordPolicies: ['1', '3']
+          }, store);
+        });
       });
     });
   });
