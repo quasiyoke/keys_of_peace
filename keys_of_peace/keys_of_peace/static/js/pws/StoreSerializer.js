@@ -35,6 +35,7 @@ define('pws/StoreSerializer', [
   StoreSerializer._RECORDS_FIELDS = {};
   StoreSerializer._RECORDS_FIELDS_CODES = {};
   StoreSerializer._UUID_LENGTH = 16;
+  StoreSerializer._YUBI_SK_LENGTH = 20;
 
   /**
    * @throws pws/ValueError

@@ -452,12 +452,9 @@ describe('pws/StoreSerializer', function() {
           data: new jDataView(POLICIES_SERIALIZED, 0, undefined, true)
         };
         StoreSerializer._parsePasswordPolicy
-          .onFirstCall()
-          .returns('1')
-          .onSecondCall()
-          .returns('2')
-          .onThirdCall()
-          .returns('3')
+          .onFirstCall().returns('1')
+          .onSecondCall().returns('2')
+          .onThirdCall().returns('3')
         ;
         assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
         sinon.assert.calledThrice(StoreSerializer._parsePasswordPolicy);
@@ -477,20 +474,34 @@ describe('pws/StoreSerializer', function() {
             code: 0x10,
             data: new jDataView(POLICIES_SERIALIZED, 0, undefined, true)
           };
-          StoreSerializer._parsePasswordPolicy.onFirstCall().returns('1');
-          StoreSerializer._parsePasswordPolicy.onSecondCall().throws(new Error);
-          StoreSerializer._parsePasswordPolicy.onThirdCall().returns('3');
+          StoreSerializer._parsePasswordPolicy
+            .onFirstCall().returns('1')
+            .onSecondCall().throws(new Error)
+            .onThirdCall().returns('3')
+          ;
           assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
           sinon.assert.calledThrice(StoreSerializer._parsePasswordPolicy);
-          assert.equal(StoreSerializer._parsePasswordPolicy.firstCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
-          assert(StoreSerializer._parsePasswordPolicy.firstCall.args[1]);
-          assert.equal(StoreSerializer._parsePasswordPolicy.secondCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
-          assert(StoreSerializer._parsePasswordPolicy.secondCall.args[1]);
-          assert.equal(StoreSerializer._parsePasswordPolicy.thirdCall.args[0].getString(undefined, 0), POLICIES_SERIALIZED);
-          assert(StoreSerializer._parsePasswordPolicy.thirdCall.args[1]);
+          StoreSerializer._parsePasswordPolicy.firstCall.calledWith(POLICIES_SERIALIZED_MATCH, true);
+          StoreSerializer._parsePasswordPolicy.secondCall.calledWith(POLICIES_SERIALIZED_MATCH, true);
+          StoreSerializer._parsePasswordPolicy.thirdCall.calledWith(POLICIES_SERIALIZED_MATCH, true);
           assert.deepEqual({
             namedPasswordPolicies: ['1', '3']
           }, store);
+        });
+      });
+
+      describe('when YUBI_SK is presented instead of password policies', function() {
+        it('stores YUBI_SK', function() {
+          var YUBI_SK_BASE64 = 'NfBeKz0Xg0b96UvtDKVcqSRpC9U=';
+          var store = {};
+          var storeSerializer = new StoreSerializer(store, {});
+          var field = {
+            code: 0x10,
+            data: new jDataView(base64.decode(YUBI_SK_BASE64), 0, undefined, true)
+          };
+          assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
+          sinon.assert.notCalled(StoreSerializer._parsePasswordPolicy);
+          assert.equal(YUBI_SK_BASE64, base64.encode(store.yubiSk.buffer));
         });
       });
     });
