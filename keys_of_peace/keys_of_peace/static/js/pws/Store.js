@@ -1,14 +1,9 @@
-define('pws/Store', [
-  'jbinary'
-], function(
-  jBinary
-) {
-  function Store() {
-    this.emptyGroups = [];
-    this.unknownFields = [];
-  }
+function Store() {
+	this.emptyGroups = [];
+	this.records = [];
+	this.unknownFields = [];
+}
 
-  Store._VERSION = { major: 0x03, minor: 0x0d }
+Store._VERSION = { major: 0x03, minor: 0x10 }
 
-	return Store;
-});
+exports.Store = Store;

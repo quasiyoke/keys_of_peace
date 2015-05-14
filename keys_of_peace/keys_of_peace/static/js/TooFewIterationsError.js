@@ -1,10 +1,10 @@
-define('TooFewIterationsError', ['KeysOfPeaceError'], function(KeysOfPeaceError){
-  function TooFewIterationsError() {
-    KeysOfPeaceError.call(this, 'Too small hashing iterations count for key stretching was specified.');
-    this.name = 'TooFewIterationsError';
-  }
+var KeysOfPeaceError = require('./KeysOfPeaceError').KeysOfPeaceError;
 
-  TooFewIterationsError.prototype = Object.create(KeysOfPeaceError.prototype);
+function TooFewIterationsError() {
+  KeysOfPeaceError.call(this, 'Too small hashing iterations count for key stretching was specified.');
+  this.name = 'TooFewIterationsError';
+}
 
-  return TooFewIterationsError;
-});
+TooFewIterationsError.prototype = Object.create(KeysOfPeaceError.prototype);
+
+exports.TooFewIterationsError = TooFewIterationsError;

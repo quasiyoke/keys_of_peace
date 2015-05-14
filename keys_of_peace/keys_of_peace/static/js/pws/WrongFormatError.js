@@ -1,14 +1,10 @@
-define('pws/WrongFormatError', [
-	'pws/Error'
-], function(
-	PwsError
-) {
-	function WrongFormatError(message) {
-		PwsError.call(this, 'File format is wrong.' + (message ? ' ' + message : ''));
-		this.name = 'pws/WrongFormatError';
-	}
+var Error = require('./Error').Error;
 
-	WrongFormatError.prototype = Object.create(PwsError.prototype);
+function WrongFormatError(message) {
+	Error.call(this, 'File format is wrong.' + (message ? ' ' + message : ''));
+	this.name = 'pws/WrongFormatError';
+}
 
-  return WrongFormatError;
-});
+WrongFormatError.prototype = Object.create(Error.prototype);
+
+exports.WrongFormatError = WrongFormatError;

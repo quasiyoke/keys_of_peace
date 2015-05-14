@@ -1,10 +1,10 @@
-define('IncorrectSaltError', ['KeysOfPeaceError'], function(KeysOfPeaceError){
-	function IncorrectSaltError() {
-		KeysOfPeaceError.call(this, 'Incorrect salt for key stretching was specified.');
-		this.name = 'IncorrectSaltError';
-	}
+var KeysOfPeaceError = require('./KeysOfPeaceError').KeysOfPeaceError;
 
-	IncorrectSaltError.prototype = Object.create(KeysOfPeaceError.prototype);
+function IncorrectSaltError() {
+	KeysOfPeaceError.call(this, 'Incorrect salt for key stretching was specified.');
+	this.name = 'IncorrectSaltError';
+}
 
-  return IncorrectSaltError;
-});
+IncorrectSaltError.prototype = Object.create(KeysOfPeaceError.prototype);
+
+exports.IncorrectSaltError = IncorrectSaltError;

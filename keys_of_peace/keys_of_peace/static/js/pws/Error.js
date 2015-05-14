@@ -1,10 +1,10 @@
-define('pws/Error', ['KeysOfPeaceError'], function(KeysOfPeaceError) {
-	function Error(message) {
-		KeysOfPeaceError.call(this, message);
-		this.name = 'pws/Error';
-	}
+var KeysOfPeaceError = require('../KeysOfPeaceError').KeysOfPeaceError;
 
-	Error.prototype = Object.create(KeysOfPeaceError.prototype);
+function Error(message) {
+	KeysOfPeaceError.call(this, message);
+	this.name = 'pws/Error';
+}
 
-  return Error;
-});
+Error.prototype = Object.create(KeysOfPeaceError.prototype);
+
+exports.Error = Error;

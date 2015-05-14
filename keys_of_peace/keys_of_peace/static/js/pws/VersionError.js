@@ -1,19 +1,13 @@
-define('pws/VersionError', [
-	'pws/Error',
-	'KeysOfPeace'
-], function(
-	PwsError,
-	KeysOfPeace
-) {
-	function VersionError(message) {
-		if (!_.isString(message)) {
-			message = 'This website doesn\'t supports storages of version ' + KeysOfPeace.getVersionString(message);
-		}
-		PwsError.call(this, message);
-		this.name = 'pws/VersionError';
+var Error = require('./Error').Error;
+
+function VersionError(message) {
+	if (!_.isString(message)) {
+		message = 'This website doesn\'t supports storages of version ' + KeysOfPeace.getVersionString(message);
 	}
+	Error.call(this, message);
+	this.name = 'pws/VersionError';
+}
 
-	VersionError.prototype = Object.create(PwsError.prototype);
+VersionError.prototype = Object.create(Error.prototype);
 
-  return VersionError;
-});
+exports.VersionError = VersionError;

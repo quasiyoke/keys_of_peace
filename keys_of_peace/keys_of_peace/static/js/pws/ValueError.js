@@ -1,14 +1,10 @@
-define('pws/ValueError', [
-	'pws/Error'
-], function(
-	Error
-) {
-	function ValueError(message) {
-		Error.call(this, message || 'Wrong value was given.');
-		this.name = 'pws/ValueError';
-	}
+var Error = require('./Error').Error;
 
-	ValueError.prototype = Object.create(Error.prototype);
+function ValueError(message) {
+	Error.call(this, message || 'Wrong value was given.');
+	this.name = 'pws/ValueError';
+}
 
-  return ValueError;
-});
+ValueError.prototype = Object.create(Error.prototype);
+
+exports.ValueError = ValueError;

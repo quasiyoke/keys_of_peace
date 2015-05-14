@@ -1,14 +1,10 @@
-define('pws/IncorrectPasswordError', [
-	'pws/Error'
-], function(
-	PwsError
-) {
-	function IncorrectPasswordError(message) {
-		PwsError.call(this, 'Incorrect password.');
-		this.name = 'pws/IncorrectPasswordError';
-	}
+var Error = require('./Error').Error;
 
-	IncorrectPasswordError.prototype = Object.create(PwsError.prototype);
+function IncorrectPasswordError(message) {
+	Error.call(this, 'Incorrect password.');
+	this.name = 'pws/IncorrectPasswordError';
+}
 
-  return IncorrectPasswordError;
-});
+IncorrectPasswordError.prototype = Object.create(Error.prototype);
+
+exports.IncorrectPasswordError = IncorrectPasswordError;
