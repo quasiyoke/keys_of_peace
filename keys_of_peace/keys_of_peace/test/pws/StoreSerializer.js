@@ -3,6 +3,7 @@ var assert = require('assert');
 var base64 = require('base64-arraybuffer');
 var Error = require('../../static/js/pws/Error').Error;
 var jDataView = require('jdataview');
+var Record = require('../../static/js/pws/Record').Record;
 var sinon = require('sinon');
 var StoreSerializer = require('../../static/js/pws/StoreSerializer').StoreSerializer;
 var VersionError = require('../../static/js/pws/Error').VersionError;
@@ -119,6 +120,25 @@ describe('pws/StoreSerializer', function() {
 		});
 	});
 
+	describe('._parseUuid()', function() {
+		it('should work', function() {
+			var data = new jDataView(base64.decode("OshS0gzEReaTfl21RbfscA=="), 0, undefined, true);
+			assert.equal('3ac852d20cc445e6937e5db545b7ec70', StoreSerializer._parseUuid(data));
+		});
+
+		describe('wrong length', function() {
+			it('should throw pws/Error', function() {
+				var data = new jDataView(base64.decode("OshS0gzEReaTfl21RbfscCE="), 0, undefined, true); // 17 bytes
+				assert.throws(
+					function() {
+						StoreSerializer._parseUuid(data)
+					},
+					Error
+				);
+			});
+		});
+	});
+
 	describe('._parseHeader()', function() {
 		it('should call ._parseHeaderField()', function() {
 			var file = {
@@ -192,33 +212,30 @@ describe('pws/StoreSerializer', function() {
 		});
 
 		describe('UUID', function() {
+			var sandbox;
+
+			beforeEach(function() {
+				sandbox = sinon.sandbox.create();
+				sandbox.stub(StoreSerializer, '_parseUuid');
+			});
+
+			afterEach(function() {
+				sandbox.restore();
+			});
+
 			describe('parsing', function() {
-				it('should work', function() {
+				it('calls StoreSerializer._parseUuid()', function() {
 					var store = {};
 					var storeSerializer = new StoreSerializer(store, {});
 					var field = {
 						code: 0x01,
-						data: new jDataView(base64.decode("OshS0gzEReaTfl21RbfscA=="), 0, undefined, true)
+						data: 'foo'
 					};
+					StoreSerializer._parseUuid.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-					assert.equal('3ac852d20cc445e6937e5db545b7ec70', store.uuid);
-				});
-
-				describe('wrong length', function() {
-					it('should throw pws/Error', function() {
-						var store = {};
-						var storeSerializer = new StoreSerializer(store, {});
-						var field = {
-							code: 0x01,
-							data: new jDataView(base64.decode("OshS0gzEReaTfl21RbfscCE="), 0, undefined, true) // 17 bytes
-						};
-						assert.throws(
-							function() {
-								storeSerializer._parseHeaderField(field)
-							},
-							Error
-						);
-					});
+					assert(StoreSerializer._parseUuid.calledOnce);
+					assert(StoreSerializer._parseUuid.firstCall.calledWith('foo'));
+					assert.equal('bar', store.uuid);
 				});
 			});
 		});
@@ -583,21 +600,87 @@ describe('pws/StoreSerializer', function() {
 			assert(parseRecord.firstCall.calledWith(2));
 			assert(parseRecord.secondCall.calledWith(3));
 		});
+
+		it('throws pws/Error if _headerFieldsEndIndex isn\'t specified', function() {
+			var file = {
+				fields: ['zero', 'first', 'second', 'third', 'fourth']
+			};
+			var storeSerializer = new StoreSerializer({}, file);
+			var parseRecord = sinon.stub(storeSerializer, '_parseRecord');
+			assert.throws(function() {
+				storeSerializer._parseRecords();
+			}, Error);
+			assert(parseRecord.notCalled);
+		});
 	});
-/*
-	describe('._parseHeaderField()', function() {
-		describe('version', function() {
+
+	describe('._parseRecord()', function() {
+		it('should call ._parseRecordField()', function() {
+			var file = {
+				fields: ['zero', 'first', 'second', 'third', 'fourth']
+			};
+			var store = {
+				records: []
+			};
+			var storeSerializer = new StoreSerializer(store, file);
+			var parseRecordField = sinon.stub(storeSerializer, '_parseRecordField');
+			parseRecordField
+				.onThirdCall().returns(null)
+			;
+			assert.equal(3, storeSerializer._parseRecord(1));
+			assert(parseRecordField.calledThrice);
+			assert(parseRecordField.firstCall.calledWith('first', sinon.match.instanceOf(Record)));
+			assert(parseRecordField.secondCall.calledWith('second', sinon.match.instanceOf(Record)));
+			assert(parseRecordField.thirdCall.calledWith('third', sinon.match.instanceOf(Record)));
+		});
+
+		it('throws pws/Error if there\'s no signal about entry ending', function() {
+			var file = {
+				fields: ['zero', 'first', 'second', 'third', 'fourth']
+			};
+			var store = {
+				records: []
+			};
+			var storeSerializer = new StoreSerializer(store, file);
+			var parseRecordField = sinon.stub(storeSerializer, '_parseRecordField');
+			assert.throws(function() {
+				storeSerializer._parseRecord(2)
+			}, Error);
+			assert(parseRecordField.calledThrice);
+			assert(parseRecordField.firstCall.calledWith('second', sinon.match.instanceOf(Record)));
+			assert(parseRecordField.secondCall.calledWith('third', sinon.match.instanceOf(Record)));
+			assert(parseRecordField.thirdCall.calledWith('fourth', sinon.match.instanceOf(Record)));
+		});
+	});
+
+	describe('.parseRecordField()', function() {
+		describe('UUID', function() {
+			var sandbox;
+
+			beforeEach(function() {
+				sandbox = sinon.sandbox.create();
+				sandbox.stub(StoreSerializer, '_parseUuid');
+			});
+
+			afterEach(function() {
+				sandbox.restore();
+			});
+
 			describe('parsing', function() {
-				it('should work', function() {
-					var store = {};
-					var storeSerializer = new StoreSerializer(store, {});
+				it('calls StoreSerializer._parseUuid()', function() {
+					var storeSerializer = new StoreSerializer({}, {});
 					var field = {
-						code: 0x00,
-						data: new jDataView(base64.decode("DQM="), 0, undefined, true)
+						code: 0x01,
+						data: 'foo'
 					};
-					assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-					assert.equal(0x03, store.version.major);
-					assert.equal(0x0d, store.version.minor);
+					var record = new Record();
+					StoreSerializer._parseUuid.returns('bar');
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert(StoreSerializer._parseUuid.calledOnce);
+					assert(StoreSerializer._parseUuid.firstCall.calledWith('foo'));
+					assert.equal('bar', record.get('uuid'));
 				});
-*/
+			});
+		});
+	});
 });

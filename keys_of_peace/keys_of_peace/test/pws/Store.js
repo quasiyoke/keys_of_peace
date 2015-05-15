@@ -6,6 +6,7 @@ describe('pws/Store', function() {
 	it('should be created properly', function() {
 		var store = new Store();
 		assert(_.isArray(store.emptyGroups));
+		assert(_.isArray(store.records));
 		assert(_.isArray(store.unknownFields));
 	});
 });

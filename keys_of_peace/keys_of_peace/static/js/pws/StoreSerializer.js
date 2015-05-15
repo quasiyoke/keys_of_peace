@@ -137,9 +137,13 @@ StoreSerializer._serializeUnicode = function(str) {
 	return CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Utf8.parse(str));
 };
 
+/**
+ * @throws pws/Error when UUID format is incorrect.
+ */
 StoreSerializer._parseUuid = function(data) {
 	if (StoreSerializer._UUID_LENGTH !== data.byteLength) {
-		throw new Error('Incorrect UUID.');
+		throw new Error('Incorrect UUID length: ' + data.byteLength + ' instead of ' +
+			StoreSerializer._UUID_LENGTH + '.');
 	}
 	return CryptoJS.enc.Latin1.parse(data.getString(undefined, 0)).toString();
 };
@@ -219,7 +223,15 @@ HeaderField.create({
 	name: 'uuid',
 	code: 0x01,
 	parse: function(data) {
-		return StoreSerializer._parseUuid(data);
+		try {
+			return StoreSerializer._parseUuid(data);
+		} catch(e) {
+			if (e instanceof Error) {
+				throw new Error('Problems while parsing header\'s UUID. ' + e);
+			} else {
+				throw e;
+			}
+		}
 	},
 	serialize: function(value) {
 		return StoreSerializer._serializeUuid(value);
@@ -466,7 +478,15 @@ RecordField.create({
 	name: 'uuid',
 	code: 0x01,
 	parse: function(data){
-		return StoreSerializer._parseUuid(data);
+		try {
+			return StoreSerializer._parseUuid(data);
+		} catch(e) {
+			if (e instanceof Error) {
+				throw new Error('Problems while parsing record\'s UUID. ' + e);
+			} else {
+				throw e;
+			}
+		}
 	},
 	serialize: function(value){
 		return StoreSerializer._serializeUuid(value);
@@ -845,7 +865,7 @@ StoreSerializer.prototype._parseRecords = function() {
  */
 StoreSerializer.prototype._parseRecord = function(index) {
 	var record = new Record();
-	for (; index >= this.file.fields.length; ++index) {
+	for (; index < this.file.fields.length; ++index) {
 		if (null === this._parseRecordField(this.file.fields[index], record)) {
 			this.store.records.push(record);
 			return index;
