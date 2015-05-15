@@ -1169,6 +1169,48 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('shift-double-click action', function() {
+			describe('parsing', function() {
+				it('works', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x17,
+						data: new jDataView('\xab\xcd', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal(0xcdab, record.get('shiftDoubleClickAction'));
+				});
+
+				describe('when 0xff is specified', function() {
+					it('ignores it', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x17,
+							data: new jDataView('\xff\x00', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+						assert(!record.has('shiftDoubleClickAction'));
+					});
+				});
+
+				describe('when length is wrong', function() {
+					it('throws pws/Error', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x17,
+							data: new jDataView('\xff\x00\xff', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.throws(function() {
+							storeSerializer._parseRecordField(field, record);
+						}, Error);
+					});
+				});
+			});
+		});
+
 		describe('password policy name', function() {
 			describe('parsing', function() {
 				it('works with unicode names', function() {

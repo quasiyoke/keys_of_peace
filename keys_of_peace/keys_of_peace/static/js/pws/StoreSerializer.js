@@ -665,9 +665,7 @@ UnicodeRecordField.create({
 	code: 0x12
 });
 
-RecordField.create({
-	name: 'doubleClickAction',
-	code: 0x13,
+var ActionRecordField = RecordField.extend({
 	parse: function(data) {
 		if (2 !== data.byteLength) {
 			throw new Error('Incorrect data length: ' + data.byteLength + ' instead of 2.');
@@ -686,6 +684,11 @@ RecordField.create({
 		data.pushShort(value);
 		return data;
 	}
+});
+
+ActionRecordField.create({
+	name: 'doubleClickAction',
+	code: 0x13
 });
 
 UnicodeRecordField.create({
@@ -718,20 +721,9 @@ UnicodeRecordField.create({
 	code: 0x16
 });
 
-RecordField.create({
+ActionRecordField.create({
 	name: 'shiftDoubleClickAction',
-	code: 0x17,
-	parse: function(data){
-		return data.shiftShort();
-	},
-	serialize: function(value) {
-		if (undefined === value || 0xff === value) {
-			return;
-		}
-		var data = CryptoJS.lib.WordStack.create();
-		data.pushShort(value);
-		return data;
-	}
+	code: 0x17
 });
 
 UnicodeRecordField.create({
