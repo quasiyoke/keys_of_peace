@@ -41,11 +41,29 @@ StoreSerializer._parseHex = function(str) {
 	 * parseInt returns NaN only if there're wrong symbols from the very beginning:
 	 *
 	 * parseInt('123+', 16); // 0x123
+	 *
+	 * ...so we need to test strings by regex to check them strictly.
 	 */
 	if (!StoreSerializer._HEX_REGEX.test(str)) {
 		throw new ValueError('Hex number is incorrect: \"' + str + '\"');
 	}
 	return parseInt(str, 16);
+};
+
+StoreSerializer._serializeHex = function(n, length) {
+	if (isNaN(n)) {
+		throw new ValueError('NaN was given for hex-serializing: \"' + n + '\"');
+	} else if (isNaN(length)) {
+		throw new Error('NaN length was specified for hex-serializing: \"' + length + '\"');
+	}
+	var serialized = Number(n).toString(16);
+	if (serialized.length < length) {
+		var prefix = new Array(length - serialized.length + 1).join('0');
+		serialized = prefix + serialized;
+	} else if (length < serialized.length) {
+		throw new ValueError('Too large number was given for hex-serializing: ' + n + ', length: ' + length);
+	}
+	return serialized;
 };
 
 /**
@@ -84,30 +102,32 @@ StoreSerializer._parsePasswordPolicy = function(data, hasName) {
 };
 
 StoreSerializer._serializePasswordPolicy = function(policy, hasName) {
-	var serialized = CryptoJS.lib.WordStack.create();
+	var serialized = [];
 	if (hasName) {
-		serialized.pushNumberHex(policy.name.length, 2);
-		serialized.pushBytes(Store._serializeText(policy.name));
+		var serializedName = StoreSerializer._serializeUnicode(policy.name);
+		serialized.push(StoreSerializer._serializeHex(serializedName.length, 2));
+		serialized.push(serializedName);
 	}
 	var flags = 0;
-	policy.useLowercase && (flags |= Store._PASSWORD_POLICY_USE_LOWERCASE);
-	policy.useUppercase && (flags |= Store._PASSWORD_POLICY_USE_UPPERCASE);
-	policy.useDigits && (flags |= Store._PASSWORD_POLICY_USE_DIGITS);
-	policy.useSymbols && (flags |= Store._PASSWORD_POLICY_USE_SYMBOLS);
-	policy.useHexDigits && (flags |= Store._PASSWORD_POLICY_USE_HEX_DIGITS);
-	policy.useEasyVision && (flags |= Store._PASSWORD_POLICY_USE_EASY_VISION);
-	policy.makePronounceable && (flags |= Store._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
-	serialized.pushNumberHex(flags, 4);
-	serialized.pushNumberHex(policy.length, 3);
-	serialized.pushNumberHex(policy.lowercaseCountMin, 3);
-	serialized.pushNumberHex(policy.uppercaseCountMin, 3);
-	serialized.pushNumberHex(policy.digitsCountMin, 3);
-	serialized.pushNumberHex(policy.symbolsCountMin, 3);
-	if(hasName){
-		serialized.pushNumberHex(policy.specialSymbols.length, 2);
-		serialized.pushBytes(Store._serializeText(policy.specialSymbols));
+	policy.useLowercase && (flags |= StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE);
+	policy.useUppercase && (flags |= StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE);
+	policy.useDigits && (flags |= StoreSerializer._PASSWORD_POLICY_USE_DIGITS);
+	policy.useSymbols && (flags |= StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS);
+	policy.useHexDigits && (flags |= StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS);
+	policy.useEasyVision && (flags |= StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION);
+	policy.makePronounceable && (flags |= StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+	serialized.push(StoreSerializer._serializeHex(flags, 4));
+	serialized.push(StoreSerializer._serializeHex(policy.length, 3));
+	serialized.push(StoreSerializer._serializeHex(policy.lowercaseCountMin, 3));
+	serialized.push(StoreSerializer._serializeHex(policy.uppercaseCountMin, 3));
+	serialized.push(StoreSerializer._serializeHex(policy.digitsCountMin, 3));
+	serialized.push(StoreSerializer._serializeHex(policy.symbolsCountMin, 3));
+	if (hasName) {
+		var serializedSpecialSymbols = StoreSerializer._serializeUnicode(policy.specialSymbols);
+		serialized.push(StoreSerializer._serializeHex(serializedSpecialSymbols.length, 2));
+		serialized.push(serializedSpecialSymbols);
 	}
-	return serialized;
+	return serialized.join('');
 };
 
 StoreSerializer._parseTime = function(data){

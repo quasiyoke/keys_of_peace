@@ -1,4 +1,6 @@
+var _ = require('underscore');
 var Error = require('./Error').Error;
+var KeysOfPeace = require('../KeysOfPeace').KeysOfPeace;
 
 function VersionError(message) {
 	if (!_.isString(message)) {

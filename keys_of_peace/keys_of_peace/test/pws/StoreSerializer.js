@@ -6,12 +6,49 @@ var jDataView = require('jdataview');
 var Record = require('../../static/js/pws/Record').Record;
 var sinon = require('sinon');
 var StoreSerializer = require('../../static/js/pws/StoreSerializer').StoreSerializer;
-var VersionError = require('../../static/js/pws/Error').VersionError;
+var ValueError = require('../../static/js/pws/ValueError').ValueError;
+var VersionError = require('../../static/js/pws/VersionError').VersionError;
 
 describe('pws/StoreSerializer', function() {
+	describe('._parseHex()', function() {
+		it('works', function() {
+			assert.equal(0x1234abcd, StoreSerializer._parseHex('1234abcd'));
+		});
+	});
+
+	describe('._serializeHex()', function() {
+		it('works', function() {
+			assert.equal('00012345', StoreSerializer._serializeHex(0x12345, 8));
+		});
+
+		describe('when wrong number was specified', function() {
+			it('throws pws/ValueError', function() {
+				assert.throws(function() {
+					StoreSerializer._serializeHex('@@@', 5)
+				}, ValueError);
+			});
+		});
+
+		describe('when too large number was specified', function() {
+			it('throws pws/ValueError', function() {
+				assert.throws(function() {
+					StoreSerializer._serializeHex(0x123, 2)
+				}, ValueError);
+			});
+		});
+
+		describe('when length isn\'t specified', function() {
+			it('throws pws/Error', function() {
+				assert.throws(function() {
+					StoreSerializer._serializeHex(0x12345)
+				}, Error);
+			});
+		});
+	});
+
 	describe('._parsePasswordPolicy()', function() {
 		describe('parsing named policies', function() {
-			it('should work', function() {
+			it('works', function() {
 				var data = new jDataView('06G0ogle08000280010010010011c+-=_@#$%^&;:,.<>/~\\[](){}?!|', 0, undefined, true);
 				var policy = {
 					name: 'G0ogle',
@@ -32,7 +69,7 @@ describe('pws/StoreSerializer', function() {
 				assert.deepEqual(policy, StoreSerializer._parsePasswordPolicy(data, true));
 			});
 
-			it('should work with unicode special symbols', function() {
+			it('works with unicode special symbols', function() {
 				var data = new jDataView(base64.decode('MDNJQ1FiMjAwMDA2MDAxMDAxMDAxMDAxMDjigKIj0KvRiQ=='), 0, undefined, true);
 				var policy = {
 					name: 'ICQ',
@@ -133,8 +170,79 @@ describe('pws/StoreSerializer', function() {
 		});
 	});
 
+	describe('._serializePasswordPolicy()', function() {
+		describe('named policies', function() {
+			it('works', function() {
+				var policy = {
+					name: 'G0ogle',
+					length: 40,
+					useLowercase: false,
+					lowercaseCountMin: 1,
+					useUppercase: false,
+					uppercaseCountMin: 1,
+					useDigits: false,
+					digitsCountMin: 1,
+					useHexDigits: true,
+					useSymbols: false,
+					symbolsCountMin: 1,
+					useEasyVision: false,
+					makePronounceable: false,
+					specialSymbols: '+-=_@#$%^&;:,.<>/~\\[](){}?!|'
+				};
+				assert.equal('06G0ogle08000280010010010011c+-=_@#$%^&;:,.<>/~\\[](){}?!|',
+					StoreSerializer._serializePasswordPolicy(policy, true));
+			});
+
+			it('works with unicode special symbols', function() {
+				var policy = {
+					name: 'ICQ',
+					length: 6,
+					useLowercase: true,
+					lowercaseCountMin: 1,
+					useUppercase: false,
+					uppercaseCountMin: 1,
+					useDigits: true,
+					digitsCountMin: 1,
+					useHexDigits: false,
+					useSymbols: true,
+					symbolsCountMin: 1,
+					useEasyVision: false,
+					makePronounceable: true,
+					specialSymbols: '•#Ыщ'
+				};
+				assert.equal(
+					'03ICQb20000600100100100108\xe2\x80\xa2#\xd0\xab\xd1\x89',
+					StoreSerializer._serializePasswordPolicy(policy, true)
+				);
+			});
+
+			it('works with unicode names', function() {
+				var policy = {
+					name: 'Мои пароли',
+					length: 31,
+					useLowercase: false,
+					lowercaseCountMin: 2,
+					useUppercase: true,
+					uppercaseCountMin: 3,
+					useDigits: true,
+					digitsCountMin: 4,
+					useHexDigits: false,
+					useSymbols: false,
+					symbolsCountMin: 5,
+					useEasyVision: true,
+					makePronounceable: true,
+					specialSymbols: ''
+				};
+				assert.equal(
+					'13\xd0\x9c\xd0\xbe\xd0\xb8 \xd0\xbf\xd0\xb0\xd1\x80\xd0\xbe\xd0\xbb\xd0\xb8660001f00200300400500',
+					StoreSerializer._serializePasswordPolicy(policy, true)
+				);
+			});
+		});
+	});
+
 	describe('._parseTime()', function() {
-		it('should work', function() {
+		it('works', function() {
 			var data = new jDataView(base64.decode("b6vNVA=="), 0, undefined, true);
 			assert.equal(1422764911000, StoreSerializer._parseTime(data).getTime());
 		});
@@ -157,7 +265,7 @@ describe('pws/StoreSerializer', function() {
 	});
 
 	describe('._parseUuid()', function() {
-		it('should work', function() {
+		it('works', function() {
 			var data = new jDataView(base64.decode("OshS0gzEReaTfl21RbfscA=="), 0, undefined, true);
 			assert.equal('3ac852d20cc445e6937e5db545b7ec70', StoreSerializer._parseUuid(data));
 		});
@@ -169,6 +277,12 @@ describe('pws/StoreSerializer', function() {
 					StoreSerializer._parseUuid(data)
 				}, Error);
 			});
+		});
+	});
+
+	describe('._serializeUnicode()', function() {
+		it('works', function() {
+			assert.equal('\xd0\xa1\xd1\x82\xd1\x80\xd0\xbe\xd0\xba\xd0\xb0 / String', StoreSerializer._serializeUnicode('Строка / String'));
 		});
 	});
 
