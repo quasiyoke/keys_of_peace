@@ -697,6 +697,66 @@ describe('pws/StoreSerializer', function() {
 				});
 			});
 		});
-	});
 
+		describe('title', function() {
+			describe('parsing', function() {
+				it('works with unicode titles', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x03,
+						data: new jDataView(base64.decode('0JzQvtC5INCw0LrQutCw0YPQvdGCIC8gTXkgYWNjb3VudA=='), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('Мой аккаунт / My account', record.get('title'));
+				});
+			});
+		});
+
+		describe('username', function() {
+			describe('parsing', function() {
+				it('works with unicode usernames', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x04,
+						data: new jDataView(base64.decode('0JLQsNGB0Y8g0J/Rg9C/0LrQuNC9IC8gSm9obiBEb2U='), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('Вася Пупкин / John Doe', record.get('username'));
+				});
+			});
+		});
+
+		describe('notes', function() {
+			describe('parsing', function() {
+				it('works with unicode notes', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x05,
+						data: new jDataView(base64.decode('0JLRgNC10LzQtdC90L3Ri9C5INCw0LrQutCw0YPQvdGCIC8gVGVtcG9yYXJ5IGFjY291bnQ='), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('Временный аккаунт / Temporary account', record.get('notes'));
+				});
+			});
+		});
+
+		describe('password', function() {
+			describe('parsing', function() {
+				it('works with unicode passwords', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x06,
+						data: new jDataView(base64.decode('0L/QkNCg0J7Qm9GMIXBBU1NXT1Jk'), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('пАРОЛь!pASSWORd', record.get('password'));
+				});
+			});
+		});
+
+	});
 });

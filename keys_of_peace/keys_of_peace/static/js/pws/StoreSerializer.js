@@ -158,7 +158,7 @@ var Field = StoreSerializer._Field = CryptoJS.lib.Base.extend({
 		this.code = options.code;
 		if (options.extendObject) {
 			this.extendObject = options.extendObject;
-		} else {
+		} else if (options.parse) {
 			this.parse = options.parse;
 		}
 		options.serialize && (this.serialize = options.serialize);
@@ -493,9 +493,7 @@ RecordField.create({
 	}
 });
 
-RecordField.create({
-	name: 'group',
-	code: 0x02,
+var UnicodeRecordField = RecordField.extend({
 	parse: function(data) {
 		return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 	},
@@ -504,48 +502,29 @@ RecordField.create({
 	}
 });
 
-RecordField.create({
+UnicodeRecordField.create({
+	name: 'group',
+	code: 0x02
+});
+
+UnicodeRecordField.create({
 	name: 'title',
-	code: 0x03,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value){
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x03
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'username',
-	code: 0x04,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value){
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x04
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'notes',
-	code: 0x05,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value){
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x05
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'password',
-	code: 0x06,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value){
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x06
 });
 
 RecordField.create({
