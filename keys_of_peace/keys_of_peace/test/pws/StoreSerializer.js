@@ -1018,13 +1018,73 @@ describe('pws/StoreSerializer', function() {
 						var storeSerializer = new StoreSerializer(store, {});
 						var field = {
 							code: 0x11,
-							data: new jDataView('\x43\x0e\x00\x00', 0, undefined, true)
+							data: new jDataView('\x43\x0e\x00\x00', 0, undefined, true) // 3651
 						};
 						var record = new Record();
 						assert.throws(function() {
 							storeSerializer._parseRecordField(field, record);
 						}, Error);
 					});
+				});
+			});
+		});
+
+		describe('run command', function() {
+			describe('parsing', function() {
+				it('works with unicode commands', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x12,
+						data: new jDataView('\xd0\xbf\xd1\x80\xd0\xbe\xd0\xb3\xd1\x80\xd0\xb0\xd0\xbc\xd0\xbc\xd0\xb0_program -with -parameters', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('программа_program -with -parameters', record.get('runCommand'));
+				});
+			});
+		});
+
+		describe('email', function() {
+			describe('parsing', function() {
+				it('works with unicode emails', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x14,
+						data: new jDataView('\xd0\xb2\xd0\xb0\xd1\x81\xd1\x8f.john@mail.com', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('вася.john@mail.com', record.get('email'));
+				});
+			});
+		});
+
+		describe('own symbols for password', function() {
+			describe('parsing', function() {
+				it('works with unicode symbols', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x16,
+						data: new jDataView('\xe2\x80\xa2#\xd0\xab\xd1\x89', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('•#Ыщ', record.get('ownSymbolsForPassword'));
+				});
+			});
+		});
+
+		describe('password policy name', function() {
+			describe('parsing', function() {
+				it('works with unicode names', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x18,
+						data: new jDataView('\xd0\x9c\xd0\xbe\xd0\xb8 \xd0\xb0\xd0\xba\xd0\xba\xd0\xb0\xd1\x83\xd0\xbd\xd1\x82\xd1\x8b / My accounts', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('Мои аккаунты / My accounts', record.get('passwordPolicyName'));
 				});
 			});
 		});

@@ -660,18 +660,9 @@ RecordField.create({
 	}
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'runCommand',
-	code: 0x12,
-	parse: function(data) {
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value) {
-		if (!value) {
-			return;
-		}
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x12
 });
 
 RecordField.create({
@@ -690,18 +681,9 @@ RecordField.create({
 	}
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'email',
-	code: 0x14,
-	parse: function(data) {
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value) {
-		if (!value) {
-			return;
-		}
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x14
 });
 
 RecordField.create({
@@ -718,18 +700,9 @@ RecordField.create({
 	}
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'ownSymbolsForPassword',
-	code: 0x16,
-	parse: function(data) {
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value) {
-		if(!value){
-			return;
-		}
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x16
 });
 
 RecordField.create({
@@ -748,18 +721,9 @@ RecordField.create({
 	}
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'passwordPolicyName',
-	code: 0x18,
-	parse: function(data) {
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value) {
-		if (!value) {
-			return;
-		}
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x18
 });
 
 RecordField.create({
