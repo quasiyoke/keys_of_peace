@@ -875,5 +875,35 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('URL', function() {
+			describe('parsing', function() {
+				it('works with unicode URLs', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x0d,
+						data: new jDataView(base64.decode('aHR0cHM6Ly9ydS53aWtpcGVkaWEub3JnL3dpa2kv0JfQsNCz0LvQsNCy0L3QsNGPX9GB0YLRgNCw0L3QuNGG0LA='), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('https://ru.wikipedia.org/wiki/Заглавная_страница', record.get('url'));
+				});
+			});
+		});
+
+		describe('autotype', function() {
+			describe('parsing', function() {
+				it('works with unicode autotype instructions', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x0e,
+						data: new jDataView(base64.decode('0L/QvtC70YzQt9C+0LLQsNGC0LXQu9GMX3VzZXJuYW1lLCB0YWIsINC/0LDRgNC+0LvRjF9wYXNzd29yZCwgdGFiLCBlbnRlcg=='), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('пользователь_username, tab, пароль_password, tab, enter', record.get('autotype'));
+				});
+			});
+		});
+
 	});
 });

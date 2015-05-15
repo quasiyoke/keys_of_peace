@@ -172,10 +172,14 @@ var Field = StoreSerializer._Field = CryptoJS.lib.Base.extend({
 		switch (value) {
 		case null:
 			return null;
+			break;
 		case undefined:
 			return;
+			break;
+		default:
+			this._setValue(obj, value);
+			break;
 		}
-		this._setValue(obj, value);
 	},
 
 	serialize: function() {}
@@ -570,26 +574,14 @@ TimeRecordField.create({
 	code: 0x0c
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'url',
-	code: 0x0d,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value){
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x0d
 });
 
-RecordField.create({
+UnicodeRecordField.create({
 	name: 'autotype',
-	code: 0x0e,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
-	},
-	serialize: function(value){
-		return StoreSerializer._serializeText(value);
-	}
+	code: 0x0e
 });
 
 RecordField.create({
