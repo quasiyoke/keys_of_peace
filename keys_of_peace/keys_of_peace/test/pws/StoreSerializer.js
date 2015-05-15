@@ -1044,6 +1044,48 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('double click action', function() {
+			describe('parsing', function() {
+				it('works', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x13,
+						data: new jDataView('\xab\xcd', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal(0xcdab, record.get('doubleClickAction'));
+				});
+
+				describe('when 0xff is specified', function() {
+					it('ignores it', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x13,
+							data: new jDataView('\xff\x00', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+						assert(!record.has('doubleClickAction'));
+					});
+				});
+
+				describe('when length is wrong', function() {
+					it('throws pws/Error', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x13,
+							data: new jDataView('\xff\x00\xff', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.throws(function() {
+							storeSerializer._parseRecordField(field, record);
+						}, Error);
+					});
+				});
+			});
+		});
+
 		describe('email', function() {
 			describe('parsing', function() {
 				it('works with unicode emails', function() {

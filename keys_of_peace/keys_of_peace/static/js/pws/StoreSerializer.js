@@ -669,7 +669,14 @@ RecordField.create({
 	name: 'doubleClickAction',
 	code: 0x13,
 	parse: function(data) {
-		return data.shiftShort();
+		if (2 !== data.byteLength) {
+			throw new Error('Incorrect data length: ' + data.byteLength + ' instead of 2.');
+		}
+		var value = data.getUint16();
+		if (0xff === value) {
+			return;
+		}
+		return value;
 	},
 	serialize: function(value) {
 		if (undefined === value || 0xff === value) {
