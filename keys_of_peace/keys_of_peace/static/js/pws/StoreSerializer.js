@@ -74,6 +74,8 @@ StoreSerializer._parsePasswordPolicy = function(data, hasName) {
 		if (hasName) {
 			length = StoreSerializer._parseHex(data.getString(2));
 			policy.specialSymbols = StoreSerializer._parseUnicode(data.getString(length));
+		} else if (data.tell() < data.byteLength) {
+			throw new Error('Data weren\'t parsed completely.');
 		}
 	} catch(e) {
 		throw new Error('Password policy parsing was failed. ' + e);
@@ -637,7 +639,16 @@ RecordField.create({
 	name: 'passwordExpiryInterval',
 	code: 0x11,
 	parse: function(data) {
-		return data.shiftNumber();
+		var value = data.getUint32();
+		if (isNaN(value) || value < 0 || 3650 < value) {
+			throw new Error('Incorrect password expiry interval value ' + value + '.');
+		/*
+		 * @see formatV3.txt A value of zero is equivalent to this field not being set.
+		 */
+		} else if (!value) {
+			return;
+		}
+		return value;
 	},
 	serialize: function(value) {
 		if (!value) {

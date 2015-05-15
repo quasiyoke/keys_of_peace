@@ -92,6 +92,45 @@ describe('pws/StoreSerializer', function() {
 				});
 			});
 		});
+
+		describe('parsing unnamed policies', function() {
+			it('should work', function() {
+				var data = new jDataView('0800028001001001001', 0, undefined, true);
+				var policy = {
+					length: 40,
+					useLowercase: false,
+					lowercaseCountMin: 1,
+					useUppercase: false,
+					uppercaseCountMin: 1,
+					useDigits: false,
+					digitsCountMin: 1,
+					useHexDigits: true,
+					useSymbols: false,
+					symbolsCountMin: 1,
+					useEasyVision: false,
+					makePronounceable: false
+				};
+				assert.deepEqual(policy, StoreSerializer._parsePasswordPolicy(data));
+			});
+
+			describe('too long', function() {
+				it('should throw pws/Error', function() {
+					var data = new jDataView('08000280010010010011', 0, undefined, true);
+					assert.throws(function() {
+						StoreSerializer._parsePasswordPolicy(data);
+					}, Error);
+				});
+			});
+
+			describe('too short', function() {
+				it('should throw pws/Error', function() {
+					var data = new jDataView('080002800100100100', 0, undefined, true);
+					assert.throws(function() {
+						StoreSerializer._parsePasswordPolicy(data);
+					}, Error);
+				});
+			});
+		});
 	});
 
 	describe('._parseTime()', function() {
@@ -103,12 +142,9 @@ describe('pws/StoreSerializer', function() {
 		describe('wrong length', function() {
 			it('should throw pws/Error', function() {
 				var data = new jDataView('12345', 0, undefined, true);
-				assert.throws(
-					function() {
-						StoreSerializer._parseTime(data);
-					},
-					Error
-				);
+				assert.throws(function() {
+					StoreSerializer._parseTime(data);
+				}, Error);
 			});
 		});
 
@@ -129,12 +165,9 @@ describe('pws/StoreSerializer', function() {
 		describe('wrong length', function() {
 			it('should throw pws/Error', function() {
 				var data = new jDataView(base64.decode("OshS0gzEReaTfl21RbfscCE="), 0, undefined, true); // 17 bytes
-				assert.throws(
-					function() {
-						StoreSerializer._parseUuid(data)
-					},
-					Error
-				);
+				assert.throws(function() {
+					StoreSerializer._parseUuid(data)
+				}, Error);
 			});
 		});
 	});
@@ -183,12 +216,9 @@ describe('pws/StoreSerializer', function() {
 							code: 0x00,
 							data: new jDataView(base64.decode("DQQ="), 0, undefined, true) // v. 4.10
 						};
-						assert.throws(
-							function() {
-								storeSerializer._parseHeaderField(field)
-							},
-							VersionError
-						);
+						assert.throws(function() {
+							storeSerializer._parseHeaderField(field)
+						}, VersionError);
 					});
 				});
 
@@ -200,12 +230,9 @@ describe('pws/StoreSerializer', function() {
 							code: 0x00,
 							data: new jDataView('123', 0, undefined, true)
 						};
-						assert.throws(
-							function() {
-								storeSerializer._parseHeaderField(field)
-							},
-							VersionError
-						);
+						assert.throws(function() {
+							storeSerializer._parseHeaderField(field)
+						}, VersionError);
 					});
 				});
 			});
@@ -953,6 +980,51 @@ describe('pws/StoreSerializer', function() {
 					parsePasswordPolicy.calledWith('foo');
 					assert.equal('bar', record.get('passwordPolicy'));
 					parsePasswordPolicy.restore();
+				});
+			});
+		});
+
+		describe('password expiry interval', function() {
+			describe('parsing', function() {
+				it('works', function() {
+					var store = {};
+					var storeSerializer = new StoreSerializer(store, {});
+					var field = {
+						code: 0x11,
+						data: new jDataView('\x42\x0e\x00\x00', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal(3650, record.get('passwordExpiryInterval'));
+				});
+
+				describe('when zero is specified', function() {
+					it('ignores it', function() {
+						var store = {};
+						var storeSerializer = new StoreSerializer(store, {});
+						var field = {
+							code: 0x11,
+							data: new jDataView('\x00\x00\x00\x00', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+						assert(!record.has('passwordExpiryInterval'));
+					});
+				});
+
+				describe('when value is too large', function() {
+					it('throws pws/Error', function() {
+						var store = {};
+						var storeSerializer = new StoreSerializer(store, {});
+						var field = {
+							code: 0x11,
+							data: new jDataView('\x43\x0e\x00\x00', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.throws(function() {
+							storeSerializer._parseRecordField(field, record);
+						}, Error);
+					});
 				});
 			});
 		});
