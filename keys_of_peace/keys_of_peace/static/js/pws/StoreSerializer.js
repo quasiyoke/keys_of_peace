@@ -1,7 +1,9 @@
 var _ = require('underscore');
 var CryptoJS = require('crypto-js/core');
 var Error = require('./Error').Error;
+var Hex = require('crypto-js/enc-hex');
 var jDataView = require('jdataview');
+var Latin1 = require('crypto-js/enc-latin1');
 var Record = require('./Record').Record;
 var Store = require('./Store').Store;
 var ValueError = require('./ValueError').ValueError;
@@ -816,8 +818,17 @@ StoreSerializer.prototype._parseRecord = function(index) {
 StoreSerializer.prototype._parseRecordField = function(field, record) {
 	var fieldHandler = StoreSerializer._RECORDS_FIELDS_CODES[field.code];
 	if (fieldHandler) {
-		if (null === fieldHandler.extendObject(record, field.data)) {
-			return null; // This means that record definition was finished.
+		try {
+			if (null === fieldHandler.extendObject(record, field.data)) {
+				return null; // This means that record definition was finished.
+			}
+		} catch(e) {
+			var message = 'Parsing record field \"' + fieldHandler.name + '\".';
+			if (field.data) {
+				message += ' Data: ' + Hex.stringify(Latin1.parse(field.data.getString(undefined, 0))) + '.';
+			}
+			message += ' ' + e;
+			throw new Error(message);
 		}
 	} else {
 		this.record.get('unknownFields').push(field);

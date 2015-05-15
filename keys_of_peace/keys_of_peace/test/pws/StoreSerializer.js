@@ -161,17 +161,6 @@ describe('pws/StoreSerializer', function() {
 	});
 
 	describe('._parseHeaderField()', function() {
-		var sandbox;
-
-		beforeEach(function() {
-			sandbox = sinon.sandbox.create();
-			sandbox.stub(StoreSerializer, '_parseTime');
-		});
-
-		afterEach(function() {
-			sandbox.restore();
-		});
-
 		describe('version', function() {
 			describe('parsing', function() {
 				it('should work', function() {
@@ -223,17 +212,6 @@ describe('pws/StoreSerializer', function() {
 		});
 
 		describe('UUID', function() {
-			var sandbox;
-
-			beforeEach(function() {
-				sandbox = sinon.sandbox.create();
-				sandbox.stub(StoreSerializer, '_parseUuid');
-			});
-
-			afterEach(function() {
-				sandbox.restore();
-			});
-
 			describe('parsing', function() {
 				it('calls StoreSerializer._parseUuid()', function() {
 					var store = {};
@@ -242,11 +220,13 @@ describe('pws/StoreSerializer', function() {
 						code: 0x01,
 						data: 'foo'
 					};
-					StoreSerializer._parseUuid.returns('bar');
+					var parseUuid = sinon.stub(StoreSerializer, '_parseUuid');
+					parseUuid.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-					assert(StoreSerializer._parseUuid.calledOnce);
-					assert(StoreSerializer._parseUuid.firstCall.calledWith('foo'));
+					assert(parseUuid.calledOnce);
+					assert(parseUuid.calledWith('foo'));
 					assert.equal('bar', store.uuid);
+					parseUuid.restore();
 				});
 			});
 		});
@@ -291,11 +271,13 @@ describe('pws/StoreSerializer', function() {
 						code: 0x04,
 						data: 'foo'
 					};
-					StoreSerializer._parseTime.returns('bar');
+					var parseTime = sinon.stub(StoreSerializer, '_parseTime');
+					parseTime.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseHeaderField(field));
-					assert(StoreSerializer._parseTime.calledOnce);
+					assert(parseTime.calledOnce);
 					assert.equal('bar', store.lastSave);
-					assert(StoreSerializer._parseTime.firstCall.calledWith('foo'));
+					assert(parseTime.firstCall.calledWith('foo'));
+					parseTime.restore();
 				});
 			});
 		});
@@ -664,18 +646,6 @@ describe('pws/StoreSerializer', function() {
 	});
 
 	describe('.parseRecordField()', function() {
-		var sandbox;
-
-		beforeEach(function() {
-			sandbox = sinon.sandbox.create();
-			sandbox.stub(StoreSerializer, '_parseTime');
-			sandbox.stub(StoreSerializer, '_parseUuid');
-		});
-
-		afterEach(function() {
-			sandbox.restore();
-		});
-
 		describe('UUID', function() {
 			describe('parsing', function() {
 				it('calls StoreSerializer._parseUuid()', function() {
@@ -685,11 +655,13 @@ describe('pws/StoreSerializer', function() {
 						data: 'foo'
 					};
 					var record = new Record();
-					StoreSerializer._parseUuid.returns('bar');
+					var parseUuid = sinon.stub(StoreSerializer, '_parseUuid');
+					parseUuid.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
-					assert(StoreSerializer._parseUuid.calledOnce);
-					assert(StoreSerializer._parseUuid.calledWith('foo'));
+					assert(parseUuid.calledOnce);
+					assert(parseUuid.calledWith('foo'));
 					assert.equal('bar', record.get('uuid'));
+					parseUuid.restore();
 				});
 			});
 		});
@@ -778,11 +750,13 @@ describe('pws/StoreSerializer', function() {
 						data: 'foo'
 					};
 					var record = new Record();
-					StoreSerializer._parseTime.returns('bar');
+					var parseTime = sinon.stub(StoreSerializer, '_parseTime');
+					parseTime.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
-					assert(StoreSerializer._parseTime.calledOnce);
-					assert(StoreSerializer._parseTime.calledWith('foo'));
+					assert(parseTime.calledOnce);
+					assert(parseTime.calledWith('foo'));
 					assert.equal('bar', record.get('creationTime'));
+					parseTime.restore();
 				});
 			});
 		});
@@ -796,11 +770,13 @@ describe('pws/StoreSerializer', function() {
 						data: 'foo'
 					};
 					var record = new Record();
-					StoreSerializer._parseTime.returns('bar');
+					var parseTime = sinon.stub(StoreSerializer, '_parseTime');
+					parseTime.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
-					assert(StoreSerializer._parseTime.calledOnce);
-					assert(StoreSerializer._parseTime.calledWith('foo'));
+					assert(parseTime.calledOnce);
+					assert(parseTime.calledWith('foo'));
 					assert.equal('bar', record.get('passwordModificationTime'));
+					parseTime.restore();
 				});
 			});
 		});
@@ -814,11 +790,13 @@ describe('pws/StoreSerializer', function() {
 						data: 'foo'
 					};
 					var record = new Record();
-					StoreSerializer._parseTime.returns('bar');
+					var parseTime = sinon.stub(StoreSerializer, '_parseTime');
+					parseTime.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
-					assert(StoreSerializer._parseTime.calledOnce);
-					assert(StoreSerializer._parseTime.calledWith('foo'));
+					assert(parseTime.calledOnce);
+					assert(parseTime.calledWith('foo'));
 					assert.equal('bar', record.get('lastAccessTime'));
+					parseTime.restore();
 				});
 			});
 		});
@@ -832,11 +810,13 @@ describe('pws/StoreSerializer', function() {
 						data: 'foo'
 					};
 					var record = new Record();
-					StoreSerializer._parseTime.returns('bar');
+					var parseTime = sinon.stub(StoreSerializer, '_parseTime');
+					parseTime.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
-					assert(StoreSerializer._parseTime.calledOnce);
-					assert(StoreSerializer._parseTime.calledWith('foo'));
+					assert(parseTime.calledOnce);
+					assert(parseTime.calledWith('foo'));
 					assert.equal('bar', record.get('passwordExpiryTime'));
+					parseTime.restore();
 				});
 			});
 		});
@@ -866,11 +846,13 @@ describe('pws/StoreSerializer', function() {
 						data: 'foo'
 					};
 					var record = new Record();
-					StoreSerializer._parseTime.returns('bar');
+					var parseTime = sinon.stub(StoreSerializer, '_parseTime');
+					parseTime.returns('bar');
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
-					assert(StoreSerializer._parseTime.calledOnce);
-					assert(StoreSerializer._parseTime.calledWith('foo'));
+					assert(parseTime.calledOnce);
+					assert(parseTime.calledWith('foo'));
 					assert.equal('bar', record.get('lastModificationTime'));
+					parseTime.restore();
 				});
 			});
 		});
@@ -950,6 +932,27 @@ describe('pws/StoreSerializer', function() {
 							storeSerializer._parseRecordField(field, record);
 						}, Error);
 					});
+				});
+			});
+		});
+
+		describe('password policy', function() {
+			describe('parsing', function() {
+				it('calls ._parsePasswordPolicy()', function() {
+					var store = {};
+					var storeSerializer = new StoreSerializer(store, {});
+					var field = {
+						code: 0x10,
+						data: new jDataView('foo', 0, undefined, true)
+					};
+					var record = new Record();
+					var parsePasswordPolicy = sinon.stub(StoreSerializer, '_parsePasswordPolicy');
+					parsePasswordPolicy.returns('bar');
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert(parsePasswordPolicy.calledOnce);
+					parsePasswordPolicy.calledWith('foo');
+					assert.equal('bar', record.get('passwordPolicy'));
+					parsePasswordPolicy.restore();
 				});
 			});
 		});
