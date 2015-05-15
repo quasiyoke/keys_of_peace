@@ -74,11 +74,7 @@ StoreSerializer._parsePasswordPolicy = function(data, hasName) {
 			policy.specialSymbols = StoreSerializer._parseUnicode(data.getString(length));
 		}
 	} catch(e) {
-		if (e instanceof ValueError || e instanceof RangeError) {
-			throw new Error('Password policy parsing was failed. ' + e);
-		} else {
-			throw e;
-		}
+		throw new Error('Password policy parsing was failed. ' + e);
 	}
 	return policy;
 };
@@ -230,11 +226,7 @@ HeaderField.create({
 		try {
 			return StoreSerializer._parseUuid(data);
 		} catch(e) {
-			if (e instanceof Error) {
-				throw new Error('Problems while parsing header\'s UUID. ' + e);
-			} else {
-				throw e;
-			}
+			throw new Error('Problems while parsing header\'s UUID. ' + e);
 		}
 	},
 	serialize: function(value) {
@@ -485,11 +477,7 @@ RecordField.create({
 		try {
 			return StoreSerializer._parseUuid(data);
 		} catch(e) {
-			if (e instanceof Error) {
-				throw new Error('Problems while parsing record\'s UUID. ' + e);
-			} else {
-				throw e;
-			}
+			throw new Error('Problems while parsing record\'s UUID. ' + e);
 		}
 	},
 	serialize: function(value) {
@@ -587,19 +575,28 @@ UnicodeRecordField.create({
 RecordField.create({
 	name: 'passwordHistory',
 	code: 0x0f,
-	parse: function(data){
-		var value = {
-			on: '1'.charCodeAt(0) === data.shiftByte()
-		};
-		value.maxSize = data.shiftNumberHex(2);
-		var length = data.shiftNumberHex(2);
-		var items = value.items = [];
-		for (var i = 0; i < length; ++i) {
-			var item = {
-				time: new Date(data.shiftNumberHex(8) * 1000)
+	parse: function(data) {
+		try {
+			var value = {
+				on: '1' === data.getString(1),
+				items: [],
+				maxSize: StoreSerializer._parseHex(data.getString(2))
 			};
-			item.password = StoreSerializer._parseText(data.shiftBytes(data.shiftNumberHex(4)));
-			items.push(item);
+		} catch(e) {
+			throw new Error('Problem while parsing password history beginning. ' + e);
+		}
+		var length = StoreSerializer._parseHex(data.getString(2));
+		for (var i = 0; i < length; ++i) {
+			try {
+				var item = {
+					time: new Date(StoreSerializer._parseHex(data.getString(8)) * 1000)
+				};
+				var passwordLength = StoreSerializer._parseHex(data.getString(4));
+				item.password = StoreSerializer._parseUnicode(data.getString(passwordLength));
+				value.items.push(item);
+			} catch(e) {
+				throw new Error('Problem while parsing password history item #' + i + '. ' + e);
+			}
 		}
 		return value;
 	},

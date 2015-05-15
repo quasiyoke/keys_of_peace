@@ -905,5 +905,54 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('password history', function() {
+			describe('parsing', function() {
+				it('works with unicode passwords\' history', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x0f,
+						data: new jDataView('1040254cdaafc001c--==\xd0\xbf\xd0\x90\xd0\xa0\xd0\x9e\xd0\x9b\xd1\x8cpASSWORd==--54c91926000c:4o%nG+hF7WI', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal(2, record.get('passwordHistory').items.length);
+					assert.equal('--==пАРОЛьpASSWORd==--', record.get('passwordHistory').items[0].password);
+					assert.equal(1422764796000, record.get('passwordHistory').items[0].time.getTime());
+					assert.equal(':4o%nG+hF7WI', record.get('passwordHistory').items[1].password);
+					assert.equal(1422465318000, record.get('passwordHistory').items[1].time.getTime());
+					assert.strictEqual(4, record.get('passwordHistory').maxSize);
+					assert.strictEqual(true, record.get('passwordHistory').on);
+				});
+
+				describe('when password history beginning is incorrect', function() {
+					it('throws pws/Error', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x0f,
+							data: new jDataView('1@@0154cdaafc0001-', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.throws(function() {
+							storeSerializer._parseRecordField(field, record);
+						}, Error);
+					});
+				});
+
+				describe('when password history item is incorrect', function() {
+					it('throws pws/Error', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x0f,
+							data: new jDataView('1040254cdaafc0001-@@cdaafc0001-', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.throws(function() {
+							storeSerializer._parseRecordField(field, record);
+						}, Error);
+					});
+				});
+			});
+		});
+
 	});
 });
