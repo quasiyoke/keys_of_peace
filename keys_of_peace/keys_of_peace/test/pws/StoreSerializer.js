@@ -1226,5 +1226,17 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('end of entry', function() {
+			describe('parsing', function() {
+				it('returns null', function() {
+					var store = {};
+					var storeSerializer = new StoreSerializer(store, {});
+					var field = {
+						code: 0xff
+					};
+					assert.strictEqual(null, storeSerializer._parseRecordField(field, {}));
+				});
+			});
+		});
 	});
 });
