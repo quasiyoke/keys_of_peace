@@ -682,5 +682,21 @@ describe('pws/StoreSerializer', function() {
 				});
 			});
 		});
+
+		describe('group', function() {
+			describe('parsing', function() {
+				it('works with unicode groups', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x02,
+						data: new jDataView(base64.decode('0JzQvtGPINCz0YDRg9C/0L/QsCAvIE15IGdyb3Vw'), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal('Моя группа / My group', record.get('group'));
+				});
+			});
+		});
 	});
+
 });

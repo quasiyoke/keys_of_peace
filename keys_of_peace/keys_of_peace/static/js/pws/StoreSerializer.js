@@ -463,7 +463,7 @@ HeaderField.create({
 })
 
 var RecordField = StoreSerializer._RecordField = Field.extend({
-	init: function(options){
+	init: function(options) {
 		RecordField.$super.init.apply(this, arguments);
 		StoreSerializer._RECORDS_FIELDS_CODES[options.code] = this;
 		StoreSerializer._RECORDS_FIELDS[options.name] = this;
@@ -477,7 +477,7 @@ var RecordField = StoreSerializer._RecordField = Field.extend({
 RecordField.create({
 	name: 'uuid',
 	code: 0x01,
-	parse: function(data){
+	parse: function(data) {
 		try {
 			return StoreSerializer._parseUuid(data);
 		} catch(e) {
@@ -488,7 +488,7 @@ RecordField.create({
 			}
 		}
 	},
-	serialize: function(value){
+	serialize: function(value) {
 		return StoreSerializer._serializeUuid(value);
 	}
 });
@@ -496,10 +496,10 @@ RecordField.create({
 RecordField.create({
 	name: 'group',
 	code: 0x02,
-	parse: function(data){
-		return StoreSerializer._parseText(data);
+	parse: function(data) {
+		return StoreSerializer._parseUnicode(data.getString(undefined, 0));
 	},
-	serialize: function(value){
+	serialize: function(value) {
 		return StoreSerializer._serializeText(value);
 	}
 });
