@@ -527,76 +527,43 @@ UnicodeRecordField.create({
 	code: 0x06
 });
 
-RecordField.create({
+var TimeRecordField = RecordField.extend({
+	parse: function(data){
+		return StoreSerializer._parseTime(data);
+	},
+	serialize: function(value){
+		if(!value){
+			return;
+		}
+		return StoreSerializer._serializeTime(value);
+	}
+});
+
+TimeRecordField.create({
 	name: 'creationTime',
-	code: 0x07,
-	parse: function(data){
-		return StoreSerializer._parseTime(data);
-	},
-	serialize: function(value){
-		if(!value){
-			return;
-		}
-		return StoreSerializer._serializeTime(value);
-	}
+	code: 0x07
 });
 
-RecordField.create({
+TimeRecordField.create({
 	name: 'passwordModificationTime',
-	code: 0x08,
-	parse: function(data){
-		return StoreSerializer._parseTime(data);
-	},
-	serialize: function(value){
-		if(!value){
-			return;
-		}
-		return StoreSerializer._serializeTime(value);
-	}
+	code: 0x08
 });
 
-RecordField.create({
+TimeRecordField.create({
 	name: 'lastAccessTime',
-	code: 0x09,
-	parse: function(data){
-		return StoreSerializer._parseTime(data);
-	},
-	serialize: function(value){
-		if(!value){
-			return;
-		}
-		return StoreSerializer._serializeTime(value);
-	}
+	code: 0x09
 });
 
-RecordField.create({
+TimeRecordField.create({
 	name: 'passwordExpiryTime',
-	code: 0x0a,
-	parse: function(data){
-		return StoreSerializer._parseTime(data);
-	},
-	serialize: function(value){
-		if(!value){
-			return;
-		}
-		return StoreSerializer._serializeTime(value);
-	}
+	code: 0x0a
 });
 
 RecordField.create({ code: 0x0b }); // Reserved.
 
-RecordField.create({
+TimeRecordField.create({
 	name: 'lastModificationTime',
-	code: 0x0c,
-	parse: function(data){
-		return StoreSerializer._parseTime(data);
-	},
-	serialize: function(value){
-		if(!value){
-			return;
-		}
-		return StoreSerializer._serializeTime(value);
-	}
+	code: 0x0c
 });
 
 RecordField.create({
