@@ -694,10 +694,16 @@ UnicodeRecordField.create({
 });
 
 RecordField.create({
-	name: 'protectedEntry',
+	name: 'protected',
 	code: 0x15,
-	parse: function(data) { // TODO: Test this.
-		return !!data.shiftByte();
+	/**
+	 * @see ItemData.cpp for CItemData::GetProtected -- it marks record as not "protected" when data is
+	 * omitted or having wrong length.
+	 */
+	parse: function(data) {
+		if (data && data.getUint8()) {
+			return true;
+		}
 	},
 	serialize: function(value) { // TODO: Test this.
 		if (!value) {

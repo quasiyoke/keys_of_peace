@@ -1101,6 +1101,59 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('protected', function() {
+			describe('parsing', function() {
+				it('works', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x15,
+						data: new jDataView('\x01', 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.strictEqual(true, record.get('protected'));
+				});
+
+				describe('when length is wrong', function() {
+					it('works', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x15,
+							data: new jDataView('\xff\x00', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+						assert.strictEqual(true, record.get('protected'));
+					});
+				});
+
+				describe('when falsy value was specified', function() {
+					it('ignores it', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x15,
+							data: new jDataView('\x00', 0, undefined, true)
+						};
+						var record = new Record();
+						assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+						assert(!record.has('protected'));
+					});
+				});
+
+				describe('when no data was specified', function() {
+					it('ignores it', function() {
+						var storeSerializer = new StoreSerializer({}, {});
+						var field = {
+							code: 0x15
+						};
+						var record = new Record();
+						assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+						assert(!record.has('protected'));
+					});
+				});
+			});
+		});
+
 		describe('own symbols for password', function() {
 			describe('parsing', function() {
 				it('works with unicode symbols', function() {
