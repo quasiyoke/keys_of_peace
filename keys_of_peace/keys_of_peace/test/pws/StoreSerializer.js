@@ -841,6 +841,22 @@ describe('pws/StoreSerializer', function() {
 			});
 		});
 
+		describe('reserved', function() {
+			describe('parsing', function() {
+				it('ignores it', function() {
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0x0b,
+						data: 'foo'
+					};
+					var record = new Record();
+					var recentAttributes = _.clone(record.attributes);
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.deepEqual(recentAttributes, record.attributes);
+				});
+			});
+		});
+
 		describe('last modification time', function() {
 			describe('parsing', function() {
 				it('calls StoreSerializer._parseTime()', function() {

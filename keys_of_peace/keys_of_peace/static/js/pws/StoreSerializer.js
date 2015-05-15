@@ -559,7 +559,11 @@ TimeRecordField.create({
 	code: 0x0a
 });
 
-RecordField.create({ code: 0x0b }); // Reserved.
+/*
+ * @see ItemData.cpp for CItemData::GetFieldValue -- reserved 0x0b field should be ignored
+ * as reference implementation does.
+ */
+RecordField.create({ code: 0x0b });
 
 TimeRecordField.create({
 	name: 'lastModificationTime',
