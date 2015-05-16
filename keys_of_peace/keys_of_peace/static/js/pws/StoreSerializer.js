@@ -67,7 +67,10 @@ StoreSerializer._serializeHex = function(n, length) {
 };
 
 /**
+ * @param data jDataView
+ * @param hasName Boolean
  * @throws pws/Error
+ * @return Object
  */
 StoreSerializer._parsePasswordPolicy = function(data, hasName) {
 	var policy = {};
@@ -101,35 +104,48 @@ StoreSerializer._parsePasswordPolicy = function(data, hasName) {
 	return policy;
 };
 
+/**
+ * @param policy Object
+ * @param hasName Boolean
+ * @return String
+ */
 StoreSerializer._serializePasswordPolicy = function(policy, hasName) {
 	var serialized = [];
-	if (hasName) {
-		var serializedName = StoreSerializer._serializeUnicode(policy.name);
-		serialized.push(StoreSerializer._serializeHex(serializedName.length, 2));
-		serialized.push(serializedName);
-	}
-	var flags = 0;
-	policy.useLowercase && (flags |= StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE);
-	policy.useUppercase && (flags |= StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE);
-	policy.useDigits && (flags |= StoreSerializer._PASSWORD_POLICY_USE_DIGITS);
-	policy.useSymbols && (flags |= StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS);
-	policy.useHexDigits && (flags |= StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS);
-	policy.useEasyVision && (flags |= StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION);
-	policy.makePronounceable && (flags |= StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
-	serialized.push(StoreSerializer._serializeHex(flags, 4));
-	serialized.push(StoreSerializer._serializeHex(policy.length, 3));
-	serialized.push(StoreSerializer._serializeHex(policy.lowercaseCountMin, 3));
-	serialized.push(StoreSerializer._serializeHex(policy.uppercaseCountMin, 3));
-	serialized.push(StoreSerializer._serializeHex(policy.digitsCountMin, 3));
-	serialized.push(StoreSerializer._serializeHex(policy.symbolsCountMin, 3));
-	if (hasName) {
-		var serializedSpecialSymbols = StoreSerializer._serializeUnicode(policy.specialSymbols);
-		serialized.push(StoreSerializer._serializeHex(serializedSpecialSymbols.length, 2));
-		serialized.push(serializedSpecialSymbols);
+	try {
+		if (hasName) {
+			var serializedName = StoreSerializer._serializeUnicode(policy.name);
+			serialized.push(StoreSerializer._serializeHex(serializedName.length, 2));
+			serialized.push(serializedName);
+		}
+		var flags = 0;
+		policy.useLowercase && (flags |= StoreSerializer._PASSWORD_POLICY_USE_LOWERCASE);
+		policy.useUppercase && (flags |= StoreSerializer._PASSWORD_POLICY_USE_UPPERCASE);
+		policy.useDigits && (flags |= StoreSerializer._PASSWORD_POLICY_USE_DIGITS);
+		policy.useSymbols && (flags |= StoreSerializer._PASSWORD_POLICY_USE_SYMBOLS);
+		policy.useHexDigits && (flags |= StoreSerializer._PASSWORD_POLICY_USE_HEX_DIGITS);
+		policy.useEasyVision && (flags |= StoreSerializer._PASSWORD_POLICY_USE_EASY_VISION);
+		policy.makePronounceable && (flags |= StoreSerializer._PASSWORD_POLICY_MAKE_PRONOUNCEABLE);
+		serialized.push(StoreSerializer._serializeHex(flags, 4));
+		serialized.push(StoreSerializer._serializeHex(policy.length, 3));
+		serialized.push(StoreSerializer._serializeHex(policy.lowercaseCountMin, 3));
+		serialized.push(StoreSerializer._serializeHex(policy.uppercaseCountMin, 3));
+		serialized.push(StoreSerializer._serializeHex(policy.digitsCountMin, 3));
+		serialized.push(StoreSerializer._serializeHex(policy.symbolsCountMin, 3));
+		if (hasName) {
+			var serializedSpecialSymbols = StoreSerializer._serializeUnicode(policy.specialSymbols);
+			serialized.push(StoreSerializer._serializeHex(serializedSpecialSymbols.length, 2));
+			serialized.push(serializedSpecialSymbols);
+		}
+	} catch (e) {
+		throw new Error('Password policy serializing was failed. ' + e);
 	}
 	return serialized.join('');
 };
 
+/**
+ * @param data jDataView
+ * @return Date
+ */
 StoreSerializer._parseTime = function(data){
 	/* @see ReadHeader at PWSfileV3.cpp */
 	if (8 === data.byteLength) {
@@ -143,22 +159,36 @@ StoreSerializer._parseTime = function(data){
 	return new Date(data.getUint32() * 1000);
 };
 
+/**
+ * @param time Date
+ * @return jDataView
+ */
 StoreSerializer._serializeTime = function(time) {
-	var serialized = CryptoJS.lib.WordStack.create();
-	serialized.pushNumber(time.getTime() / 1000);
+	var serialized = new jDataView(4, 0, undefined, true);
+	serialized.writeUint32(time.getTime() / 1000);
 	return serialized;
 };
 
+/**
+ * @param str String utf-8-encoded "binary" string.
+ * @return String full of Unicode characters.
+ */
 StoreSerializer._parseUnicode = function(str) {
 	return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Latin1.parse(str));
 };
 
+/**
+ * @param str String full of Unicode characters.
+ * @return String utf-8-encoded "binary" string.
+ */
 StoreSerializer._serializeUnicode = function(str) {
 	return CryptoJS.enc.Latin1.stringify(CryptoJS.enc.Utf8.parse(str));
 };
 
 /**
+ * @param data jDataView
  * @throws pws/Error when UUID format is incorrect.
+ * @return String
  */
 StoreSerializer._parseUuid = function(data) {
 	if (StoreSerializer._UUID_LENGTH !== data.byteLength) {
@@ -168,8 +198,22 @@ StoreSerializer._parseUuid = function(data) {
 	return CryptoJS.enc.Latin1.parse(data.getString(undefined, 0)).toString();
 };
 
-StoreSerializer._serializeUuid = function(uuid){
-	return CryptoJS.enc.Hex.parse(uuid);
+/**
+ * @param uuid String
+ * @throws pws/ValueError when UUID format is incorrect.
+ * @return jDataView
+ */
+StoreSerializer._serializeUuid = function(uuid) {
+	if (!StoreSerializer._HEX_REGEX.test(uuid)) {
+		throw new ValueError('Incorrect UUID contents. It\'s not a hex string: \"' + uuid + '\"');
+	}
+	if (uuid.length !== StoreSerializer._UUID_LENGTH * 2) {
+		throw new ValueError('Incorrect UUID length: ' + uuid.sigBytes + ' instead of ' +
+			StoreSerializer._UUID_LENGTH * 2 + '.');
+	}
+	uuid = CryptoJS.enc.Hex.parse(uuid);
+	var serialized = CryptoJS.enc.Latin1.stringify(uuid);
+	return new jDataView(serialized, 0, undefined, true);
 };
 
 var Field = StoreSerializer._Field = CryptoJS.lib.Base.extend({
@@ -438,15 +482,19 @@ HeaderField.create({
 		if (!value || !value.length) {
 			return;
 		}
-		if (value.length > 0xff) {
-			value = value.slice(0, 0xff); // TODO: Check slicing.
+		var PASSWORD_POLICIES_COUNT_MAX = 0xff;
+		if (value.length > PASSWORD_POLICIES_COUNT_MAX) {
+			throw new Error('Too much password policies to save. Maximum count is ' +
+				PASSWORD_POLICIES_COUNT_MAX + ', but now it\'s ' + value.length + '.');
 		}
-		var data = CryptoJS.lib.WordStack.create();
-		data.pushNumberHex(value.length, 2);
-		_.each(value, function(policy) {
-			data.pushBytes(StoreSerializer._serializePasswordPolicy(policy, true));
+		var policies = _.map(value, function(policy) {
+			return StoreSerializer._serializePasswordPolicy(policy, true);
 		});
-		return data;
+		policies = policies.join('');
+		var serialized = new jDataView(policies.length + 2, 0, undefined, true);
+		serialized.writeString(StoreSerializer._serializeHex(value.length, 2));
+		serialized.writeString(policies);
+		return serialized;
 	}
 });
 

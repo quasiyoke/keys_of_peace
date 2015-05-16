@@ -239,11 +239,31 @@ describe('pws/StoreSerializer', function() {
 				);
 			});
 		});
+
+		describe('serializing unnamed policies', function() {
+			it('should work', function() {
+				var policy = {
+					length: 40,
+					useLowercase: false,
+					lowercaseCountMin: 1,
+					useUppercase: false,
+					uppercaseCountMin: 1,
+					useDigits: false,
+					digitsCountMin: 1,
+					useHexDigits: true,
+					useSymbols: false,
+					symbolsCountMin: 1,
+					useEasyVision: false,
+					makePronounceable: false
+				};
+				assert.deepEqual('0800028001001001001', StoreSerializer._serializePasswordPolicy(policy));
+			});
+		});
 	});
 
 	describe('._parseTime()', function() {
 		it('works', function() {
-			var data = new jDataView(base64.decode("b6vNVA=="), 0, undefined, true);
+			var data = new jDataView('o\xab\xcdT', 0, undefined, true);
 			assert.equal(1422764911000, StoreSerializer._parseTime(data).getTime());
 		});
 
@@ -264,15 +284,28 @@ describe('pws/StoreSerializer', function() {
 		});
 	});
 
+	describe('._serializeTime()', function() {
+		it('works', function() {
+			var time = new Date(1422764911000);
+			assert.equal('o\xab\xcdT', StoreSerializer._serializeTime(time).getString(undefined, 0));
+		});
+	});
+
+	describe('._serializeUnicode()', function() {
+		it('works', function() {
+			assert.equal('\xd0\xa1\xd1\x82\xd1\x80\xd0\xbe\xd0\xba\xd0\xb0 / String', StoreSerializer._serializeUnicode('Строка / String'));
+		});
+	});
+
 	describe('._parseUuid()', function() {
 		it('works', function() {
-			var data = new jDataView(base64.decode("OshS0gzEReaTfl21RbfscA=="), 0, undefined, true);
+			var data = new jDataView(':\xc8R\xd2\x0c\xc4E\xe6\x93~]\xb5E\xb7\xecp', 0, undefined, true);
 			assert.equal('3ac852d20cc445e6937e5db545b7ec70', StoreSerializer._parseUuid(data));
 		});
 
 		describe('wrong length', function() {
 			it('should throw pws/Error', function() {
-				var data = new jDataView(base64.decode("OshS0gzEReaTfl21RbfscCE="), 0, undefined, true); // 17 bytes
+				var data = new jDataView(':\xc8R\xd2\x0c\xc4E\xe6\x93~]\xb5E\xb7\xecpp', 0, undefined, true); // 17 bytes
 				assert.throws(function() {
 					StoreSerializer._parseUuid(data)
 				}, Error);
@@ -280,9 +313,28 @@ describe('pws/StoreSerializer', function() {
 		});
 	});
 
-	describe('._serializeUnicode()', function() {
+	describe('._serializeUuid()', function() {
 		it('works', function() {
-			assert.equal('\xd0\xa1\xd1\x82\xd1\x80\xd0\xbe\xd0\xba\xd0\xb0 / String', StoreSerializer._serializeUnicode('Строка / String'));
+			var uuid = '3ac852d20cc445e6937e5db545b7ec70';
+			assert.equal(':\xc8R\xd2\x0c\xc4E\xe6\x93~]\xb5E\xb7\xecp', StoreSerializer._serializeUuid(uuid).getString(undefined, 0));
+		});
+
+		describe('wrong length', function() {
+			it('should throw pws/ValueError', function() {
+				var uuid = '3ac852d20cc445e6937e5db545b7ec7'; // 31 bytes
+				assert.throws(function() {
+					StoreSerializer._serializeUuid(uuid)
+				}, ValueError);
+			});
+		});
+
+		describe('wrong format', function() {
+			it('should throw pws/ValueError', function() {
+				var uuid = '@@c852d20cc445e6937e5db545b7ec70';
+				assert.throws(function() {
+					StoreSerializer._serializeUuid(uuid)
+				}, ValueError);
+			});
 		});
 	});
 
