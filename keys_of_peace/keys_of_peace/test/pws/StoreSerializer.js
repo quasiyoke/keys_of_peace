@@ -4,6 +4,7 @@ var base64 = require('base64-arraybuffer');
 var Error = require('../../static/js/pws/Error').Error;
 var jDataView = require('jdataview');
 var Record = require('../../static/js/pws/Record').Record;
+var Records = require('../../static/js/pws/Records').Records;
 var sinon = require('sinon');
 var StoreSerializer = require('../../static/js/pws/StoreSerializer').StoreSerializer;
 var ValueError = require('../../static/js/pws/ValueError').ValueError;
@@ -805,7 +806,7 @@ describe('pws/StoreSerializer', function() {
 				fields: ['zero', 'first', 'second', 'third', 'fourth']
 			};
 			var store = {
-				records: []
+				records: new Records()
 			};
 			var storeSerializer = new StoreSerializer(store, file);
 			var parseRecordField = sinon.stub(storeSerializer, '_parseRecordField');
@@ -824,7 +825,7 @@ describe('pws/StoreSerializer', function() {
 				fields: ['zero', 'first', 'second', 'third', 'fourth']
 			};
 			var store = {
-				records: []
+				records: new Records()
 			};
 			var storeSerializer = new StoreSerializer(store, file);
 			var parseRecordField = sinon.stub(storeSerializer, '_parseRecordField');
@@ -1388,6 +1389,23 @@ describe('pws/StoreSerializer', function() {
 					var record = new Record();
 					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
 					assert.equal('Мои аккаунты / My accounts', record.get('passwordPolicyName'));
+				});
+			});
+		});
+
+		describe('unknown field', function() {
+			describe('parsing', function() {
+				it('pushes it to unknown fields array', function() {
+					var DATA_BASE64 = 'NfBeKz0Xg0b96UvtDKVcqSRpC9U=';
+					var storeSerializer = new StoreSerializer({}, {});
+					var field = {
+						code: 0xfe,
+						data: new jDataView(base64.decode(DATA_BASE64), 0, undefined, true)
+					};
+					var record = new Record();
+					assert.strictEqual(undefined, storeSerializer._parseRecordField(field, record));
+					assert.equal(field.code, record.get('unknownFields')[0].code);
+					assert.equal(DATA_BASE64, base64.encode(record.get('unknownFields')[0].data.buffer));
 				});
 			});
 		});

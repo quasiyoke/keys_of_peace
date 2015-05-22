@@ -309,7 +309,7 @@ HeaderField.create({
 		return data.getString(undefined, 0);
 	},
 	serialize: function(value) {
-		return StoreSerializer._serializeText(value);
+		return new jDataView(value, undefined, 0, true);
 	}
 });
 
@@ -836,7 +836,7 @@ StoreSerializer.prototype._parseHeaderField = function(field) {
 };
 
 /**
- * @throws pws/Error if file hasn't end-of-record field.
+ * @throws pws/Error if file hasn't end-of-record field. @see _parseRecord
  * @throws pws/Error if _headerFieldsEndIndex is undefined.
  */
 StoreSerializer.prototype._parseRecords = function() {
@@ -853,7 +853,7 @@ StoreSerializer.prototype._parseRecords = function() {
  * @returns Number index of record's end.
  */
 StoreSerializer.prototype._parseRecord = function(index) {
-	var record = new Record();
+	var record = this.store.records.create();
 	for (; index < this.file.fields.length; ++index) {
 		if (null === this._parseRecordField(this.file.fields[index], record)) {
 			this.store.records.push(record);
@@ -879,7 +879,7 @@ StoreSerializer.prototype._parseRecordField = function(field, record) {
 			throw new Error(message);
 		}
 	} else {
-		this.record.get('unknownFields').push(field);
+		record.get('unknownFields').push(field);
 	}
 };
 
